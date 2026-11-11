@@ -1,0 +1,47 @@
+name: Publicar book en GitHub Pages
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "index.md"
+      - "myst.yml"
+      - "references.bib"
+      - "book/**"
+      - ".github/workflows/deploy.yml"
+  workflow_dispatch:
+
+env:
+  BASE_URL: /${{ github.event.repository.name }}
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/configure-pages@v5
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Instalar MyST
+        run: npm install -g mystmd
+      - name: Construir HTML
+        run: myst build --html
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: ./_build/html
+      - name: Desplegar
+        id: deployment
+        uses: actions/deploy-pages@v4

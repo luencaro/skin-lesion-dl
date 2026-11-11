@@ -1,0 +1,7 @@
+# Configuración común a todos los modelos.
+# Irá aquí:
+#   - semillas para la reproducibilidad
+#   - partición (ruta del split, proporciones, agrupación por lesión)
+#   - resolución de entrada de las imágenes
+#   - métricas a reportar
+#   - número de épocas y early stopping

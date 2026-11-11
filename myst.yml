@@ -1,0 +1,16 @@
+version: 1
+project:
+  title: Clasificación de lesiones pigmentadas de la piel con aprendizaje profundo
+  authors:
+    - name: Luis Cabarcas
+      affiliations:
+        - Universidad del Norte
+  bibliography:
+    - references.bib
+  toc:
+    - file: index.md
+    - file: book/descripcion-del-proyecto.md
+    - file: book/estado-del-arte.md
+    - file: book/modelos-base.md
+site:
+  template: book-theme

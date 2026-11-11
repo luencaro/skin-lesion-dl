@@ -1,0 +1,4 @@
+# Configuración propia de vgg16.
+# Irá aquí:
+#   - hiperparámetros (learning rate, batch size, dropout, capas a descongelar, ...)
+#   - espacio de búsqueda de hiperparámetros

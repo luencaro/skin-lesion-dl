@@ -1,0 +1,14 @@
+# Datos crudos HAM10000 (no se suben a git)
+data/raw/*
+!data/raw/.gitkeep
+
+# Python
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+
+# Build del libro (MyST)
+_build/
+
+# Entorno virtual (uv)
+.venv/
