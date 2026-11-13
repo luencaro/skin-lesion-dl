@@ -1,7 +1,72 @@
-# Configuración común a todos los modelos.
-# Irá aquí:
-#   - semillas para la reproducibilidad
-#   - partición (ruta del split, proporciones, agrupación por lesión)
-#   - resolución de entrada de las imágenes
-#   - métricas a reportar
-#   - número de épocas y early stopping
+# Configuración común a todos los modelos y al EDA.
+# Pendiente de añadir para el entrenamiento: resolución de entrada, métricas, épocas,
+# early stopping.
+
+seed: 42
+
+# Rutas relativas a la raíz del proyecto (src/data.py las resuelve como absolutas).
+paths:
+  raw_dir: data/raw
+  images_dir: data/raw/images
+  metadata_csv: data/raw/HAM10000_metadata.csv
+  segmentations_dir: data/raw/segmentations
+  hashes_json: data/hashes.json
+  phash_csv: data/interim/phash.csv
+  duplicates_candidates_csv: data/duplicados_candidatos.csv
+  duplicates_confirmed_csv: data/duplicados_confirmados.csv
+  splits_csv: data/splits.csv
+  splits_hash_json: data/splits_hash.json
+  eda_cache_dir: data/processed/eda_cache
+  artifacts_annotation_csv: data/anotacion_artefactos.csv
+  train_color_stats_json: data/train_color_stats.json
+
+# Formato de los archivos
+image_ext: .jpg
+mask_suffix: _segmentation.png
+source_column: dataset          # columna opcional con la fuente de cada imagen
+missing_tokens: ["unknown", ""] # valores que se cuentan como faltantes
+
+# Partición
+test_size: 0.15
+n_folds: 5
+overwrite_splits: false
+
+# Duplicados (pHash)
+phash_hash_size: 8              # hash de 8 x 8 = 64 bits
+phash_threshold: 2              # distancia de Hamming máxima para proponer un par
+phash_dist_max: 16              # distancia máxima que muestra la tabla de distribución
+eda_pairs_page_size: 20         # pares por página en la revisión visual
+eda_pairs_pages_per_figure: 2   # páginas que se muestran una al lado de la otra
+
+# Caché e inspección visual
+eda_cache_max_side: 300
+eda_cache_format: jpg
+eda_cache_jpeg_quality: 95
+eda_grid_per_class: 16
+eda_grid_ncols: 8
+
+# Artefactos
+eda_annotation_per_class: 40
+eda_annotation_page_size: 20
+artifact_columns: [regla, tinta, vello, burbujas, vineteado, parche_color]
+eda_vignette_corner_frac: 0.1   # lado de cada esquina, fracción del lado menor
+eda_vignette_center_frac: 0.2   # ventana central, fracción del alto y del ancho
+
+# Color
+eda_luma_weights: [0.299, 0.587, 0.114]  # luminancia ITU-R BT.601
+shades_of_gray_p: 6
+eda_sog_examples_per_class: 1
+
+# Máscaras de lesión
+mask_threshold: 127
+
+# Validación adversarial
+adv_hist_bins: 16
+adv_cv_folds: 5
+adv_max_iter: 1000
+
+# Embeddings
+eda_embeddings: false
+eda_embeddings_input_size: 224
+eda_embeddings_batch_size: 64
+eda_tsne_perplexity: 30

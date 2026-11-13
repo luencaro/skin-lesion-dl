@@ -9,8 +9,8 @@ project:
     - references.bib
   toc:
     - file: index.md
-    - file: book/descripcion-del-proyecto.md
-    - file: book/estado-del-arte.md
-    - file: book/modelos-base.md
+    - file: book/01-descripcion-del-proyecto.md
+    - file: book/02-estado-del-arte.md
+    - file: book/03-modelos-base.md
 site:
   template: book-theme

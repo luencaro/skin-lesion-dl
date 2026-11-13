@@ -8,7 +8,7 @@ El cáncer de piel es una de las neoplasias más frecuentes en poblaciones de pi
 
 La publicación de HAM10000 [@tschandl2018] y su uso en el reto ISIC 2018 [@codella2019] proporcionaron a la comunidad un conjunto público de referencia con siete categorías diagnósticas. Desde entonces, cientos de trabajos reportan exactitudes superiores al 90 % sobre este conjunto. Esas cifras, sin embargo, contrastan con las obtenidas bajo protocolos más estrictos, que se sitúan alrededor de 0,70 de exactitud balanceada [@pinar2026], y con la caída de más de veinte puntos que se observa al evaluar en datos de otra institución [@combalia2022]. La diferencia se explica en buena parte por decisiones metodológicas: particiones que reparten imágenes de una misma lesión entre entrenamiento y prueba, aumento de datos aplicado antes de dividir los datos, métricas sensibles al desbalance de clases y comparaciones basadas en una sola ejecución.
 
-En ese contexto, la pregunta de cuánto mejora un modelo avanzado respecto de uno sencillo no tiene hoy una respuesta fiable. El problema que aborda esta etapa del proyecto es, por tanto, previo al desarrollo de cualquier modelo nuevo: determinar con rigor el desempeño de los modelos base que la literatura emplea como referencia en la clasificación de lesiones dermatoscópicas.
+En ese contexto, la pregunta de cuánto mejora una arquitectura nueva respecto de los modelos con los que se compara no tiene hoy una respuesta fiable. Proponer una arquitectura que supere a los modelos de referencia exige, en primer lugar, identificar cuáles son esos modelos y conocer su desempeño bajo un protocolo que controle la dependencia entre imágenes de una misma lesión.
 
 ## Antecedentes
 
@@ -22,17 +22,16 @@ A partir de 2019, la literatura empezó a cuestionar la validez de esos resultad
 
 ## Justificación
 
-Cualquier afirmación sobre la superioridad de un modelo exige conocer antes, con su incertidumbre, el desempeño del punto de comparación. En aprendizaje automático clásico ese papel lo cumple la regresión logística; en aprendizaje profundo aplicado a dermatoscopia lo cumplen unas pocas arquitecturas estándar, pero sus valores de referencia se han medido casi siempre una sola vez, bajo particiones con fuga y con métricas poco apropiadas para el desbalance de clases. Establecer un baseline riguroso tiene, por tanto, un valor en sí mismo: permite saber qué magnitud de mejora es plausible, cuál es indistinguible de la variabilidad experimental y cuál constituye una contribución real. Además, como el conjunto de datos y el protocolo se mantendrán en todas las etapas del proyecto, la calidad de este punto de partida condiciona la validez de todo lo que se construya después.
+La literatura sobre HAM10000 propone continuamente arquitecturas nuevas, pero las mejoras que reporta se miden casi siempre contra modelos de referencia evaluados una sola vez, bajo particiones con fuga y con métricas poco apropiadas para el desbalance de clases. En esas condiciones, una mejora de pocos puntos puede deberse a la variabilidad del entrenamiento o a diferencias de protocolo y no a la arquitectura. Una propuesta que pretenda superar a los modelos de referencia necesita, por tanto, compararse con ellos bajo el mismo conjunto de datos, la misma partición y el mismo procedimiento de evaluación, y demostrar la mejora con evidencia estadística. Conocer con rigor el desempeño de esos modelos es la condición para juzgar cualquier propuesta posterior.
 
 ## Objetivos
 
 ### Objetivo general
 
-Establecer, con evidencia estadística, el desempeño de referencia de los modelos base de aprendizaje profundo empleados en la literatura para la clasificación de las siete categorías diagnósticas de HAM10000, bajo un protocolo que controle la dependencia entre imágenes de una misma lesión.
+Proponer una arquitectura de aprendizaje profundo para la clasificación de las siete categorías diagnósticas de HAM10000 que supere, con evidencia estadística, el desempeño de los modelos de referencia empleados en la literatura.
 
 ### Objetivos específicos
 
-1. Identificar, mediante una revisión sistemática de la literatura, los tres modelos de aprendizaje profundo más básicos que los estudios sobre HAM10000 utilizan como referencia comparativa.
+1. Identificar, mediante una revisión sistemática de la literatura, los modelos de aprendizaje profundo que los estudios sobre HAM10000 utilizan como referencia comparativa.
 2. Caracterizar el conjunto de datos, su estructura de dependencia, su desbalance y sus posibles atajos visuales, y definir a partir de ello una partición estratificada y agrupada por lesión.
-3. Implementar y entrenar los tres modelos base bajo el mismo pipeline, la misma partición y el mismo presupuesto de ajuste de hiperparámetros.
-4. Comparar los modelos mediante pruebas estadísticas apropiadas y definir el baseline y el umbral mínimo de mejora que deberán superar los modelos avanzados.
+3. Implementar y evaluar los modelos de referencia bajo un mismo pipeline, una misma partición y un mismo presupuesto de ajuste de hiperparámetros, y compararlos mediante pruebas estadísticas.

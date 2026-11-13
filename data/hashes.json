@@ -1,0 +1,6 @@
+{
+  "data/raw/HAM10000_images_part_1.zip": "6202a599129c2efe81c25aea8586d422eeda8a4fae5df49dd7b7bbf956d419db",
+  "data/raw/HAM10000_images_part_2.zip": "9677f30118c21ecc667a147de369d89acb25efab046fd32f6b13ad677ce2d6d0",
+  "data/raw/HAM10000_segmentations_lesion_tschandl.zip": "6d88d7df8cc806c938932939d50c17fb9ad206c143343e4702c81cf3453c1e7a",
+  "data/raw/HAM10000_metadata.csv": "de17ec44cb25ea9c3f6378ba18d69224c740afd62e86ec2edc6a894d6aa663d3"
+}

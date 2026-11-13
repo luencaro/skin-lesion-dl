@@ -12,3 +12,6 @@ _build/
 
 # Entorno virtual (uv)
 .venv/
+
+# Datos procesados (caché del EDA, etc.)
+data/processed/
