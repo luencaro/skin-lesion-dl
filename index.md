@@ -11,5 +11,8 @@ Este proyecto tiene como propósito proponer una arquitectura de aprendizaje pro
 ## Contenido
 
 - [Descripción del proyecto](book/01-descripcion-del-proyecto.md): planteamiento del problema, antecedentes, justificación y objetivos.
-- [Estado del arte](book/02-estado-del-arte.md): estrategia de búsqueda, evaluación de los estudios e identificación de los modelos base.
-- [Modelos base](book/03-modelos-base.md): análisis de VGG-16, ResNet-50 y MobileNetV2, comparación crítica y brecha en la literatura.
+- [Definición del problema y del conjunto de datos](book/02-definicion-del-problema.md): formulación del problema, hipótesis, declaración a priori y descripción de HAM10000.
+- [Estado del arte](book/03-estado-del-arte.md): estrategia de búsqueda, evaluación de los estudios e identificación de los modelos base.
+- [Modelos base](book/04-modelos-base.md): análisis de VGG-16, ResNet-50 y MobileNetV2, comparación crítica y brecha en la literatura.
+- [EDA de metadatos y partición](book/05-eda_metadatos_particion.ipynb): integridad, duplicados, metadatos y partición agrupada por lesión.
+- [EDA de imágenes](book/06-eda_imagenes.ipynb): artefactos, formato, color, lesión, atajos visuales y separabilidad.

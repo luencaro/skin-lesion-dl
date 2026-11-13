@@ -2,7 +2,7 @@
 title: Modelos base
 ---
 
-Esta página analiza los tres modelos base identificados en el [estado del arte](02-estado-del-arte.md), los compara entre sí y describe la brecha que la literatura deja abierta.
+Esta página analiza los tres modelos base identificados en el [estado del arte](03-estado-del-arte.md), los compara entre sí y describe la brecha que la literatura deja abierta.
 
 ## Elementos comunes
 

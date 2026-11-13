@@ -10,7 +10,10 @@ project:
   toc:
     - file: index.md
     - file: book/01-descripcion-del-proyecto.md
-    - file: book/02-estado-del-arte.md
-    - file: book/03-modelos-base.md
+    - file: book/02-definicion-del-problema.md
+    - file: book/03-estado-del-arte.md
+    - file: book/04-modelos-base.md
+    - file: book/05-eda_metadatos_particion.ipynb
+    - file: book/06-eda_imagenes.ipynb
 site:
   template: book-theme

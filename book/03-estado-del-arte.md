@@ -2,7 +2,7 @@
 title: Estado del arte
 ---
 
-El propósito de la revisión de literatura es identificar los tres modelos de aprendizaje profundo más básicos que los estudios sobre clasificación de lesiones dermatoscópicas utilizan como referencia comparativa. Esta página documenta la estrategia de búsqueda, la evaluación de los estudios incluidos y el procedimiento que condujo a la selección de los modelos. El análisis detallado de cada modelo se presenta en la página [Modelos base](03-modelos-base.md).
+El propósito de la revisión de literatura es identificar los tres modelos de aprendizaje profundo más básicos que los estudios sobre clasificación de lesiones dermatoscópicas utilizan como referencia comparativa. Esta página documenta la estrategia de búsqueda, la evaluación de los estudios incluidos y el procedimiento que condujo a la selección de los modelos. El análisis detallado de cada modelo se presenta en la página [Modelos base](04-modelos-base.md).
 
 ## Estrategia de búsqueda
 
@@ -77,7 +77,7 @@ AND PUBYEAR > 2020
 ```
 :::
 
-Cuando una búsqueda devolvió más registros de los que Scopus permite exportar en una sola operación, se exportaron los 200 más citados. La cadena de la fase sistemática devolvió [COMPLETAR] registros; restringir el cribado a los 200 más citados introduce un posible sesgo hacia publicaciones de mayor visibilidad. Todas las exportaciones se conservan en `data/literatura/`.
+Cuando una búsqueda devolvió más registros de los que Scopus permite exportar en una sola operación, se exportaron los 200 más citados. La cadena de la fase sistemática devolvió 1853 registros (consulta repetida el 13 de noviembre de 2026); restringir el cribado a los 200 más citados introduce un posible sesgo hacia publicaciones de mayor visibilidad. Todas las exportaciones se conservan en `data/literatura/`.
 
 ## Criterios y proceso de selección
 
@@ -87,7 +87,7 @@ La selección fue realizada por un único revisor, el autor del proyecto. El cri
 
 ```{mermaid}
 flowchart TD
-    A["Registros identificados en Scopus<br/>n = [COMPLETAR]"] --> B["Registros exportados y cribados<br/>(200 más citados)<br/>n = 200"]
+    A["Registros identificados en Scopus<br/>n = 1853"] --> B["Registros exportados y cribados<br/>(200 más citados)<br/>n = 200"]
     B --> C["Excluidos por título: n = 54<br/>Segmentación: 37 · Imagen médica genérica: 6<br/>Otro dominio: 6 · Revisiones: 4 · Atributos: 1"]
     B --> D["Potencialmente elegibles<br/>n = 146"]
     D --> E["No priorizados<br/>n = 122"]
