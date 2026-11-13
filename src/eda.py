@@ -1,5 +1,5 @@
 """Funciones de apoyo para el EDA de imágenes: caché, muestreo, figuras, color, artefactos,
-máscaras de lesión, mapas medios y validación adversarial."""
+máscaras de lesión, mapas medios, validación adversarial y embeddings."""
 
 from __future__ import annotations
 
@@ -10,7 +10,7 @@ import numpy as np
 import pandas as pd
 import seaborn as sns
 from PIL import Image
-from tqdm.auto import tqdm
+from tqdm import tqdm
 
 _PIL_FORMAT = {"jpg": "JPEG", "jpeg": "JPEG", "png": "PNG"}
 
@@ -409,7 +409,7 @@ def adversarial_validation(X, y, n_splits: int, seed: int, max_iter: int) -> dic
     model = make_pipeline(StandardScaler(), LogisticRegression(max_iter=max_iter))
     cv = StratifiedKFold(n_splits=n_splits, shuffle=True, random_state=seed)
     aucs = cross_val_score(model, X, y, cv=cv, scoring="roc_auc")
-    return {"auc_media": float(aucs.mean()), "auc_std": float(aucs.std()), "auc_por_pliegue": aucs.tolist()}
+    return {"auc_media": float(aucs.mean()), "auc_std": float(aucs.std(ddof=1)), "auc_por_pliegue": aucs.tolist()}
 
 
 
@@ -633,28 +633,37 @@ def fold_cv_classification(X, y, folds, max_iter: int) -> dict:
     evaluada con los pliegues predefinidos de `folds`.
 
     Devuelve la exactitud balanceada por pliegue, su media y desviación estándar, el nivel
-    de azar (1 / número de clases) y las predicciones fuera de pliegue.
+    de azar (1 / número de clases), las predicciones fuera de pliegue y `pliegues`: tabla
+    con exactitud balanceada, F1 macro y exactitud por pliegue, más su media y desviación
+    estándar (ddof = 1).
     """
     from sklearn.linear_model import LogisticRegression
-    from sklearn.metrics import balanced_accuracy_score
+    from sklearn.metrics import accuracy_score, balanced_accuracy_score, f1_score
     from sklearn.pipeline import make_pipeline
     from sklearn.preprocessing import StandardScaler
 
     X, y, folds = np.asarray(X), np.asarray(y), np.asarray(folds)
     oof = np.empty(len(y), dtype=object)
-    scores = []
+    filas = {}
     for f in np.unique(folds):
         te = folds == f
         model = make_pipeline(StandardScaler(),
                               LogisticRegression(max_iter=max_iter, class_weight="balanced"))
         model.fit(X[~te], y[~te])
         oof[te] = model.predict(X[te])
-        scores.append(balanced_accuracy_score(y[te], oof[te].astype(y.dtype)))
-    scores = np.asarray(scores)
+        pred = oof[te].astype(y.dtype)
+        filas[f] = {"exactitud_balanceada": balanced_accuracy_score(y[te], pred),
+                    "f1_macro": f1_score(y[te], pred, average="macro"),
+                    "exactitud": accuracy_score(y[te], pred), "n": int(te.sum())}
+    pliegues = pd.DataFrame(filas).T.rename_axis("fold")
+    metricas = ["exactitud_balanceada", "f1_macro", "exactitud"]
+    pliegues.loc["media", metricas] = pliegues[metricas].mean()
+    pliegues.loc["desviación estándar", metricas] = pliegues.loc[list(filas), metricas].std(ddof=1)
+    scores = np.asarray([filas[f]["exactitud_balanceada"] for f in filas])
     return {"exactitud_balanceada_media": float(scores.mean()),
-            "exactitud_balanceada_std": float(scores.std()),
+            "exactitud_balanceada_std": float(scores.std(ddof=1)),
             "azar": 1 / len(np.unique(y)), "n": len(y), "n_clases": len(np.unique(y)),
-            "por_pliegue": scores.tolist(), "oof": oof}
+            "por_pliegue": scores.tolist(), "pliegues": pliegues, "oof": oof}
 
 
 def plot_confusion(y_true, y_pred, labels, title: str):
@@ -714,3 +723,248 @@ def mean_std_images(paths, groupings: dict, size, luma_weights) -> dict:
         out.setdefault(g, {})[k] = {"media_rgb": s / n, "media_lum": media_lum,
                                     "std_lum": np.sqrt(np.maximum(sl2 / n - media_lum**2, 0)), "n": n}
     return out
+
+
+# ---------------------------------------------------------------------------
+# Calidad de los metadatos
+# ---------------------------------------------------------------------------
+
+
+def age_out_of_range(meta: pd.DataFrame, age_min: float, age_max: float) -> tuple[pd.DataFrame, pd.DataFrame]:
+    """Filas con edad igual a 0 o fuera de [`age_min`, `age_max`] (los NaN no se marcan).
+
+    Devuelve (resumen, filas): conteo por motivo y las filas afectadas con su motivo.
+    """
+    age = pd.to_numeric(meta["age"], errors="coerce")
+    motivos = {
+        "edad = 0": age == 0,
+        f"edad < {age_min} (distinta de 0)": (age < age_min) & (age != 0),
+        f"edad > {age_max}": age > age_max,
+    }
+    resumen = pd.Series({k: int(v.sum()) for k, v in motivos.items()}, name="filas").to_frame()
+    motivo = pd.Series(pd.NA, index=meta.index, dtype="object")
+    for k, v in motivos.items():
+        motivo[v.fillna(False)] = k
+    cols = [c for c in ["image_id", "lesion_id", "age", "sex", "localization", "dx", "dataset"] if c in meta.columns]
+    filas = meta.loc[motivo.notna(), cols].assign(motivo=motivo[motivo.notna()])
+    return resumen, filas.reset_index(drop=True)
+
+
+def category_check(meta: pd.DataFrame, valid: dict) -> pd.DataFrame:
+    """Valores únicos (con su conteo) de cada columna de `valid` presente en `meta`,
+    marcando si están en la lista de categorías válidas. Los vacíos aparecen como NaN."""
+    rows = []
+    for col, ok in valid.items():
+        if col not in meta.columns:
+            continue
+        for val, n in meta[col].value_counts(dropna=False).items():
+            rows.append({"columna": col, "valor": val, "n": int(n),
+                         "valido": bool(not pd.isna(val) and val in set(ok))})
+    return pd.DataFrame(rows, columns=["columna", "valor", "n", "valido"])
+
+
+def lesion_inconsistencies(meta: pd.DataFrame, cols) -> tuple[pd.DataFrame, pd.DataFrame]:
+    """Lesiones cuyas imágenes tienen más de un valor (contando el vacío como valor) en `cols`.
+
+    Devuelve (conteo, ejemplos): lesiones inconsistentes por columna y una fila por
+    lesión y columna inconsistente con los valores encontrados.
+    """
+    cols = [c for c in cols if c in meta.columns]
+    g = meta.groupby("lesion_id")
+    n_img = g.size()
+    conteo, ejemplos = {}, []
+    for c in cols:
+        distintos = g[c].nunique(dropna=False)
+        inc = distintos[distintos > 1].index
+        conteo[c] = len(inc)
+        for les in inc:
+            vals = meta.loc[meta["lesion_id"] == les, c]
+            ejemplos.append({"lesion_id": les, "columna": c, "n_imagenes": int(n_img[les]),
+                             "valores": " | ".join(sorted(map(str, vals.unique())))})
+    conteo_df = pd.Series(conteo, name="lesiones inconsistentes").to_frame()
+    conteo_df["lesiones con más de una imagen"] = int((n_img > 1).sum())
+    return conteo_df, pd.DataFrame(ejemplos, columns=["lesion_id", "columna", "n_imagenes", "valores"])
+
+
+def missing_indicators(meta: pd.DataFrame, cols, tokens, keep=("image_id", "dx", "dataset")) -> pd.DataFrame:
+    """Indicador booleano `falta_<col>` (NaN o valor de `tokens`) por columna, más las
+    columnas de `keep` presentes en `meta`. Alineado con `meta`."""
+    out = meta[[k for k in keep if k in meta.columns]].copy()
+    for c in cols:
+        out[f"falta_{c}"] = meta[c].isna() | meta[c].isin(tokens)
+    return out
+
+
+# ---------------------------------------------------------------------------
+# Calidad de imagen: profundidad de bits, nitidez, recorte e histogramas
+# ---------------------------------------------------------------------------
+
+_MODE_BITS = {"1": 1, "L": 8, "P": 8, "RGB": 8, "RGBA": 8, "CMYK": 8, "YCbCr": 8, "LAB": 8, "HSV": 8,
+              "LA": 8, "PA": 8, "RGBX": 8, "I": 32, "F": 32, "I;16": 16, "I;16B": 16, "I;16L": 16,
+              "I;16N": 16}
+
+
+def pixel_quality_pass(image_ids, paths, labels, luma_weights, clip_low: int, clip_high: int):
+    """Una pasada sobre las imágenes originales.
+
+    Por imagen: modo de PIL y bits por canal según el modo (`bits_modo`), dtype del
+    arreglo y sus bits (`bits_dtype`), nitidez (varianza del laplaciano de la luminancia,
+    escala 0-255, `scipy.ndimage.laplace`) y porcentaje de píxeles recortados por canal
+    (valor <= `clip_low` o >= `clip_high`, sobre RGB de 8 bits).
+    Además acumula histogramas de intensidad de 256 niveles por canal R, G, B para todas
+    las imágenes (`"Todo"`) y para cada valor de `labels`.
+    Devuelve (tabla por imagen, {grupo: arreglo (3, 256) de conteos}).
+    """
+    from scipy import ndimage
+
+    w = np.asarray(luma_weights, dtype=np.float64)
+    labels = list(labels)
+    hists: dict = {"Todo": np.zeros((3, 256), dtype=np.int64)}
+    rows = []
+    for i, (iid, p) in enumerate(tqdm(list(zip(image_ids, paths)), desc="Calidad de imagen")):
+        with Image.open(p) as im:
+            modo = im.mode
+            arr = np.asarray(im)
+            rgb = np.asarray(im.convert("RGB"))
+        lum = rgb.astype(np.float64) @ w
+        recorte = ((rgb <= clip_low) | (rgb >= clip_high)).reshape(-1, 3).mean(axis=0) * 100
+        h = np.stack([np.bincount(rgb[..., c].ravel(), minlength=256) for c in range(3)])
+        hists["Todo"] += h
+        if not pd.isna(labels[i]):
+            hists.setdefault(labels[i], np.zeros((3, 256), dtype=np.int64))
+            hists[labels[i]] += h
+        rows.append({"image_id": iid, "modo": modo, "bits_modo": _MODE_BITS.get(modo, np.nan),
+                     "dtype": str(arr.dtype), "bits_dtype": 1 if arr.dtype == bool else arr.dtype.itemsize * 8,
+                     "nitidez": float(ndimage.laplace(lum).var()),
+                     "recorte_r": recorte[0], "recorte_g": recorte[1], "recorte_b": recorte[2]})
+    return pd.DataFrame(rows), hists
+
+
+def plot_channel_histograms(hist: np.ndarray, title: str):
+    """Histograma de intensidad (256 niveles) de R, G y B en un mismo eje."""
+    fig, ax = plt.subplots(figsize=(9, 4))
+    for c, (nombre, color) in enumerate(zip("RGB", ("tab:red", "tab:green", "tab:blue"))):
+        ax.plot(np.arange(256), hist[c], color=color, label=nombre)
+    ax.set_xlabel("Intensidad")
+    ax.set_ylabel("Píxeles")
+    ax.set_title(title)
+    ax.legend()
+    fig.tight_layout()
+    return fig
+
+
+def plot_class_channel_histograms(hists: dict, order, title: str):
+    """Histogramas de intensidad normalizados (suma 1) por clase, superpuestos; un panel por canal."""
+    fig, axes = plt.subplots(1, 3, figsize=(16, 4), sharey=True)
+    for c, (ax, nombre) in enumerate(zip(axes, ("R", "G", "B"))):
+        for k in order:
+            if k in hists:
+                h = hists[k][c]
+                ax.plot(np.arange(256), h / h.sum(), label=str(k), linewidth=1)
+        ax.set_title(f"Canal {nombre}")
+        ax.set_xlabel("Intensidad")
+    axes[0].set_ylabel("Proporción de píxeles")
+    axes[-1].legend(fontsize=8)
+    fig.suptitle(title)
+    fig.tight_layout()
+    return fig
+
+
+def clip_alert(df: pd.DataFrame, cols, frac: float) -> pd.Series:
+    """True si el porcentaje de recorte supera `frac` (proporción) en alguna columna de `cols`."""
+    return (df[list(cols)] > 100 * frac).any(axis=1)
+
+
+def flag_table(df: pd.DataFrame, flag_col: str, col: str, order=None) -> pd.DataFrame:
+    """Imágenes y casos marcados (`flag_col` verdadero) por `col`, con fila Total."""
+    t = df.groupby(col).agg(imagenes=("image_id", "size"), marcadas=(flag_col, "sum"))
+    if order is not None:
+        t = t.loc[[o for o in order if o in t.index]]
+    t.loc["Total"] = t.sum()
+    t = t.astype(int)
+    t["pct_marcadas"] = 100 * t["marcadas"] / t["imagenes"]
+    return t
+
+
+def plot_bar_values(values: pd.Series, title: str, label: str, value_label: str, horizontal: bool = False):
+    """Barras con los valores de una serie, en el orden de la serie."""
+    labels = values.index.astype(str).tolist()
+    v = values.to_numpy(dtype=float)
+    if horizontal:
+        fig, ax = plt.subplots(figsize=(8, max(3, 0.35 * len(labels))))
+        ax.barh(labels[::-1], v[::-1])
+        ax.set_xlabel(value_label)
+        ax.set_ylabel(label)
+    else:
+        fig, ax = plt.subplots(figsize=(8, 4))
+        ax.bar(labels, v)
+        ax.set_xlabel(label)
+        ax.set_ylabel(value_label)
+    ax.set_title(title)
+    fig.tight_layout()
+    return fig
+
+
+# ---------------------------------------------------------------------------
+# Embeddings
+# ---------------------------------------------------------------------------
+
+
+def mobilenet_embeddings(paths, input_size: int, batch_size: int) -> np.ndarray:
+    """Vector de características (pooling promedio) de MobileNetV2 preentrenada en ImageNet.
+
+    Las imágenes se redimensionan a `input_size` x `input_size` y pasan por
+    `mobilenet_v2.preprocess_input`. La primera llamada descarga los pesos de Keras.
+    """
+    from tensorflow import keras
+
+    model = keras.applications.MobileNetV2(
+        include_top=False, weights="imagenet", pooling="avg", input_shape=(input_size, input_size, 3)
+    )
+    preprocess = keras.applications.mobilenet_v2.preprocess_input
+    paths = list(paths)
+    feats = []
+    for start in tqdm(range(0, len(paths), batch_size), desc="Embeddings"):
+        batch = np.stack([
+            np.asarray(load_rgb(p).resize((input_size, input_size), Image.Resampling.BILINEAR), dtype=np.float32)
+            for p in paths[start:start + batch_size]
+        ])
+        feats.append(np.asarray(model.predict_on_batch(preprocess(batch))))
+    return np.concatenate(feats)
+
+
+def load_or_compute_embeddings(cache_file, image_ids, paths, input_size: int, batch_size: int) -> np.ndarray:
+    """Embeddings de MobileNetV2 con caché en `cache_file` (.npz).
+
+    Reutiliza la caché si contiene los mismos image_id en el mismo orden y el mismo
+    `input_size`; si no, los calcula con `mobilenet_embeddings` y la sobrescribe.
+    """
+    cache_file = Path(cache_file)
+    ids = np.asarray([str(i) for i in image_ids])
+    if cache_file.exists():
+        with np.load(cache_file, allow_pickle=False) as z:
+            if int(z["input_size"]) == input_size and np.array_equal(z["image_ids"], ids):
+                return z["embeddings"]
+    emb = mobilenet_embeddings(paths, input_size, batch_size)
+    cache_file.parent.mkdir(parents=True, exist_ok=True)
+    tmp = cache_file.with_name(cache_file.stem + ".tmp.npz")
+    np.savez(tmp, embeddings=emb, image_ids=ids, input_size=np.int64(input_size))
+    tmp.replace(cache_file)
+    return emb
+
+
+def tsne_2d(X, seed: int, perplexity: float) -> np.ndarray:
+    from sklearn.manifold import TSNE
+
+    return TSNE(n_components=2, perplexity=perplexity, init="pca", random_state=seed).fit_transform(X)
+
+
+def plot_scatter_2d(df: pd.DataFrame, x: str, y: str, hue_cols, title: str):
+    """Un diagrama de dispersión por variable de `hue_cols`, coloreado por esa variable."""
+    hue_cols = list(hue_cols)
+    fig, axes = plt.subplots(1, len(hue_cols), figsize=(7 * len(hue_cols), 6), squeeze=False)
+    for ax, col in zip(axes.ravel(), hue_cols):
+        sns.scatterplot(data=df, x=x, y=y, hue=col, s=6, linewidth=0, ax=ax)
+        ax.set_title(f"{title}, coloreado por {col}")
+    fig.tight_layout()
+    return fig

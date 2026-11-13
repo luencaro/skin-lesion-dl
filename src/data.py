@@ -12,7 +12,7 @@ import pandas as pd
 import yaml
 from PIL import Image
 from sklearn.model_selection import StratifiedGroupKFold
-from tqdm.auto import tqdm
+from tqdm import tqdm
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_CONFIG = PROJECT_ROOT / "configs" / "base.yaml"

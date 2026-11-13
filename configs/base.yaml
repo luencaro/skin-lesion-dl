@@ -19,12 +19,28 @@ paths:
   eda_cache_dir: data/processed/eda_cache
   artifacts_annotation_csv: data/anotacion_artefactos.csv
   train_color_stats_json: data/train_color_stats.json
+  outliers_csv: data/atipicos_imagenes.csv
+  embeddings_cache: data/processed/embeddings_mobilenetv2.npz
 
 # Formato de los archivos
 image_ext: .jpg
 mask_suffix: _segmentation.png
 source_column: dataset          # columna opcional con la fuente de cada imagen
 missing_tokens: ["unknown", ""] # valores que se cuentan como faltantes
+missing_indicator_columns: [age, sex, localization]  # columnas con indicador de faltante
+
+# Calidad de los metadatos
+age_min_valid: 1
+age_max_valid: 100
+valid_categories:              # categorías documentadas de HAM10000
+  sex: [male, female, unknown]
+  localization: [abdomen, acral, back, chest, ear, face, foot, genital, hand, lower extremity,
+                 neck, scalp, trunk, unknown, upper extremity]
+  dx: [akiec, bcc, bkl, df, mel, nv, vasc]
+  dx_type: [histo, follow_up, consensus, confocal]
+  dataset: [rosendahl, vidir_modern, vidir_molemax, vienna_dias]
+lesion_consistency_columns: [age, sex, localization, dx_type, dataset]
+eda_inconsistency_examples: 20  # filas de ejemplo de lesiones inconsistentes
 
 # Partición
 test_size: 0.15
@@ -72,7 +88,25 @@ adv_hist_bins: 16
 adv_cv_folds: 5
 adv_max_iter: 1000
 
+# Calidad de imagen
+clip_low: 0                     # valor de píxel recortado por abajo (<=)
+clip_high: 255                  # valor de píxel recortado por arriba (>=)
+clip_frac_alert: 0.01           # proporción de píxeles recortados que activa la alerta
+
+# Atípicos en las características de imagen
+iqr_factor: 1.5
+robust_z: 3.5
+mahal_quantile: 0.975
+eda_outlier_grid_n: 16
+
 # Estadística
 chi2_mc_iterations: 10000       # permutaciones para el p-valor simulado de chi-cuadrado
 eda_hist_bins: auto             # intervalos de los histogramas univariados (numpy)
 eda_spearman_top_pairs: 15      # pares con mayor |rho| que se muestran
+
+# Embeddings
+eda_embeddings: true
+eda_embeddings_input_size: 224
+eda_embeddings_batch_size: 64
+eda_tsne_perplexity: 30
+emb_probe_max_iter: 2000        # iteraciones de la regresión logística sobre los embeddings
