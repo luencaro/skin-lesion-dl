@@ -1,5 +1,5 @@
 """Funciones de apoyo para el EDA de imágenes: caché, muestreo, figuras, color, artefactos,
-máscaras de lesión, validación adversarial y embeddings."""
+máscaras de lesión, mapas medios y validación adversarial."""
 
 from __future__ import annotations
 
@@ -215,27 +215,53 @@ def artifact_prevalence(df: pd.DataFrame, artifact_cols, col: str = "dx") -> pd.
     return vals.groupby(col).mean() * 100
 
 
-def vignetting_index(img: Image.Image, corner_frac: float, center_frac: float) -> dict:
-    """Intensidad media (escala de grises) de las cuatro esquinas y de una ventana central.
+def load_mask(mask_path, size, mask_threshold: int) -> np.ndarray:
+    """Máscara binaria (alto, ancho) redimensionada con vecino más cercano a `size` = (ancho, alto)."""
+    with Image.open(mask_path) as m:
+        mask = m.convert("L")
+    if mask.size != tuple(size):
+        mask = mask.resize(tuple(size), Image.Resampling.NEAREST)
+    return np.asarray(mask) > mask_threshold
 
-    Esquinas: cuadrados de lado `corner_frac` * lado menor. Centro: ventana de
-    `center_frac` * alto por `center_frac` * ancho.
-    """
-    g = np.asarray(img.convert("L"), dtype=np.float32)
-    h, w = g.shape
+
+def corner_mask(shape, corner_frac: float) -> np.ndarray:
+    """Máscara booleana de las cuatro esquinas: cuadrados de lado `corner_frac` * lado menor."""
+    h, w = shape
     c = max(1, round(min(h, w) * corner_frac))
-    corners = np.concatenate([g[:c, :c].ravel(), g[:c, -c:].ravel(), g[-c:, :c].ravel(), g[-c:, -c:].ravel()])
-    ch, cw = max(1, round(h * center_frac)), max(1, round(w * center_frac))
-    top, left = (h - ch) // 2, (w - cw) // 2
-    center = g[top:top + ch, left:left + cw]
-    esq, cen = float(corners.mean()), float(center.mean())
-    return {"media_esquinas": esq, "media_centro": cen, "razon_esquinas_centro": esq / cen if cen > 0 else np.nan}
+    out = np.zeros((h, w), dtype=bool)
+    out[:c, :c] = out[:c, -c:] = out[-c:, :c] = out[-c:, -c:] = True
+    return out
 
 
-def vignetting_table(image_ids, paths, corner_frac: float, center_frac: float) -> pd.DataFrame:
+def vignetting_index(img: Image.Image, lesion: np.ndarray, corner_frac: float, luma_weights) -> dict:
+    """Índice de viñeteado con la máscara de lesión.
+
+    `lum_esquinas`: luminancia media (escala [0, 1]) de las cuatro esquinas sin píxeles de
+    lesión. `mediana_piel`: mediana de la luminancia del fondo de piel (ni lesión ni
+    esquina). `indice_vineteado` = lum_esquinas / mediana_piel.
+    """
+    lum = (np.asarray(img.convert("RGB"), dtype=np.float64) / 255.0) @ np.asarray(luma_weights, dtype=np.float64)
+    corners = corner_mask(lum.shape, corner_frac)
+    esq = corners & ~lesion
+    piel = ~corners & ~lesion
+    lum_esq = float(lum[esq].mean()) if esq.any() else np.nan
+    med_piel = float(np.median(lum[piel])) if piel.any() else np.nan
+    indice = lum_esq / med_piel if med_piel > 0 else np.nan
+    return {"lum_esquinas": lum_esq, "mediana_piel": med_piel, "indice_vineteado": indice}
+
+
+def vignetting_table(image_ids, img_paths, mask_paths, corner_frac: float, mask_threshold: int,
+                     luma_weights) -> pd.DataFrame:
+    """`vignetting_index` por imagen; NaN si la imagen no tiene máscara."""
     rows = []
-    for iid, p in tqdm(zip(image_ids, paths), total=len(paths), desc="Viñeteado"):
-        rows.append({"image_id": iid, **vignetting_index(load_rgb(p), corner_frac, center_frac)})
+    for iid, ip, mp in tqdm(zip(image_ids, img_paths, mask_paths), total=len(img_paths), desc="Viñeteado"):
+        if not Path(mp).exists():
+            rows.append({"image_id": iid, "lum_esquinas": np.nan, "mediana_piel": np.nan,
+                         "indice_vineteado": np.nan})
+            continue
+        img = load_rgb(ip)
+        lesion = load_mask(mp, img.size, mask_threshold)
+        rows.append({"image_id": iid, **vignetting_index(img, lesion, corner_frac, luma_weights)})
     return pd.DataFrame(rows)
 
 
@@ -386,35 +412,305 @@ def adversarial_validation(X, y, n_splits: int, seed: int, max_iter: int) -> dic
     return {"auc_media": float(aucs.mean()), "auc_std": float(aucs.std()), "auc_por_pliegue": aucs.tolist()}
 
 
+
 # ---------------------------------------------------------------------------
-# Embeddings
+# Univariado y correlaciones
 # ---------------------------------------------------------------------------
 
 
-def mobilenet_embeddings(paths, input_size: int, batch_size: int) -> np.ndarray:
-    """Vector de características (pooling promedio) de MobileNetV2 preentrenada en ImageNet.
+def plot_histograms(df: pd.DataFrame, cols, bins, ncols: int = 3, titles: dict | None = None,
+                    suptitle: str | None = None):
+    """Un histograma por variable de `cols` (se excluyen NaN)."""
+    cols = list(cols)
+    ncols = min(ncols, len(cols))
+    nrows = int(np.ceil(len(cols) / ncols))
+    fig, axes = plt.subplots(nrows, ncols, figsize=(ncols * 4.5, nrows * 3.2), squeeze=False)
+    for ax in axes.ravel()[len(cols):]:
+        ax.axis("off")
+    for ax, c in zip(axes.ravel(), cols):
+        vals = pd.to_numeric(df[c], errors="coerce").dropna().to_numpy()
+        ax.hist(vals, bins=bins)
+        ax.set_title((titles or {}).get(c, c), fontsize=9)
+        ax.set_ylabel("Frecuencia")
+    if suptitle:
+        fig.suptitle(suptitle)
+    fig.tight_layout()
+    return fig
 
-    Las imágenes se redimensionan a `input_size` x `input_size` y pasan por
-    `mobilenet_v2.preprocess_input`. La primera llamada descarga los pesos de Keras.
+
+def plot_counts(conteo: pd.DataFrame, title: str, label: str, value_label: str = "Imágenes",
+                horizontal: bool = False):
+    """Barras con la columna `n` de una tabla de `stats.value_counts_pct`."""
+    labels = conteo.index.astype(str).tolist()
+    values = conteo["n"].to_numpy()
+    if horizontal:
+        fig, ax = plt.subplots(figsize=(8, max(3, 0.32 * len(labels))))
+        ax.barh(labels[::-1], values[::-1])
+        ax.set_xlabel(value_label)
+        ax.set_ylabel(label)
+    else:
+        fig, ax = plt.subplots(figsize=(8, 4))
+        ax.bar(labels, values)
+        ax.set_xlabel(label)
+        ax.set_ylabel(value_label)
+        ax.tick_params(axis="x", labelrotation=45)
+    ax.set_title(title)
+    fig.tight_layout()
+    return fig
+
+
+def plot_corr_heatmap(corr: pd.DataFrame, title: str):
+    """Heatmap de correlaciones con valores anotados y escala divergente centrada en 0."""
+    size = max(6, 0.7 * len(corr))
+    fig, ax = plt.subplots(figsize=(size, size * 0.85))
+    sns.heatmap(corr, annot=True, fmt=".2f", cmap="RdBu_r", center=0, vmin=-1, vmax=1,
+                square=True, annot_kws={"fontsize": 7}, ax=ax)
+    ax.set_title(title)
+    fig.tight_layout()
+    return fig
+
+
+# ---------------------------------------------------------------------------
+# Control de calidad de las máscaras
+# ---------------------------------------------------------------------------
+
+
+def mask_qc_flags(les: pd.DataFrame, min_frac: float, max_frac: float) -> pd.DataFrame:
+    """Marca máscaras casi vacías (fracción < `min_frac`) y casi completas (fracción > `max_frac`)."""
+    out = les[["image_id", "dx", "fraccion_area"]].copy()
+    out["casi_vacia"] = out["fraccion_area"] < min_frac
+    out["casi_completa"] = out["fraccion_area"] > max_frac
+    return out
+
+
+def mask_qc_table(flags: pd.DataFrame, order=None, col: str = "dx") -> pd.DataFrame:
+    """Conteo de máscaras casi vacías y casi completas por `col`, con una fila Total."""
+    t = flags.groupby(col).agg(n=("image_id", "size"), casi_vacia=("casi_vacia", "sum"),
+                               casi_completa=("casi_completa", "sum"))
+    if order is not None:
+        t = t.loc[[o for o in order if o in t.index]]
+    t.loc["Total"] = t.sum()
+    return t.astype(int)
+
+
+def plot_mask_overlays(img_paths, mask_paths, titles, ncols: int, mask_threshold: int,
+                       cell_size: float = 2.2, suptitle: str | None = None):
+    """Cuadrícula de imágenes con el contorno de la máscara de lesión superpuesto."""
+    img_paths, mask_paths, titles = list(img_paths), list(mask_paths), list(titles)
+    n = len(img_paths)
+    ncols = max(1, min(ncols, n))
+    nrows = max(1, int(np.ceil(n / ncols)))
+    fig, axes = plt.subplots(nrows, ncols, figsize=(ncols * cell_size, nrows * cell_size * 1.05), squeeze=False)
+    for ax in axes.ravel():
+        ax.axis("off")
+    for ax, ip, mp, t in zip(axes.ravel(), img_paths, mask_paths, titles):
+        img = load_rgb(ip)
+        mask = load_mask(mp, img.size, mask_threshold)
+        ax.imshow(img)
+        if mask.any() and not mask.all():
+            ax.contour(mask.astype(float), levels=[0.5], colors="yellow", linewidths=1)
+        ax.set_title(t, fontsize=7)
+    if suptitle:
+        fig.suptitle(suptitle)
+    fig.tight_layout()
+    return fig
+
+
+# ---------------------------------------------------------------------------
+# Mapas medios
+# ---------------------------------------------------------------------------
+
+
+def load_masks_resized(mask_paths, size, mask_threshold: int) -> np.ndarray:
+    """Máscaras binarizadas y redimensionadas a `size` = (ancho, alto) por promedio de área.
+
+    Devuelve un arreglo (N, alto, ancho) con valores en [0, 1].
     """
-    from tensorflow import keras
-
-    model = keras.applications.MobileNetV2(
-        include_top=False, weights="imagenet", pooling="avg", input_shape=(input_size, input_size, 3)
-    )
-    preprocess = keras.applications.mobilenet_v2.preprocess_input
-    paths = list(paths)
-    feats = []
-    for start in tqdm(range(0, len(paths), batch_size), desc="Embeddings"):
-        batch = np.stack([
-            np.asarray(load_rgb(p).resize((input_size, input_size), Image.Resampling.BILINEAR), dtype=np.float32)
-            for p in paths[start:start + batch_size]
-        ])
-        feats.append(np.asarray(model.predict_on_batch(preprocess(batch))))
-    return np.concatenate(feats)
+    out = []
+    for mp in tqdm(list(mask_paths), desc="Máscaras redimensionadas"):
+        with Image.open(mp) as m:
+            binary = np.asarray(m.convert("L")) > mask_threshold
+        small = Image.fromarray(binary.astype(np.uint8) * 255).resize(tuple(size), Image.Resampling.BOX)
+        out.append(np.asarray(small, dtype=np.float32) / 255.0)
+    return np.stack(out)
 
 
-def tsne_2d(X, seed: int, perplexity: float) -> np.ndarray:
-    from sklearn.manifold import TSNE
+def group_means(arr: np.ndarray, labels, order=None) -> dict:
+    """Media de `arr` a lo largo del primer eje para cada valor de `labels` (se omiten NaN)."""
+    labels = pd.Series(list(labels))
+    keys = order if order is not None else labels.dropna().unique().tolist()
+    return {k: arr[(labels == k).to_numpy()].mean(axis=0) for k in keys if (labels == k).any()}
 
-    return TSNE(n_components=2, perplexity=perplexity, init="pca", random_state=seed).fit_transform(X)
+
+def plot_maps(maps: dict, ncols: int, cmap: str, vmin: float, vmax: float, cbar_label: str,
+              suptitle: str | None = None, cell_size: float = 2.8):
+    """Mapas 2D con una escala común (`vmin`, `vmax`) y una sola barra de color."""
+    n = len(maps)
+    ncols = max(1, min(ncols, n))
+    nrows = int(np.ceil(n / ncols))
+    fig, axes = plt.subplots(nrows, ncols, figsize=(ncols * cell_size + 1, nrows * cell_size * 0.85),
+                             squeeze=False, layout="constrained")
+    for ax in axes.ravel():
+        ax.axis("off")
+    im = None
+    for ax, (title, m) in zip(axes.ravel(), maps.items()):
+        im = ax.imshow(m, cmap=cmap, vmin=vmin, vmax=vmax)
+        ax.set_title(str(title), fontsize=9)
+    if im is not None:
+        fig.colorbar(im, ax=axes.ravel().tolist(), label=cbar_label, shrink=0.8)
+    if suptitle:
+        fig.suptitle(suptitle)
+    return fig
+
+
+def plot_rgb_grid(images: dict, ncols: int, suptitle: str | None = None, cell_size: float = 2.8):
+    """Imágenes RGB con valores en [0, 1], una por panel."""
+    n = len(images)
+    ncols = max(1, min(ncols, n))
+    nrows = int(np.ceil(n / ncols))
+    fig, axes = plt.subplots(nrows, ncols, figsize=(ncols * cell_size, nrows * cell_size * 0.85),
+                             squeeze=False, layout="constrained")
+    for ax in axes.ravel():
+        ax.axis("off")
+    for ax, (title, img) in zip(axes.ravel(), images.items()):
+        ax.imshow(np.clip(img, 0, 1))
+        ax.set_title(str(title), fontsize=9)
+    if suptitle:
+        fig.suptitle(suptitle)
+    return fig
+
+
+def symmetric_limit(maps: dict) -> float:
+    """Máximo valor absoluto entre todos los mapas (para una escala divergente común)."""
+    return float(max(np.nanmax(np.abs(m)) for m in maps.values()))
+
+
+def max_value(maps: dict) -> float:
+    """Máximo valor entre todos los mapas (para una escala común que empieza en 0)."""
+    return float(max(np.nanmax(m) for m in maps.values()))
+
+
+# ---------------------------------------------------------------------------
+# Capacidad predictiva de la lesión y del fondo
+# ---------------------------------------------------------------------------
+
+
+def _region_histogram(pixels: np.ndarray, bins: int) -> np.ndarray:
+    """Histograma normalizado de `bins` intervalos por canal de píxeles (m, 3); NaN si m = 0."""
+    if len(pixels) == 0:
+        return np.full(3 * bins, np.nan)
+    return np.concatenate([np.histogram(pixels[:, c], bins=bins, range=(0, 256))[0] / len(pixels)
+                           for c in range(3)])
+
+
+def region_color_histograms(img_paths, mask_paths, bins: int, mask_threshold: int) -> dict:
+    """Histogramas de color del fondo (máscara = 0) y de la lesión (máscara = 1) por imagen.
+
+    Devuelve `fondo` y `lesion` (N, 3 * bins) y `frac_fondo` y `frac_lesion` (N,). Las
+    imágenes sin máscara tienen NaN.
+    """
+    fondo, lesion, frac_f, frac_l = [], [], [], []
+    for ip, mp in tqdm(zip(img_paths, mask_paths), total=len(img_paths), desc="Histogramas por región"):
+        if not Path(mp).exists():
+            fondo.append(np.full(3 * bins, np.nan))
+            lesion.append(np.full(3 * bins, np.nan))
+            frac_f.append(np.nan)
+            frac_l.append(np.nan)
+            continue
+        img = load_rgb(ip)
+        x = np.asarray(img)
+        m = load_mask(mp, img.size, mask_threshold)
+        fondo.append(_region_histogram(x[~m], bins))
+        lesion.append(_region_histogram(x[m], bins))
+        frac_f.append(float((~m).mean()))
+        frac_l.append(float(m.mean()))
+    return {"fondo": np.stack(fondo), "lesion": np.stack(lesion),
+            "frac_fondo": np.asarray(frac_f), "frac_lesion": np.asarray(frac_l)}
+
+
+def fold_cv_classification(X, y, folds, max_iter: int) -> dict:
+    """Regresión logística multinomial (estandarización previa, class_weight="balanced")
+    evaluada con los pliegues predefinidos de `folds`.
+
+    Devuelve la exactitud balanceada por pliegue, su media y desviación estándar, el nivel
+    de azar (1 / número de clases) y las predicciones fuera de pliegue.
+    """
+    from sklearn.linear_model import LogisticRegression
+    from sklearn.metrics import balanced_accuracy_score
+    from sklearn.pipeline import make_pipeline
+    from sklearn.preprocessing import StandardScaler
+
+    X, y, folds = np.asarray(X), np.asarray(y), np.asarray(folds)
+    oof = np.empty(len(y), dtype=object)
+    scores = []
+    for f in np.unique(folds):
+        te = folds == f
+        model = make_pipeline(StandardScaler(),
+                              LogisticRegression(max_iter=max_iter, class_weight="balanced"))
+        model.fit(X[~te], y[~te])
+        oof[te] = model.predict(X[te])
+        scores.append(balanced_accuracy_score(y[te], oof[te].astype(y.dtype)))
+    scores = np.asarray(scores)
+    return {"exactitud_balanceada_media": float(scores.mean()),
+            "exactitud_balanceada_std": float(scores.std()),
+            "azar": 1 / len(np.unique(y)), "n": len(y), "n_clases": len(np.unique(y)),
+            "por_pliegue": scores.tolist(), "oof": oof}
+
+
+def plot_confusion(y_true, y_pred, labels, title: str):
+    """Matriz de confusión normalizada por fila (clase real)."""
+    from sklearn.metrics import confusion_matrix
+
+    cm = confusion_matrix(np.asarray(y_true, dtype=object), np.asarray(y_pred, dtype=object),
+                          labels=labels, normalize="true")
+    fig, ax = plt.subplots(figsize=(1 + 0.9 * len(labels), 0.8 + 0.8 * len(labels)))
+    sns.heatmap(pd.DataFrame(cm, index=labels, columns=labels), annot=True, fmt=".2f",
+                cmap="Blues", vmin=0, vmax=1, ax=ax)
+    ax.set_xlabel("Predicha")
+    ax.set_ylabel("Real")
+    ax.set_title(title)
+    fig.tight_layout()
+    return fig
+
+
+# ---------------------------------------------------------------------------
+# Imágenes media y de desviación
+# ---------------------------------------------------------------------------
+
+
+def mean_std_images(paths, groupings: dict, size, luma_weights) -> dict:
+    """Imagen media (RGB) y media y desviación estándar de la luminancia por píxel.
+
+    Cada imagen se redimensiona a `size` = (ancho, alto) por promedio de área, con
+    valores en [0, 1]. Se acumulan en una sola pasada para todas las imágenes
+    (`resultado["global"]["Todo"]`) y para cada valor de cada agrupación de
+    `groupings` = {nombre: etiquetas por imagen} (`resultado[nombre][valor]`). Cada
+    entrada tiene `media_rgb` (alto, ancho, 3), `media_lum` y `std_lum` (alto, ancho) y `n`.
+    """
+    w = np.asarray(luma_weights, dtype=np.float64)
+    labels = {g: list(v) for g, v in groupings.items()}
+    acc: dict = {}
+
+    def add(key, x, lum):
+        if key not in acc:
+            acc[key] = [np.zeros_like(x), np.zeros_like(lum), np.zeros_like(lum), 0]
+        a = acc[key]
+        a[0] += x
+        a[1] += lum
+        a[2] += lum**2
+        a[3] += 1
+
+    for i, p in enumerate(tqdm(list(paths), desc="Imágenes media")):
+        x = np.asarray(load_rgb(p).resize(tuple(size), Image.Resampling.BOX), dtype=np.float64) / 255.0
+        lum = x @ w
+        add(("global", "Todo"), x, lum)
+        for g, lab in labels.items():
+            if not pd.isna(lab[i]):
+                add((g, lab[i]), x, lum)
+
+    out: dict = {}
+    for (g, k), (s, sl, sl2, n) in acc.items():
+        media_lum = sl / n
+        out.setdefault(g, {})[k] = {"media_rgb": s / n, "media_lum": media_lum,
+                                    "std_lum": np.sqrt(np.maximum(sl2 / n - media_lum**2, 0)), "n": n}
+    return out

@@ -50,7 +50,6 @@ eda_annotation_per_class: 40
 eda_annotation_page_size: 20
 artifact_columns: [regla, tinta, vello, burbujas, vineteado, parche_color]
 eda_vignette_corner_frac: 0.1   # lado de cada esquina, fracción del lado menor
-eda_vignette_center_frac: 0.2   # ventana central, fracción del alto y del ancho
 
 # Color
 eda_luma_weights: [0.299, 0.587, 0.114]  # luminancia ITU-R BT.601
@@ -59,14 +58,21 @@ eda_sog_examples_per_class: 1
 
 # Máscaras de lesión
 mask_threshold: 127
+mask_min_frac: 0.001            # fracción de área por debajo de la cual la máscara está casi vacía
+mask_max_frac: 0.95             # fracción de área por encima de la cual la máscara está casi completa
+eda_mask_overlay_n: 16          # imágenes por cuadrícula de contornos de máscara
+
+# Mapas medios, imágenes media y capacidad predictiva del fondo
+eda_mean_image_size: [64, 48]   # (ancho, alto)
+min_background_frac: 0.05       # fracción mínima de fondo para incluir una imagen
+bg_probe_max_iter: 2000         # iteraciones de la regresión logística multinomial
 
 # Validación adversarial
 adv_hist_bins: 16
 adv_cv_folds: 5
 adv_max_iter: 1000
 
-# Embeddings
-eda_embeddings: false
-eda_embeddings_input_size: 224
-eda_embeddings_batch_size: 64
-eda_tsne_perplexity: 30
+# Estadística
+chi2_mc_iterations: 10000       # permutaciones para el p-valor simulado de chi-cuadrado
+eda_hist_bins: auto             # intervalos de los histogramas univariados (numpy)
+eda_spearman_top_pairs: 15      # pares con mayor |rho| que se muestran
