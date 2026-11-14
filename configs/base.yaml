@@ -1,6 +1,5 @@
 # Configuración común a todos los modelos y al EDA.
-# Pendiente de añadir para el entrenamiento: resolución de entrada, métricas, épocas,
-# early stopping.
+# El entrenamiento usa la sección `train` (al final) y las rutas runs_dir, tuning_dir y pilot_dir.
 
 seed: 42
 
@@ -21,6 +20,10 @@ paths:
   train_color_stats_json: data/train_color_stats.json
   outliers_csv: data/atipicos_imagenes.csv
   embeddings_cache: data/processed/embeddings_mobilenetv2.npz
+  runs_dir: outputs/runs
+  tuning_dir: outputs/tuning
+  pilot_dir: outputs/pilot
+  logs_dir: outputs/logs
 
 # Formato de los archivos
 image_ext: .jpg
@@ -110,3 +113,66 @@ eda_embeddings_input_size: 224
 eda_embeddings_batch_size: 64
 eda_tsne_perplexity: 30
 emb_probe_max_iter: 2000        # iteraciones de la regresión logística sobre los embeddings
+
+# ---------------------------------------------------------------------------
+# Entrenamiento (src/train.py, src/tune.py, src/pilot.py)
+# ---------------------------------------------------------------------------
+# Las clases y su orden (índice de la etiqueta) son valid_categories.dx.
+train:
+  image_size: 224                 # lado de la entrada; se redimensiona sin conservar la relación de aspecto
+  resize_method: bilinear
+  resize_antialias: true          # filtro antialias al reducir (600x450 -> 224x224)
+  batch_size: 32
+  mixed_precision: true           # política mixed_float16; la salida softmax queda en float32
+  deterministic: false            # true -> tf.config.experimental.enable_op_determinism()
+  gpu_memory_growth: true
+  cache_in_memory: true           # cache tras el redimensionado, antes del aumento
+  cache_dtype: float32            # float32 (~0.6 MB por imagen) o uint8 (4 veces menos RAM)
+  save_weights: true              # guarda model.weights.h5 en las corridas de src.train (no en ajuste ni piloto)
+  verbose: 1                      # model.fit: 1 = barra por lote, 2 = una línea por época, 0 = nada (solo terminal)
+
+  augmentation:                   # solo en train, después de la cache; valores en [0, 255]
+    flip_horizontal: true
+    flip_vertical: true
+    rotate_90: true               # rotación de k * 90 grados, k uniforme en {0, 1, 2, 3}
+    zoom_max: 0.10                # acercamiento: recorte aleatorio de lado 1 / U(1, 1 + zoom_max) y redimensionado
+    brightness: 0.10              # delta aditivo U(-b, b) sobre la escala [0, 1]
+    contrast: 0.10                # factor U(1 - c, 1 + c)
+    saturation: 0.10              # factor U(1 - s, 1 + s)
+    hue: 0.02                     # delta U(-h, h)
+
+  warmup:                         # fase A: backbone congelado, tasa constante
+    epochs: 5
+    learning_rate: 1.0e-3
+    optimizer: adamw              # usa el weight_decay de los hiperparámetros del modelo
+
+  finetune:                       # fase B: todo descongelado (BatchNormalization en modo inferencia)
+    max_epochs: 30
+    optimizer: adamw
+    schedule: cosine              # CosineDecay desde learning_rate hasta alpha * learning_rate en max_epochs
+    cosine_alpha: 0.0
+    early_stopping:
+      monitor: val_balanced_accuracy
+      mode: max
+      patience: 5
+      min_delta: 0.0
+      restore_best_weights: true
+
+  weight_decay_exclude: [bias, gamma, beta]  # variables sin decaimiento de pesos en AdamW
+  class_weight: inverse_frequency # w_k = N / (K * N_k) con el train de cada corrida
+  ece_bins: 15
+
+  pilot:
+    pairs: [[0, 0], [1, 1], [2, 2], [3, 3], [4, 4]]   # (semilla, pliegue de validación)
+
+  tuning:
+    method: random
+    n_trials: 12
+    sampler_seed: 2026            # misma semilla -> mismas configuraciones para todos los modelos
+    val_fold: 0
+    seed: 0
+    max_epochs: 15                # sustituye a finetune.max_epochs durante el ajuste
+    space:                        # se muestrea en este orden
+      learning_rate: {type: loguniform, low: 1.0e-5, high: 1.0e-3}
+      weight_decay: {type: loguniform, low: 1.0e-6, high: 1.0e-3}
+      dropout: {type: choice, values: [0.0, 0.2, 0.4]}

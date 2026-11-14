@@ -1,9 +1,10 @@
-"""Carga de datos, integridad, duplicados por pHash y partición agrupada de HAM10000."""
+"""Carga de datos, integridad, duplicados por pHash, partición agrupada y tf.data de HAM10000."""
 
 from __future__ import annotations
 
 import hashlib
 import json
+from dataclasses import dataclass
 from pathlib import Path
 
 import imagehash
@@ -502,3 +503,199 @@ def splits_hashes(path: str | Path, splits: pd.DataFrame) -> dict:
         "n_train": int((splits["split"] == "train").sum()),
         "n_test": len(test_ids),
     }
+
+
+# ---------------------------------------------------------------------------
+# tf.data para el entrenamiento
+# ---------------------------------------------------------------------------
+# TensorFlow se importa dentro de las funciones para que el EDA no lo cargue.
+
+
+def class_names(cfg: dict) -> list[str]:
+    """Clases en el orden que define el índice de la etiqueta (valid_categories.dx)."""
+    return list(cfg["valid_categories"]["dx"])
+
+
+@dataclass
+class SplitSource:
+    """Imágenes de una partición: image_id y etiquetas en orden, y el dataset (imagen, etiqueta)
+    sin lotes, ya decodificado, redimensionado y (si `cache_in_memory`) en cache."""
+
+    image_ids: np.ndarray
+    labels: np.ndarray
+    base: object  # tf.data.Dataset
+
+
+@dataclass
+class Datasets:
+    train: object  # tf.data.Dataset (aumentado, barajado, en lotes)
+    val: object
+    test: object | None
+    train_labels: np.ndarray
+    val_ids: np.ndarray
+    val_labels: np.ndarray
+    test_ids: np.ndarray | None
+    test_labels: np.ndarray | None
+    class_names: list[str]
+    sources: dict  # {"train": SplitSource, "val": ..., "test": ...}; reutilizable entre corridas
+
+
+def select_split(splits: pd.DataFrame, which: str, val_fold: int) -> pd.DataFrame:
+    """Filas de train (split == train y fold != val_fold), val (fold == val_fold) o test, ordenadas por image_id."""
+    if which == "train":
+        m = (splits["split"] == "train") & (splits["fold"] != val_fold)
+    elif which == "val":
+        m = (splits["split"] == "train") & (splits["fold"] == val_fold)
+    elif which == "test":
+        m = splits["split"] == "test"
+    else:
+        raise ValueError(f"Partición desconocida: {which}")
+    return splits[m].sort_values("image_id").reset_index(drop=True)
+
+
+def _split_source(cfg: dict, df: pd.DataFrame, classes: list[str]):
+    import tensorflow as tf
+
+    tcfg = cfg["train"]
+    size = int(tcfg["image_size"])
+    method = tcfg.get("resize_method", "bilinear")
+    antialias = bool(tcfg.get("resize_antialias", True))
+    cache_uint8 = tcfg.get("cache_dtype", "float32") == "uint8"
+
+    unknown = sorted(set(df["dx"]) - set(classes))
+    if unknown:
+        raise ValueError(f"Etiquetas fuera de valid_categories.dx: {unknown}")
+    labels = df["dx"].map({c: i for i, c in enumerate(classes)}).to_numpy(np.int32)
+    paths = [str(p) for p in image_paths(cfg, df["image_id"])]
+    faltan = [p for p in paths if not Path(p).exists()]
+    if faltan:
+        raise FileNotFoundError(f"{len(faltan)} imágenes no encontradas, p. ej. {faltan[0]}")
+
+    def load(path, label):
+        img = tf.io.decode_jpeg(tf.io.read_file(path), channels=3)
+        img = tf.image.resize(img, [size, size], method=method, antialias=antialias)  # float32
+        img = tf.clip_by_value(img, 0.0, 255.0)
+        if cache_uint8:
+            img = tf.cast(tf.round(img), tf.uint8)
+        return img, label
+
+    ds = tf.data.Dataset.from_tensor_slices((paths, labels))
+    ds = ds.map(load, num_parallel_calls=tf.data.AUTOTUNE, deterministic=True)
+    if tcfg.get("cache_in_memory", True):
+        ds = ds.cache()
+    if cache_uint8:
+        ds = ds.map(lambda x, y: (tf.cast(x, tf.float32), y), num_parallel_calls=tf.data.AUTOTUNE)
+    return SplitSource(image_ids=df["image_id"].to_numpy(), labels=labels, base=ds)
+
+
+def load_split_sources(cfg: dict, val_fold: int, include_test: bool = False) -> dict:
+    """SplitSource de train, val y (opcional) test para un pliegue de validación."""
+    splits = load_splits(cfg["paths"]["splits_csv"])
+    n_folds = cfg.get("n_folds")
+    if n_folds is not None and not 0 <= val_fold < n_folds:
+        raise ValueError(f"val_fold={val_fold} fuera de 0..{n_folds - 1}")
+    classes = class_names(cfg)
+    names = ["train", "val"] + (["test"] if include_test else [])
+    return {n: _split_source(cfg, select_split(splits, n, val_fold), classes) for n in names}
+
+
+def make_augment_fn(aug: dict, seed: int):
+    """Función (imagen, etiqueta) -> (imagen aumentada, etiqueta) sobre imágenes float32 en [0, 255].
+
+    Usa operaciones aleatorias sin estado alimentadas por un tf.random.Generator con `seed`.
+    """
+    import tensorflow as tf
+
+    rng = tf.random.Generator.from_seed(seed, alg="philox")
+    n_seeds = 8
+
+    def augment(img, label):
+        seeds = rng.make_seeds(n_seeds)
+        s = [seeds[:, i] for i in range(n_seeds)]
+        static_shape = img.shape
+        size = tf.shape(img)[:2]
+        if aug.get("flip_horizontal"):
+            img = tf.image.stateless_random_flip_left_right(img, s[0])
+        if aug.get("flip_vertical"):
+            img = tf.image.stateless_random_flip_up_down(img, s[1])
+        if aug.get("rotate_90"):
+            k = tf.random.stateless_uniform([], s[2], minval=0, maxval=4, dtype=tf.int32)
+            img = tf.image.rot90(img, k)
+        zoom = float(aug.get("zoom_max") or 0.0)
+        if zoom > 0:
+            u = tf.random.stateless_uniform([3], s[3])
+            frac = 1.0 / (1.0 + zoom * u[0])          # lado relativo del recorte
+            y0, x0 = (1.0 - frac) * u[1], (1.0 - frac) * u[2]
+            box = tf.stack([y0, x0, y0 + frac, x0 + frac])[None, :]
+            img = tf.image.crop_and_resize(img[None], box, [0], size, method="bilinear")[0]
+        b, c = float(aug.get("brightness") or 0), float(aug.get("contrast") or 0)
+        sat, hue = float(aug.get("saturation") or 0), float(aug.get("hue") or 0)
+        if b or c or sat or hue:
+            x = img / 255.0
+            if b:
+                x = tf.image.stateless_random_brightness(x, b, s[4])
+            if c:
+                x = tf.image.stateless_random_contrast(x, 1.0 - c, 1.0 + c, s[5])
+            if sat:
+                x = tf.image.stateless_random_saturation(x, 1.0 - sat, 1.0 + sat, s[6])
+            if hue:
+                x = tf.image.stateless_random_hue(x, hue, s[7])
+            img = tf.clip_by_value(x, 0.0, 1.0) * 255.0
+        return tf.ensure_shape(tf.clip_by_value(img, 0.0, 255.0), static_shape), label
+
+    return augment
+
+
+def make_datasets(
+    cfg: dict, val_fold: int, seed: int, include_test: bool = False, sources: dict | None = None
+) -> Datasets:
+    """tf.data de train (aumentado y barajado con `seed`), val y test (opcional).
+
+    Train: split == "train" y fold != val_fold; val: fold == val_fold; test: split == "test".
+    Las imágenes originales se redimensionan a image_size x image_size sin conservar la
+    relación de aspecto, como float32 en [0, 255]; la cache va tras el redimensionado y el
+    aumento después de la cache. Val y test conservan el orden de `val_ids` / `test_ids`.
+    `sources` (de un Datasets anterior con el mismo val_fold) reutiliza la cache.
+    """
+    import tensorflow as tf
+
+    if sources is None:
+        sources = load_split_sources(cfg, val_fold, include_test)
+    elif include_test and "test" not in sources:
+        sources = dict(sources, test=load_split_sources(cfg, val_fold, True)["test"])
+
+    tcfg = cfg["train"]
+    bs = int(tcfg["batch_size"])
+    tr = sources["train"]
+    train = (
+        tr.base.shuffle(len(tr.labels), seed=seed, reshuffle_each_iteration=True)
+        .map(make_augment_fn(tcfg.get("augmentation") or {}, seed), num_parallel_calls=tf.data.AUTOTUNE)
+        .batch(bs)
+        .prefetch(tf.data.AUTOTUNE)
+    )
+
+    def evaluation(src):
+        return src.base.batch(bs).prefetch(tf.data.AUTOTUNE)
+
+    te = sources.get("test") if include_test else None
+    return Datasets(
+        train=train,
+        val=evaluation(sources["val"]),
+        test=evaluation(te) if te is not None else None,
+        train_labels=tr.labels,
+        val_ids=sources["val"].image_ids,
+        val_labels=sources["val"].labels,
+        test_ids=te.image_ids if te is not None else None,
+        test_labels=te.labels if te is not None else None,
+        class_names=class_names(cfg),
+        sources=sources,
+    )
+
+
+def class_weights(labels, n_classes: int) -> dict[int, float]:
+    """Pesos de frecuencia inversa w_k = N / (K * N_k)."""
+    counts = np.bincount(np.asarray(labels), minlength=n_classes)
+    if (counts == 0).any():
+        raise ValueError(f"Clases sin ejemplos en train: {np.flatnonzero(counts == 0).tolist()}")
+    n = counts.sum()
+    return {k: float(n / (n_classes * counts[k])) for k in range(n_classes)}

@@ -1,4 +1,11 @@
-# Configuración propia de mobilenetv2.
-# Irá aquí:
-#   - hiperparámetros (learning rate, batch size, dropout, capas a descongelar, ...)
-#   - espacio de búsqueda de hiperparámetros
+# Configuración propia de MobileNetV2 (src/models/mobilenetv2.py).
+name: mobilenetv2
+keras_application: MobileNetV2    # keras.applications.MobileNetV2
+weights: imagenet
+input_size: 224                   # debe coincidir con train.image_size de base.yaml
+
+# Se llenan con outputs/tuning/mobilenetv2/best.json tras `python -m src.tune --model mobilenetv2`.
+hyperparameters:
+  learning_rate: null             # tasa inicial de la fase B (decaimiento coseno)
+  weight_decay: null              # AdamW, fases A y B
+  dropout: null                   # antes de la capa densa final

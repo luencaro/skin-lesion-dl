@@ -15,5 +15,6 @@ project:
     - file: book/04-modelos-base.md
     - file: book/05-eda_metadatos_particion.ipynb
     - file: book/06-eda_imagenes.ipynb
+    - file: book/07-diseno-experimental.md
 site:
   template: book-theme

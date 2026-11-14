@@ -1,0 +1,7 @@
+2026-11-14 09:25:00 INFO mobilenetv2 | tuning_t00 s0_f0 | Fase A: 5 épocas, backbone congelado
+2026-11-14 09:26:58 INFO mobilenetv2 | tuning_t00 s0_f0 | warmup | época 1/5 | loss 1.6382 | val_bal_acc 0.5228 | mejor 0.5228 | 1m 58s
+2026-11-14 09:27:35 INFO mobilenetv2 | tuning_t00 s0_f0 | warmup | época 2/5 | loss 1.1997 | val_bal_acc 0.4861 | mejor 0.5228 | 36.2s
+2026-11-14 09:28:11 INFO mobilenetv2 | tuning_t00 s0_f0 | warmup | época 3/5 | loss 1.1101 | val_bal_acc 0.5863 | mejor 0.5863 | 36.1s
+2026-11-14 09:28:47 INFO mobilenetv2 | tuning_t00 s0_f0 | warmup | época 4/5 | loss 1.0281 | val_bal_acc 0.5700 | mejor 0.5863 | 36.1s
+2026-11-14 09:29:23 INFO mobilenetv2 | tuning_t00 s0_f0 | warmup | época 5/5 | loss 0.9840 | val_bal_acc 0.5691 | mejor 0.5863 | 36.2s
+2026-11-14 09:29:23 INFO mobilenetv2 | tuning_t00 s0_f0 | Fase B: hasta 15 épocas, todo descongelado

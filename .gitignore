@@ -15,3 +15,5 @@ _build/
 
 # Datos procesados (caché del EDA, etc.)
 data/processed/
+
+.ruff_cache/
