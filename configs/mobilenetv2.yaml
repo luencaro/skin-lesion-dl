@@ -3,6 +3,7 @@ name: mobilenetv2
 keras_application: MobileNetV2    # keras.applications.MobileNetV2
 weights: imagenet
 input_size: 224                   # debe coincidir con train.image_size de base.yaml
+gradcam_layer: out_relu           # capa del backbone anidado para Grad-CAM (src/gradcam.py)
 
 # Se llenan con outputs/tuning/mobilenetv2/best.json tras `python -m src.tune --model mobilenetv2`.
 hyperparameters:

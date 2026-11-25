@@ -16,4 +16,8 @@ Este proyecto tiene como propósito proponer una arquitectura de aprendizaje pro
 - [Modelos base](book/04-modelos-base.md): análisis de VGG-16, ResNet-50 y MobileNetV2, comparación crítica y brecha en la literatura.
 - [EDA de metadatos y partición](book/05-eda_metadatos_particion.ipynb): integridad, duplicados, metadatos y partición agrupada por lesión.
 - [EDA de imágenes](book/06-eda_imagenes.ipynb): artefactos, formato, color, lesión, atajos visuales y separabilidad.
-- [Diseño experimental](book/07-diseno-experimental.md): esquema de validación, pipeline de entrenamiento, ajuste de hiperparámetros, reproducibilidad y estudio piloto.
+- [Diseño experimental](book/07-diseno-experimental.md): esquema de validación, pipeline de entrenamiento, ajuste de hiperparámetros, reproducibilidad, estudio piloto, plan de análisis estadístico y limitaciones inferenciales.
+- [MobileNetV2](book/08-mobilenetv2.ipynb): ajuste de hiperparámetros, estudio piloto, ejecución definitiva y evaluación.
+- [ResNet-50](book/09-resnet50.ipynb): ajuste de hiperparámetros, estudio piloto, ejecución definitiva y evaluación.
+- [VGG-16](book/10-vgg16.ipynb): ajuste de hiperparámetros, estudio piloto, ejecución definitiva y evaluación.
+- [Benchmark](book/11-benchmark.ipynb): piloto conjunto, tabla comparativa, ranking, baseline y pruebas de hipótesis.

@@ -17,3 +17,6 @@ _build/
 data/processed/
 
 .ruff_cache/
+
+# Pesos de las corridas (VGG-16: ~540 MB por corrida; GitHub rechaza archivos > 100 MB)
+outputs/**/*.weights.h5

@@ -16,5 +16,9 @@ project:
     - file: book/05-eda_metadatos_particion.ipynb
     - file: book/06-eda_imagenes.ipynb
     - file: book/07-diseno-experimental.md
+    - file: book/08-mobilenetv2.ipynb
+    - file: book/09-resnet50.ipynb
+    - file: book/10-vgg16.ipynb
+    - file: book/11-benchmark.ipynb
 site:
   template: book-theme

@@ -1,5 +1,6 @@
 # Configuración común a todos los modelos y al EDA.
-# El entrenamiento usa la sección `train` (al final) y las rutas runs_dir, tuning_dir y pilot_dir.
+# El entrenamiento usa la sección `train` y las rutas runs_dir, tuning_dir, pilot_dir y final_dir;
+# la evaluación y el benchmark, las secciones `final`, `evaluation` y `benchmark` (al final).
 
 seed: 42
 
@@ -23,6 +24,8 @@ paths:
   runs_dir: outputs/runs
   tuning_dir: outputs/tuning
   pilot_dir: outputs/pilot
+  final_dir: outputs/final
+  benchmark_dir: outputs/benchmark
   logs_dir: outputs/logs
 
 # Formato de los archivos
@@ -176,3 +179,91 @@ train:
       learning_rate: {type: loguniform, low: 1.0e-5, high: 1.0e-3}
       weight_decay: {type: loguniform, low: 1.0e-6, high: 1.0e-3}
       dropout: {type: choice, values: [0.0, 0.2, 0.4]}
+
+# ---------------------------------------------------------------------------
+# Ejecución definitiva (src/final.py)
+# ---------------------------------------------------------------------------
+# Corridas = producto semilla x pliegue de validación (validación cruzada repetida), con
+# etiqueta `label`, evaluación de test y métricas de train sin aumento ni dropout.
+# El número de semillas se ajusta tras el piloto editando `seeds` (ver preregistro.md).
+final:
+  label: final
+  seeds: [0, 1, 2, 3, 4]
+  folds: [0, 1, 2, 3, 4]
+  evaluate_train: true            # métricas sobre el train de la corrida, sin aumento ni dropout
+
+# ---------------------------------------------------------------------------
+# Evaluación por modelo (src/evaluation.py, src/gradcam.py)
+# ---------------------------------------------------------------------------
+evaluation:
+  split: test                     # partición de las secciones de robustez, errores, casos difíciles y calibración
+  subgroups: [dataset, dx_type, localization]   # columnas de HAM10000_metadata.csv
+  subgroup_metrics: [balanced_accuracy, accuracy, f1_macro]
+  subgroup_min_n: 30              # se marcan los subgrupos con menos imágenes (estimación inestable)
+  overfitting_metrics: [balanced_accuracy, accuracy, f1_macro, cross_entropy]
+  top_confused_pairs: 10
+  # data/atipicos_imagenes.csv solo cubre train (8584 imágenes): la tasa de error de las
+  # imágenes atípicas se calcula con las predicciones de validación (fuera de pliegue).
+  outliers:
+    split: val
+    mahalanobis_column: atipico_mahal
+    univariate_column: n_marcas_univariadas
+    univariate_min_marks: 1       # marcada si tiene al menos este número de marcas univariadas
+  hard_cases:
+    min_error_frac: 0.5           # falla en más de esta fracción de corridas
+    grid_n: 16                    # imágenes por cuadrícula
+    grid_ncols: 8
+  calibration_bins: 15            # igual que train.ece_bins
+  gradcam:
+    run: [0, 0]                   # (semilla, pliegue) de la corrida definitiva cuyos pesos se usan
+    per_class_correct: 2          # aciertos por clase en la muestra fija de test
+    per_class_wrong: 2            # errores por clase (menos si la clase tiene pocos)
+    sample_seed: 2026
+    alpha: 0.45                   # opacidad del mapa sobre la imagen
+    ncols: 7
+
+# ---------------------------------------------------------------------------
+# Benchmark y estadística (src/benchmark.py, src/stats.py, book/11-benchmark.ipynb)
+# ---------------------------------------------------------------------------
+# Las observaciones pareadas son las corridas con la misma semilla y el mismo pliegue.
+benchmark:
+  models: [mobilenetv2, resnet50, vgg16]
+  primary_metric: balanced_accuracy
+  split: test                     # partición de la tabla comparativa y de las pruebas
+  metrics: [balanced_accuracy, accuracy, f1_macro, f1_weighted, auc_roc_macro_ovr, auc_pr_macro, mcc, ece]
+  delta: 0.02                     # margen de relevancia práctica (exactitud balanceada, absoluto)
+  alpha: 0.05
+  power: 0.80
+  p_adjust: holm
+  bootstrap:
+    method: percentile            # scipy.stats.bootstrap: percentile, basic o BCa
+    n_resamples: 10000
+    n_resamples_auc: 1000         # bootstrap estratificado de la diferencia de AUC macro (por corrida)
+    seed: 2026
+  # IC sobre el conjunto de prueba remuestreando lesion_id (sección 3 del benchmark): en cada
+  # remuestreo se recalcula la exactitud balanceada de cada corrida y se promedia entre corridas.
+  lesion_bootstrap:
+    n_resamples: 10000
+    seed: 2026
+  mcnemar_exact_below: 25        # binomial exacta si b + c < 25; si no, chi-cuadrado con corrección de continuidad
+  wilcoxon_zero_method: wilcox    # diferencias nulas: wilcox (se descartan) o pratt
+  nadeau_bengio_splits: [val, test]
+  # Cotas de referencia de la literatura (sección 5.4 del benchmark); source = clave de references.bib.
+  # La diferencia con el mejor modelo solo se calcula para las cotas cuya métrica es primary_metric_label.
+  primary_metric_label: exactitud balanceada
+  reference_bounds:
+    - name: "Lectores con más de diez años de experiencia"
+      value: 0.627                # 18,8 de 30
+      metric: exactitud en lotes de 30 imágenes
+      note: "otra muestra de prueba y otra métrica; solo referencia contextual"
+      source: tschandl2019
+    - name: "Tres mejores algoritmos del reto ISIC 2018 (mismo estudio)"
+      value: 0.847                # 25,4 de 30
+      metric: exactitud en lotes de 30 imágenes
+      note: "otra muestra de prueba y otra métrica; solo referencia contextual"
+      source: tschandl2019
+    - name: "Partición agrupada por lesión"
+      value: 0.70                 # aproximado
+      metric: exactitud balanceada
+      note: "otra muestra de prueba; valor aproximado"
+      source: pinar2026

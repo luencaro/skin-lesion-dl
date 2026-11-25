@@ -2,7 +2,7 @@
 title: Diseño experimental
 ---
 
-Este capítulo declara el diseño con el que se entrenan y evalúan los modelos base. Todas las decisiones se fijan antes de la ejecución definitiva, son comunes a los tres modelos y se derivan del análisis exploratorio y de la [declaración a priori](02-definicion-del-problema.md). Los parámetros se leen de `configs/base.yaml` y del archivo de configuración de cada modelo.
+Este capítulo declara el diseño con el que se entrenan y evalúan los modelos base, junto con el plan de análisis estadístico. Todas las decisiones se fijan antes de la ejecución definitiva, son comunes a los tres modelos y se derivan del análisis exploratorio y de la [declaración a priori](02-definicion-del-problema.md). Los parámetros se leen de `configs/base.yaml` y del archivo de configuración de cada modelo.
 
 ## Variables de entrada y objetivo
 
@@ -69,3 +69,41 @@ R \approx \frac{\left(z_{1-\alpha/2} + z_{1-\beta}\right)^2 \hat{\sigma}_d^2}{\d
 $$
 
 así como la diferencia mínima detectable con las corridas realizadas, $\left(z_{1-\alpha/2} + z_{1-\beta}\right) \hat{\sigma}_d / \sqrt{R}$. Los resultados del piloto, sus supuestos y el número de corridas resultante se registran en `preregistro.md`, con fecha, antes de la ejecución definitiva.
+
+## Plan de análisis estadístico
+
+Este plan se declara antes de la ejecución definitiva, de modo que la métrica, las comparaciones y las pruebas no se eligen después de ver los resultados. El nivel de significancia es $\alpha = 0{,}05$ y se reportan siempre los p-valores exactos, ajustados y sin ajustar, junto con un intervalo de confianza del 95 % y un tamaño de efecto.
+
+### Observaciones y variable de respuesta
+
+La ejecución definitiva sigue una validación cruzada repetida de cinco semillas por cinco pliegues, de modo que cada modelo produce 25 corridas, número que se revisará con el resultado del piloto. Cada corrida $j$ aporta dos valores de la métrica primaria: la exactitud balanceada sobre su pliegue de validación y la exactitud balanceada sobre el conjunto de prueba. Como los tres modelos comparten los pares de semilla y pliegue, las observaciones se analizan de forma pareada, y la diferencia entre dos modelos $a$ y $b$ en la corrida $j$ es $d_j = m_{a,j} - m_{b,j}$.
+
+La variable de respuesta del análisis principal es la exactitud balanceada sobre el conjunto de prueba. El desempeño de cada modelo se resume con la media, la desviación estándar y el intervalo de confianza del 95 % entre corridas, calculado por la distribución t de Student y por bootstrap. Ambos intervalos reflejan la variabilidad debida a la semilla y al pliegue, pero no la debida a la muestra de prueba, que es la misma en todas las corridas. Para incorporar esa fuente de variabilidad, se calcula además un intervalo bootstrap sobre el conjunto de prueba, remuestreando lesiones completas, de modo que las imágenes de una misma lesión entren o salgan juntas, y recalculando la exactitud balanceada media de las corridas en cada remuestreo.
+
+### Comparación de los modelos base
+
+Antes de cada comparación se verifica la normalidad de las diferencias pareadas con la prueba de Shapiro–Wilk y gráficos Q–Q. Si no se rechaza la normalidad, la comparación conjunta de los tres modelos se realiza con un ANOVA de medidas repetidas y las comparaciones por pares con la prueba t pareada; en caso contrario, con la prueba de Friedman y la prueba de rangos con signo de Wilcoxon, en su versión exacta. La prueba de Friedman se reporta en ambos casos, con el post-hoc de Nemenyi, por ser la recomendada para comparar clasificadores [@demsar2006]. Las tres comparaciones por pares se corrigen por el método de Holm.
+
+Cada comparación por pares se acompaña de la diferencia media, su intervalo de confianza del 95 % por bootstrap, la d de Cohen para datos pareados, la delta de Cliff y la probabilidad de superioridad, es decir, la proporción de corridas en que un modelo supera al otro. Para cada prueba se reporta también la diferencia mínima detectable con el número de corridas realizado, con potencia de 0,80.
+
+La significancia y la relevancia se evalúan por separado. Una diferencia se considera prácticamente relevante si su magnitud alcanza $\delta = 0{,}02$, y la ausencia de significancia no se interpreta como equivalencia: para afirmar que dos modelos son equivalentes se aplica la prueba de dos pruebas unilaterales (TOST) con margen $\delta$, como análisis separado.
+
+### Análisis complementarios
+
+Las corridas comparten el conjunto de prueba y sus conjuntos de entrenamiento se solapan, de modo que no son estrictamente independientes y las pruebas anteriores tienden a subestimar la varianza. Para acotar este problema, las diferencias de exactitud balanceada en validación se contrastan además con la prueba t corregida de @nadeau2003, que sustituye el factor $1/J$ de la varianza de la media por $1/J + n_{\text{val}}/n_{\text{train}}$, donde $J = 25$ es el número de corridas y $n_{\text{val}}/n_{\text{train}} \approx 1717/6867 \approx 0{,}25$ la razón entre los tamaños de validación y de entrenamiento.
+
+Sobre las predicciones de prueba se aplican dos pruebas específicas de clasificación. La prueba de McNemar compara las tasas de error de cada par de modelos en cada corrida pareada, en su versión exacta cuando las discordancias son menos de 25 y con corrección de continuidad en caso contrario. La prueba de DeLong compara el AUC-ROC de cada par de modelos en cada clase, con un esquema uno contra el resto y corrección de Holm sobre las siete clases, y la diferencia de AUC macro se estima además por bootstrap estratificado. Por último, se descompone la varianza de la métrica primaria en la parte atribuible al modelo y la atribuible a la corrida, lo que indica si las diferencias entre modelos son grandes en relación con la variabilidad del entrenamiento.
+
+### Definición del baseline
+
+El baseline es el modelo con mayor exactitud balanceada media en el conjunto de prueba, reportada con su desviación estándar y su intervalo de confianza del 95 %. Las diferencias entre modelos se expresan en términos absolutos y relativos, respecto del mejor y del peor modelo, con su tamaño de efecto. A partir de la variabilidad observada se fija la mejora mínima detectable que una arquitectura propuesta debería lograr respecto del baseline para ser estadísticamente distinguible, y se compara con el margen de relevancia $\delta$.
+
+El baseline se contrasta con dos cotas de referencia externas. La primera es el desempeño de los especialistas: en el estudio de lectores de @tschandl2019, el grupo con mejor desempeño, el de los lectores con más de diez años de experiencia, acertó en promedio 18,8 de 30 diagnósticos, frente a 25,4 de los tres mejores algoritmos del reto ISIC 2018. La segunda es el desempeño bajo un protocolo con partición agrupada por lesión, en torno a 0,70 de exactitud balanceada [@pinar2026]. Ninguna de las dos es directamente comparable con el baseline, porque se obtuvieron con otras muestras de prueba y, en el primer caso, con otra métrica, pero permiten situarlo respecto del desempeño humano y de la literatura con un protocolo semejante.
+
+## Limitaciones inferenciales
+
+Comparar solo tres modelos impone límites a la potencia de las pruebas que deben reconocerse antes de interpretarlas. Con cinco corridas por modelo, como en el estudio piloto, la prueba de Wilcoxon bilateral no puede alcanzar significancia: su p-valor exacto mínimo es $2/2^5 = 0{,}0625$, mayor que $\alpha$, incluso si un modelo supera al otro en todas las corridas. Por esa razón, el piloto se usa solo para estimar la variabilidad y no para contrastar hipótesis. Con las 25 corridas de la ejecución definitiva, el p-valor mínimo de la prueba de Wilcoxon es $2/2^{25} \approx 6 \times 10^{-8}$, y la prueba deja de estar limitada por el número de corridas.
+
+La prueba de Friedman con tres modelos tiene poca potencia, y el post-hoc de Nemenyi es conservador, de modo que una ausencia de significancia no demuestra que los modelos sean equivalentes. La corrección de Holm con tres comparaciones exige, en el paso más estricto, un p-valor menor que $\alpha/3 \approx 0{,}0167$. Además, como se señaló, las corridas no son independientes, porque comparten el conjunto de prueba y se solapan en entrenamiento; las pruebas que las tratan como independientes son, por tanto, optimistas, lo que motiva la prueba corregida de Nadeau y Bengio.
+
+Para compensar estas limitaciones, el análisis no se apoya solo en los p-valores. Se usa la validación cruzada repetida para disponer de más observaciones pareadas, se reporta la diferencia mínima detectable con el número de corridas disponible, se acompaña cada diferencia de su tamaño de efecto con intervalo de confianza y de la probabilidad de superioridad, y se recurre a la prueba TOST para cualquier afirmación de equivalencia. El objetivo es fijar el baseline y su variabilidad con honestidad; un resultado no concluyente, bien cuantificado, se reporta como tal.

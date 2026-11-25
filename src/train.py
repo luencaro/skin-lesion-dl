@@ -3,9 +3,10 @@
 Fase A: backbone congelado, AdamW con tasa constante (train.warmup).
 Fase B: todo descongelado, AdamW con decaimiento coseno y parada temprana sobre la exactitud
 balanceada de validación (train.finetune). Con los mejores pesos se calculan las métricas de
-validación y, solo con --test, las de test.
+validación; solo con --test, las de test, y solo con --train-metrics, las del train de la
+corrida sin aumento de datos ni dropout (para medir la brecha entre train y validación).
 
-    python -m src.train --model mobilenetv2 --seed 0 --val-fold 0 [--test] [--label etiqueta]
+    python -m src.train --model mobilenetv2 --seed 0 --val-fold 0 [--test] [--train-metrics] [--label etiqueta]
 """
 
 from __future__ import annotations
@@ -253,6 +254,8 @@ def load_run_summary(run_dir: Path) -> dict:
     """Resumen de una corrida terminada (metrics.json + run_info.json)."""
     metrics = D.load_json(run_dir / "metrics.json")
     info = D.load_json(run_dir / "run_info.json")
+    extra = {f"{split}_balanced_accuracy": metrics[split]["balanced_accuracy"]
+             for split in ("test", "train") if split in metrics}
     return {
         "run_dir": _relpath(run_dir),
         "seed": info["seed"],
@@ -260,6 +263,7 @@ def load_run_summary(run_dir: Path) -> dict:
         "label": info["label"],
         **info["hyperparameters"],
         "val_balanced_accuracy": metrics["val"]["balanced_accuracy"],
+        **extra,
         "best_epoch": info["epochs"]["finetune_best"],
         "epochs_warmup": info["epochs"]["warmup"],
         "epochs_finetune": info["epochs"]["finetune_run"],
@@ -276,6 +280,7 @@ def run_training(
     hparams: dict | None = None,
     label: str = "default",
     evaluate_test: bool = False,
+    evaluate_train: bool = False,
     max_epochs: int | None = None,
     save_weights: bool | None = None,
     sources: dict | None = None,
@@ -285,6 +290,8 @@ def run_training(
 
     `hparams` sustituye a los del YAML del modelo; `max_epochs` a finetune.max_epochs;
     `sources` (de data.load_split_sources con el mismo val_fold) reutiliza la cache.
+    Con `evaluate_train`, metrics.json incluye también "train": las métricas sobre las imágenes
+    de train de la corrida sin aumento y en modo inferencia (sin dropout).
     """
     model_cfg = load_model_config(model_name)
     hp = resolve_hparams(model_cfg, hparams)
@@ -319,7 +326,8 @@ def run_training(
 
     resolved = {
         "run": {"model": model_name, "label": label, "seed": seed, "val_fold": val_fold,
-                "evaluate_test": evaluate_test, "save_weights": save_weights},
+                "evaluate_test": evaluate_test, "evaluate_train": evaluate_train,
+                "save_weights": save_weights},
         "model": {**model_cfg, "hyperparameters": hp},
         "train": tcfg,
         "classes": classes,
@@ -394,6 +402,9 @@ def run_training(
         metrics["test"] = classification_metrics(data.test_labels, proba_test, classes, ece_bins)
         probabilities_frame(data.test_ids, data.test_labels, proba_test, classes).to_csv(
             run_dir / "probabilities_test.csv", index=False)
+    if evaluate_train:  # sin aumento; predict usa el modo inferencia (dropout inactivo)
+        proba_train, inference["train"] = predict_timed(model, data.train_eval, n_train)
+        metrics["train"] = classification_metrics(data.train_labels, proba_train, classes, ece_bins)
 
     if save_weights:
         model.save_weights(run_dir / "model.weights.h5")
@@ -405,6 +416,7 @@ def run_training(
         "val_fold": val_fold,
         "hyperparameters": hp,
         "evaluated_test": evaluate_test,
+        "evaluated_train": evaluate_train,
         "n_images": {"train": n_train, "val": len(data.val_labels),
                      "test": len(data.test_labels) if evaluate_test else None},
         "epochs": {"warmup": epochs_a, "finetune_max": epochs_b, "finetune_run": epochs_run_b,
@@ -441,6 +453,8 @@ def main(argv=None) -> None:
     parser.add_argument("--seed", type=int, required=True)
     parser.add_argument("--val-fold", type=int, required=True)
     parser.add_argument("--test", action="store_true", help="evalúa también en test")
+    parser.add_argument("--train-metrics", action="store_true",
+                        help="calcula también las métricas de train sin aumento ni dropout")
     parser.add_argument("--label", default="default", help="subcarpeta en outputs/runs/<modelo>/")
     parser.add_argument("--overwrite", action="store_true", help="sobrescribe una corrida terminada")
     parser.add_argument("--config", default=None, help="YAML base (por defecto configs/base.yaml)")
@@ -456,7 +470,7 @@ def main(argv=None) -> None:
     log.info(f"python -m src.train {' '.join(sys.argv[1:] if argv is None else argv)} | log: {_relpath(log_file)}")
     configure_runtime(cfg)
     run_training(cfg, args.model, args.seed, args.val_fold, label=args.label,
-                 evaluate_test=args.test, overwrite=args.overwrite)
+                 evaluate_test=args.test, evaluate_train=args.train_metrics, overwrite=args.overwrite)
 
 
 if __name__ == "__main__":

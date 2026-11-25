@@ -529,8 +529,10 @@ class SplitSource:
 @dataclass
 class Datasets:
     train: object  # tf.data.Dataset (aumentado, barajado, en lotes)
+    train_eval: object  # train sin aumento ni barajado, en lotes (orden de train_ids)
     val: object
     test: object | None
+    train_ids: np.ndarray
     train_labels: np.ndarray
     val_ids: np.ndarray
     val_labels: np.ndarray
@@ -553,13 +555,38 @@ def select_split(splits: pd.DataFrame, which: str, val_fold: int) -> pd.DataFram
     return splits[m].sort_values("image_id").reset_index(drop=True)
 
 
-def _split_source(cfg: dict, df: pd.DataFrame, classes: list[str]):
+def _image_loader(cfg: dict, cache_uint8: bool = False):
+    """Función ruta -> imagen redimensionada a image_size x image_size (float32 en [0, 255], o
+    uint8 si `cache_uint8`), con el mismo redimensionado que el entrenamiento."""
     import tensorflow as tf
 
     tcfg = cfg["train"]
     size = int(tcfg["image_size"])
     method = tcfg.get("resize_method", "bilinear")
     antialias = bool(tcfg.get("resize_antialias", True))
+
+    def load(path):
+        img = tf.io.decode_jpeg(tf.io.read_file(path), channels=3)
+        img = tf.image.resize(img, [size, size], method=method, antialias=antialias)  # float32
+        img = tf.clip_by_value(img, 0.0, 255.0)
+        if cache_uint8:
+            img = tf.cast(tf.round(img), tf.uint8)
+        return img
+
+    return load
+
+
+def load_resized_images(cfg: dict, image_ids) -> np.ndarray:
+    """Imágenes (N, image_size, image_size, 3) float32 en [0, 255], redimensionadas como en el
+    entrenamiento y sin aumento (para Grad-CAM y visualizaciones)."""
+    load = _image_loader(cfg)
+    return np.stack([load(str(image_path(cfg, i))).numpy() for i in image_ids]).astype(np.float32)
+
+
+def _split_source(cfg: dict, df: pd.DataFrame, classes: list[str]):
+    import tensorflow as tf
+
+    tcfg = cfg["train"]
     cache_uint8 = tcfg.get("cache_dtype", "float32") == "uint8"
 
     unknown = sorted(set(df["dx"]) - set(classes))
@@ -571,13 +598,10 @@ def _split_source(cfg: dict, df: pd.DataFrame, classes: list[str]):
     if faltan:
         raise FileNotFoundError(f"{len(faltan)} imágenes no encontradas, p. ej. {faltan[0]}")
 
+    load_image = _image_loader(cfg, cache_uint8)
+
     def load(path, label):
-        img = tf.io.decode_jpeg(tf.io.read_file(path), channels=3)
-        img = tf.image.resize(img, [size, size], method=method, antialias=antialias)  # float32
-        img = tf.clip_by_value(img, 0.0, 255.0)
-        if cache_uint8:
-            img = tf.cast(tf.round(img), tf.uint8)
-        return img, label
+        return load_image(path), label
 
     ds = tf.data.Dataset.from_tensor_slices((paths, labels))
     ds = ds.map(load, num_parallel_calls=tf.data.AUTOTUNE, deterministic=True)
@@ -649,7 +673,7 @@ def make_augment_fn(aug: dict, seed: int):
 def make_datasets(
     cfg: dict, val_fold: int, seed: int, include_test: bool = False, sources: dict | None = None
 ) -> Datasets:
-    """tf.data de train (aumentado y barajado con `seed`), val y test (opcional).
+    """tf.data de train (aumentado y barajado con `seed`), train sin aumento, val y test (opcional).
 
     Train: split == "train" y fold != val_fold; val: fold == val_fold; test: split == "test".
     Las imágenes originales se redimensionan a image_size x image_size sin conservar la
@@ -680,8 +704,10 @@ def make_datasets(
     te = sources.get("test") if include_test else None
     return Datasets(
         train=train,
+        train_eval=evaluation(tr),
         val=evaluation(sources["val"]),
         test=evaluation(te) if te is not None else None,
+        train_ids=tr.image_ids,
         train_labels=tr.labels,
         val_ids=sources["val"].image_ids,
         val_labels=sources["val"].labels,

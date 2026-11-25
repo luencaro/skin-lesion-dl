@@ -354,3 +354,462 @@ def type_shares(meta: pd.DataFrame, type_col: str, class_col: str, lesion_col: s
         out[f"{unidad}_global"] = glob
         out[f"{unidad}_por_clase"] = por
     return out
+
+
+# ---------------------------------------------------------------------------
+# Benchmark: tamaño muestral, intervalos y tamaños de efecto
+# ---------------------------------------------------------------------------
+# Las funciones reciben las diferencias pareadas d = a - b (una por corrida con la misma semilla
+# y el mismo pliegue) o las dos muestras pareadas a y b. Todos los p-valores son bilaterales.
+
+
+def _finite(x) -> np.ndarray:
+    x = np.asarray(x, dtype=float)
+    return x[np.isfinite(x)]
+
+
+def z_alpha_power(alpha: float, power: float) -> float:
+    """z_{1 - alpha / 2} + z_{1 - beta}, con 1 - beta = power."""
+    return float(ss.norm.ppf(1 - alpha / 2) + ss.norm.ppf(power))
+
+
+def required_runs(sigma_d: float, delta: float, alpha: float, power: float) -> float:
+    """R = (z_{1-alpha/2} + z_{1-beta})^2 sigma_d^2 / delta^2 (aproximación normal, sin redondear)."""
+    return float(z_alpha_power(alpha, power) ** 2 * sigma_d ** 2 / delta ** 2)
+
+
+def minimum_detectable_difference(sigma_d: float, n: int, alpha: float, power: float) -> float:
+    """Diferencia mínima detectable con n corridas: (z_{1-alpha/2} + z_{1-beta}) sigma_d / sqrt(n)."""
+    return float(z_alpha_power(alpha, power) * sigma_d / np.sqrt(n)) if n > 0 else float("nan")
+
+
+def power_paired_t(sigma_d: float, n: int, delta: float, alpha: float) -> float:
+    """Potencia de la t pareada bilateral para detectar una diferencia `delta` con n corridas
+    (t no central con parámetro delta / (sigma_d / sqrt(n)) y n - 1 grados de libertad)."""
+    if n < 2 or not np.isfinite(sigma_d) or sigma_d <= 0:
+        return float("nan")
+    df = n - 1
+    nc = delta / (sigma_d / np.sqrt(n))
+    crit = ss.t.ppf(1 - alpha / 2, df)
+    return float(ss.nct.sf(crit, df, nc) + ss.nct.cdf(-crit, df, nc))
+
+
+def shapiro_test(x) -> dict:
+    """Shapiro-Wilk: W y p-valor. NaN si hay menos de 3 valores o todos son iguales."""
+    x = _finite(x)
+    if len(x) < 3 or np.ptp(x) == 0:
+        return {"n": len(x), "W": np.nan, "p": np.nan}
+    w, p = ss.shapiro(x)
+    return {"n": len(x), "W": float(w), "p": float(p)}
+
+
+def t_confidence_interval(x, alpha: float) -> tuple[float, float]:
+    """IC 1 - alpha de la media por t de Student (ddof = 1)."""
+    x = _finite(x)
+    if len(x) < 2:
+        return float("nan"), float("nan")
+    half = ss.t.ppf(1 - alpha / 2, len(x) - 1) * x.std(ddof=1) / np.sqrt(len(x))
+    return float(x.mean() - half), float(x.mean() + half)
+
+
+def bootstrap_confidence_interval(x, alpha: float, n_resamples: int, seed: int,
+                                  method: str = "percentile") -> tuple[float, float]:
+    """IC 1 - alpha de la media por bootstrap (scipy.stats.bootstrap con `method`). NaN si
+    hay menos de 2 valores, todos iguales o el método no converge."""
+    x = _finite(x)
+    if len(x) < 2 or np.ptp(x) == 0:
+        return float("nan"), float("nan")
+    try:
+        with np.errstate(all="ignore"):
+            res = ss.bootstrap((x,), np.mean, confidence_level=1 - alpha, n_resamples=n_resamples,
+                               method=method, rng=np.random.default_rng(seed))
+        return float(res.confidence_interval.low), float(res.confidence_interval.high)
+    except (ValueError, RuntimeError):
+        return float("nan"), float("nan")
+
+
+def cohens_dz(d) -> float:
+    """d de Cohen pareada: media de las diferencias / su desviación estándar (ddof = 1)."""
+    d = _finite(d)
+    if len(d) < 2:
+        return float("nan")
+    sd = d.std(ddof=1)
+    return float(d.mean() / sd) if sd > 0 else float("nan")
+
+
+def _signed_ranks(d, zero_method: str = "wilcox") -> tuple[np.ndarray, np.ndarray]:
+    """Rangos medios de |d| y signos. wilcox: descarta los ceros; pratt: los incluye al ordenar y
+    luego los descarta."""
+    d = _finite(d)
+    if zero_method == "wilcox":
+        d = d[d != 0]
+        ranks = ss.rankdata(np.abs(d))
+    elif zero_method == "pratt":
+        ranks = ss.rankdata(np.abs(d))
+        keep = d != 0
+        d, ranks = d[keep], ranks[keep]
+    else:
+        raise ValueError(f"zero_method no soportado: {zero_method}")
+    return ranks, np.sign(d)
+
+
+def rank_biserial_paired(d, zero_method: str = "wilcox") -> float:
+    """r de rango biserial para muestras pareadas: (W+ - W-) / (W+ + W-)."""
+    ranks, sign = _signed_ranks(d, zero_method)
+    total = ranks.sum()
+    if total == 0:
+        return float("nan")
+    return float((ranks[sign > 0].sum() - ranks[sign < 0].sum()) / total)
+
+
+def cliffs_delta(a, b) -> float:
+    """Delta de Cliff: P(a > b) - P(a < b) sobre todos los pares (a_i, b_j)."""
+    a, b = _finite(a), _finite(b)
+    if not len(a) or not len(b):
+        return float("nan")
+    diff = a[:, None] - b[None, :]
+    return float(((diff > 0).sum() - (diff < 0).sum()) / diff.size)
+
+
+def probability_of_superiority_paired(d) -> float:
+    """Probabilidad de superioridad pareada: P(d > 0) + P(d = 0) / 2 (fracción de corridas
+    pareadas en que a supera a b)."""
+    d = _finite(d)
+    if not len(d):
+        return float("nan")
+    return float((d > 0).mean() + 0.5 * (d == 0).mean())
+
+
+# ---------------------------------------------------------------------------
+# Benchmark: pruebas pareadas
+# ---------------------------------------------------------------------------
+
+
+def paired_t_test(d) -> dict:
+    """t pareada (t de una muestra sobre d frente a 0)."""
+    d = _finite(d)
+    if len(d) < 2 or d.std(ddof=1) == 0:
+        return {"n": len(d), "t": np.nan, "gl": max(len(d) - 1, 0), "p": np.nan}
+    t, p = ss.ttest_1samp(d, 0.0)
+    return {"n": len(d), "t": float(t), "gl": len(d) - 1, "p": float(p)}
+
+
+def wilcoxon_exact(d, zero_method: str = "wilcox") -> dict:
+    """Wilcoxon de rangos con signo con p-valor exacto.
+
+    El p-valor se obtiene de la distribución de permutación exacta de W+ condicionada a los
+    rangos observados (2^n asignaciones de signo, por programación dinámica sobre los rangos
+    duplicados), así que sigue siendo exacto con empates. Sin empates coincide con
+    scipy.stats.wilcoxon(method="exact"). p = min(1, 2 min(P(W+ <= w), P(W+ >= w))).
+    """
+    ranks, sign = _signed_ranks(d, zero_method)
+    n = len(ranks)
+    out = {"n_no_nulas": n, "W_mas": np.nan, "W_menos": np.nan, "p": np.nan,
+           "empates": bool(len(np.unique(ranks)) < n) if n else False}
+    if n == 0:
+        return out
+    r2 = np.rint(2 * ranks).astype(np.int64)  # rangos medios x 2 -> enteros
+    total = int(r2.sum())
+    dist = np.zeros(total + 1, dtype=np.float64)
+    dist[0] = 1.0
+    for r in r2:  # número de asignaciones de signo con suma (x 2) de rangos positivos = s
+        shifted = np.zeros_like(dist)
+        shifted[r:] = dist[:-r] if r > 0 else dist
+        dist = dist + shifted
+    dist /= dist.sum()
+    w2 = int(r2[sign > 0].sum())
+    cdf = dist[: w2 + 1].sum()
+    sf = dist[w2:].sum()
+    out.update({"W_mas": w2 / 2, "W_menos": (total - w2) / 2, "p": float(min(1.0, 2 * min(cdf, sf)))})
+    return out
+
+
+def nadeau_bengio_t(d, test_train_ratio: float) -> dict:
+    """t corregida de Nadeau y Bengio (2003) para validación cruzada repetida:
+    t = media(d) / sqrt((1 / n + n_val / n_train) s^2), con n - 1 grados de libertad."""
+    d = _finite(d)
+    n = len(d)
+    if n < 2 or d.std(ddof=1) == 0:
+        return {"n": n, "t": np.nan, "gl": max(n - 1, 0), "p": np.nan, "ee_corregido": np.nan}
+    se = np.sqrt((1 / n + test_train_ratio) * d.var(ddof=1))
+    t = d.mean() / se
+    return {"n": n, "t": float(t), "gl": n - 1, "p": float(2 * ss.t.sf(abs(t), n - 1)),
+            "ee_corregido": float(se), "ee_sin_corregir": float(d.std(ddof=1) / np.sqrt(n))}
+
+
+def tost_paired(d, delta: float, alpha: float) -> dict:
+    """Equivalencia por dos pruebas t unilaterales (TOST) con margen (-delta, delta).
+    Equivalentes si p_tost = max(p_inferior, p_superior) < alpha, es decir, si el IC
+    1 - 2 alpha de la media de d queda dentro del margen."""
+    d = _finite(d)
+    n = len(d)
+    if n < 2 or d.std(ddof=1) == 0:
+        return {"n": n, "p_inferior": np.nan, "p_superior": np.nan, "p_tost": np.nan,
+                "ic_bajo": np.nan, "ic_alto": np.nan, "equivalentes": None}
+    se = d.std(ddof=1) / np.sqrt(n)
+    df = n - 1
+    p_low = ss.t.sf((d.mean() + delta) / se, df)    # H0: media <= -delta
+    p_up = ss.t.cdf((d.mean() - delta) / se, df)    # H0: media >= delta
+    half = ss.t.ppf(1 - alpha, df) * se
+    p = max(p_low, p_up)
+    return {"n": n, "p_inferior": float(p_low), "p_superior": float(p_up), "p_tost": float(p),
+            "ic_bajo": float(d.mean() - half), "ic_alto": float(d.mean() + half), "equivalentes": bool(p < alpha)}
+
+
+def adjust_pvalues(pvals, method: str = "holm") -> np.ndarray:
+    """p-valores ajustados (statsmodels.multipletests); los NaN se conservan."""
+    from statsmodels.stats.multitest import multipletests
+
+    p = np.asarray(pvals, dtype=float)
+    out = np.full_like(p, np.nan)
+    ok = np.isfinite(p)
+    if ok.any():
+        out[ok] = multipletests(p[ok], method=method)[1]
+    return out
+
+
+# ---------------------------------------------------------------------------
+# Benchmark: comparación conjunta (matriz corridas x modelos, sin faltantes)
+# ---------------------------------------------------------------------------
+
+
+def rm_anova(wide: pd.DataFrame) -> dict:
+    """ANOVA de medidas repetidas de un factor (modelo; sujeto = corrida), con eta cuadrado
+    parcial y corrección de Greenhouse-Geisser. `wide`: filas = corridas, columnas = modelos."""
+    from statsmodels.stats.anova import AnovaRM
+
+    x = wide.to_numpy(dtype=float)
+    n, k = x.shape
+    if n < 2 or k < 2:
+        return {"F": np.nan, "gl_modelo": k - 1, "gl_error": np.nan, "p": np.nan}
+    long = wide.reset_index(drop=True).rename_axis("corrida").reset_index().melt(
+        id_vars="corrida", var_name="modelo", value_name="y")
+    table = AnovaRM(long, "y", "corrida", within=["modelo"]).fit().anova_table
+    f, df1, df2, p = (float(table.iloc[0][c]) for c in ("F Value", "Num DF", "Den DF", "Pr > F"))
+    grand = x.mean()
+    ss_model = n * ((x.mean(axis=0) - grand) ** 2).sum()
+    ss_subject = k * ((x.mean(axis=1) - grand) ** 2).sum()
+    ss_error = ((x - grand) ** 2).sum() - ss_model - ss_subject
+    # Greenhouse-Geisser: épsilon a partir de la covarianza de contrastes ortonormales
+    contrasts = np.linalg.qr(np.vstack([np.ones(k), np.eye(k)[:-1]]).T)[0][:, 1:].T  # (k-1) x k
+    s = contrasts @ np.cov(x, rowvar=False) @ contrasts.T
+    eps = float(np.trace(s) ** 2 / ((k - 1) * np.trace(s @ s))) if np.trace(s @ s) > 0 else np.nan
+    p_gg = float(ss.f.sf(f, df1 * eps, df2 * eps)) if np.isfinite(eps) else np.nan
+    return {"F": f, "gl_modelo": df1, "gl_error": df2, "p": p,
+            "eta2_parcial": float(ss_model / (ss_model + ss_error)) if ss_model + ss_error > 0 else np.nan,
+            "epsilon_gg": eps, "p_gg": p_gg}
+
+
+def friedman_test(wide: pd.DataFrame) -> dict:
+    """Friedman (corridas = bloques) y W de Kendall = chi2 / (n (k - 1)). Requiere k >= 3."""
+    x = wide.to_numpy(dtype=float)
+    n, k = x.shape
+    if k < 3 or n < 2:
+        return {"chi2": np.nan, "gl": k - 1, "p": np.nan, "W_kendall": np.nan, "n": n, "k": k}
+    chi2, p = ss.friedmanchisquare(*[x[:, j] for j in range(k)])
+    return {"chi2": float(chi2), "gl": k - 1, "p": float(p), "W_kendall": float(chi2 / (n * (k - 1))),
+            "n": n, "k": k}
+
+
+def mean_ranks(wide: pd.DataFrame) -> pd.Series:
+    """Rango medio de cada modelo entre corridas (1 = peor, k = mejor; empates con rango medio)."""
+    ranks = np.apply_along_axis(ss.rankdata, 1, wide.to_numpy(dtype=float))
+    return pd.Series(ranks.mean(axis=0), index=wide.columns, name="rango_medio")
+
+
+def nemenyi_test(wide: pd.DataFrame) -> pd.DataFrame:
+    """Post-hoc de Nemenyi tras Friedman: p-valor de cada par a partir de la distribución del
+    rango studentizado, q = |R_i - R_j| / sqrt(k (k + 1) / (6 n)), p = P(Q_{k, inf} > q sqrt(2))."""
+    n, k = wide.shape
+    r = mean_ranks(wide)
+    se = np.sqrt(k * (k + 1) / (6 * n))
+    rows = []
+    cols = list(wide.columns)
+    for i in range(k):
+        for j in range(i + 1, k):
+            q = abs(r.iloc[i] - r.iloc[j]) / se
+            rows.append({"modelo_a": cols[i], "modelo_b": cols[j], "rango_a": r.iloc[i], "rango_b": r.iloc[j],
+                         "q": float(q), "p": float(ss.studentized_range.sf(q * np.sqrt(2), k, np.inf))})
+    return pd.DataFrame(rows)
+
+
+def variance_decomposition(df: pd.DataFrame, value: str, model: str = "model", seed: str = "seed",
+                           fold: str = "val_fold") -> pd.DataFrame:
+    """Descomposición de la suma de cuadrados de `value` en un diseño equilibrado modelo x corrida
+    (corrida = semilla y pliegue). Filas: modelo, corrida, residual (modelo x corrida) y total;
+    si las corridas forman un producto completo semilla x pliegue con más de un nivel de cada uno,
+    la corrida se separa además en semilla, pliegue y semilla x pliegue (filas con sangría « · »).
+    `proporcion` = SC / SC total; F y p del modelo frente al residual."""
+    d = df[[model, seed, fold, value]].copy()
+    d["_run"] = d[seed].astype(str) + "_" + d[fold].astype(str)
+    y = d[value].to_numpy(dtype=float)
+    grand = y.mean()
+    k, r = d[model].nunique(), d["_run"].nunique()
+    if len(d) != k * r:
+        raise ValueError("Diseño no equilibrado: cada modelo debe tener las mismas corridas")
+
+    def ss_of(cols):
+        g = d.groupby(cols)[value]
+        return float((g.size() * (g.mean() - grand) ** 2).sum())
+
+    ss_total = float(((y - grand) ** 2).sum())
+    ss_model, ss_run = ss_of([model]), ss_of(["_run"])
+    ss_res = ss_total - ss_model - ss_run
+    df_model, df_run, df_res = k - 1, r - 1, (k - 1) * (r - 1)
+    rows = [("modelo", ss_model, df_model), ("corrida (semilla y pliegue)", ss_run, df_run)]
+    n_seed, n_fold = d[seed].nunique(), d[fold].nunique()
+    if n_seed > 1 and n_fold > 1 and r == n_seed * n_fold:
+        ss_seed, ss_fold = ss_of([seed]), ss_of([fold])
+        rows += [(" · semilla", ss_seed, n_seed - 1), (" · pliegue", ss_fold, n_fold - 1),
+                 (" · semilla x pliegue", ss_run - ss_seed - ss_fold, (n_seed - 1) * (n_fold - 1))]
+    rows += [("residual (modelo x corrida)", ss_res, df_res), ("total", ss_total, len(d) - 1)]
+    out = pd.DataFrame(rows, columns=["fuente", "SC", "gl"]).set_index("fuente")
+    out["proporcion"] = out["SC"] / ss_total if ss_total > 0 else np.nan
+    out["CM"] = out["SC"] / out["gl"].replace(0, np.nan)
+    ms_res = ss_res / df_res if df_res > 0 else np.nan
+    out["F"] = np.nan
+    out["p"] = np.nan
+    if ms_res and np.isfinite(ms_res) and ms_res > 0:
+        for name in ("modelo", "corrida (semilla y pliegue)"):
+            f = out.loc[name, "CM"] / ms_res
+            out.loc[name, "F"] = f
+            out.loc[name, "p"] = float(ss.f.sf(f, out.loc[name, "gl"], df_res))
+    return out
+
+
+# ---------------------------------------------------------------------------
+# Benchmark: pruebas sobre las predicciones de test de una corrida pareada
+# ---------------------------------------------------------------------------
+
+
+def mcnemar_test(correct_a, correct_b, exact_below: int = 25) -> dict:
+    """McNemar sobre aciertos pareados por imagen. b = a acierta y b falla, c = a falla y b
+    acierta. Si b + c < exact_below, binomial exacta; si no, chi-cuadrado con corrección de
+    continuidad."""
+    from statsmodels.stats.contingency_tables import mcnemar
+
+    a = np.asarray(correct_a, dtype=bool)
+    b_ = np.asarray(correct_b, dtype=bool)
+    table = np.array([[np.sum(a & b_), np.sum(a & ~b_)], [np.sum(~a & b_), np.sum(~a & ~b_)]])
+    b, c = int(table[0, 1]), int(table[1, 0])
+    exact = (b + c) < exact_below
+    if b + c == 0:
+        return {"b": b, "c": c, "estadistico": np.nan, "p": 1.0, "metodo": "sin discordancias"}
+    res = mcnemar(table, exact=exact, correction=True)
+    return {"b": b, "c": c, "estadistico": float(res.statistic), "p": float(res.pvalue),
+            "metodo": "binomial exacta" if exact else "chi-cuadrado con corrección de continuidad"}
+
+
+def delong_test(y_binary, score_a, score_b) -> dict:
+    """DeLong para dos AUC correlacionadas sobre las mismas imágenes (algoritmo rápido de Sun y
+    Xu, 2014). `y_binary`: 1 = clase positiva. Devuelve AUC de a y b, diferencia, z y p."""
+    y = np.asarray(y_binary).astype(bool)
+    m, n = int(y.sum()), int((~y).sum())
+    if m < 2 or n < 2:
+        return {"auc_a": np.nan, "auc_b": np.nan, "diferencia": np.nan, "z": np.nan, "p": np.nan,
+                "positivos": m}
+    scores = np.vstack([np.asarray(score_a, float), np.asarray(score_b, float)])
+    x, z = scores[:, y], scores[:, ~y]
+    tx = np.apply_along_axis(ss.rankdata, 1, x)
+    tz = np.apply_along_axis(ss.rankdata, 1, z)
+    txz = np.apply_along_axis(ss.rankdata, 1, np.hstack([x, z]))
+    aucs = txz[:, :m].sum(axis=1) / (m * n) - (m + 1) / (2 * n)
+    v01 = (txz[:, :m] - tx) / n
+    v10 = 1.0 - (txz[:, m:] - tz) / m
+    cov = np.cov(v01) / m + np.cov(v10) / n
+    diff = float(aucs[0] - aucs[1])
+    var = float(cov[0, 0] + cov[1, 1] - 2 * cov[0, 1])
+    if var <= 0:
+        zstat, p = np.nan, (1.0 if diff == 0 else np.nan)
+    else:
+        zstat = diff / np.sqrt(var)
+        p = float(2 * ss.norm.sf(abs(zstat)))
+    return {"auc_a": float(aucs[0]), "auc_b": float(aucs[1]), "diferencia": diff,
+            "z": float(zstat) if np.isfinite(zstat) else np.nan, "p": p, "positivos": m}
+
+
+def _macro_auc_ovr_batch(y: np.ndarray, proba: np.ndarray, idx: np.ndarray, classes) -> np.ndarray:
+    """AUC-ROC macro uno contra el resto de cada remuestreo (filas de `idx`), por rangos."""
+    aucs = []
+    yb = y[idx]  # (B, N)
+    for k in classes:
+        s = proba[idx, k]
+        ranks = ss.rankdata(s, axis=1)
+        pos = yb == k
+        m = pos.sum(axis=1)
+        n = pos.shape[1] - m
+        aucs.append(((ranks * pos).sum(axis=1) - m * (m + 1) / 2) / (m * n))
+    return np.mean(aucs, axis=0)
+
+
+def stratified_bootstrap_auc_diff(y, proba_a, proba_b, n_resamples: int, seed: int, alpha: float,
+                                  batch: int = 200) -> dict:
+    """Diferencia de AUC-ROC macro uno contra el resto (a - b) sobre las mismas imágenes, con IC
+    1 - alpha por bootstrap percentil estratificado por clase (se remuestrea dentro de cada clase,
+    conservando su tamaño, y se usan los mismos índices para los dos modelos)."""
+    y = np.asarray(y)
+    pa, pb = np.asarray(proba_a, float), np.asarray(proba_b, float)
+    classes = np.unique(y)
+    full = np.arange(len(y))[None, :]
+    point = float(_macro_auc_ovr_batch(y, pa, full, classes)[0] - _macro_auc_ovr_batch(y, pb, full, classes)[0])
+    rng = np.random.default_rng(seed)
+    groups = [np.flatnonzero(y == k) for k in classes]
+    diffs = []
+    done = 0
+    while done < n_resamples:
+        b = min(batch, n_resamples - done)
+        idx = np.hstack([g[rng.integers(0, len(g), size=(b, len(g)))] for g in groups])
+        diffs.append(_macro_auc_ovr_batch(y, pa, idx, classes) - _macro_auc_ovr_batch(y, pb, idx, classes))
+        done += b
+    diffs = np.concatenate(diffs)
+    lo, hi = np.quantile(diffs, [alpha / 2, 1 - alpha / 2])
+    return {"diferencia_auc_macro": point, "ic_bajo": float(lo), "ic_alto": float(hi),
+            "p_bootstrap": float(min(1.0, 2 * min((diffs <= 0).mean(), (diffs >= 0).mean()))),
+            "remuestreos": int(n_resamples)}
+
+
+def cluster_bootstrap_balanced_accuracy(y, groups, correct: dict, n_resamples: int, seed: int,
+                                        batch: int = 500) -> dict:
+    """Bootstrap por conglomerados de la exactitud balanceada media entre corridas.
+
+    `y`: etiqueta entera de cada imagen (N). `groups`: conglomerado de cada imagen (p. ej.
+    lesion_id); en cada remuestreo se sortean con reemplazo tantos conglomerados como hay, y
+    cada imagen entra tantas veces como su conglomerado. `correct`: {clave: matriz booleana
+    (corridas, N) de aciertos}. En cada remuestreo se recalcula la exactitud balanceada de cada
+    corrida (media de la sensibilidad de las clases presentes en el remuestreo) y se promedia
+    entre corridas. Todas las claves usan los mismos remuestreos, de modo que las diferencias
+    entre claves quedan pareadas.
+
+    Devuelve {clave: {"observado": float, "remuestreos": array (n_resamples,)}}.
+    """
+    y = np.asarray(y)
+    _, g = np.unique(np.asarray(groups), return_inverse=True)
+    n_groups = int(g.max()) + 1
+    classes = np.unique(y)
+    masks = [y == k for k in classes]
+    mats = {key: np.asarray(c, dtype=np.float64) for key, c in correct.items()}
+
+    def mean_ba(w):  # w: (B, N) pesos por imagen -> {clave: (B,)}
+        n = np.stack([w[:, m].sum(axis=1) for m in masks], axis=1)          # (B, K)
+        out = {}
+        for key, c in mats.items():
+            hits = np.stack([w[:, m] @ c[:, m].T for m in masks], axis=2)    # (B, R, K)
+            with np.errstate(invalid="ignore", divide="ignore"):
+                recall = hits / n[:, None, :]
+            out[key] = np.nanmean(recall, axis=2).mean(axis=1)               # clases presentes, luego corridas
+        return out
+
+    observed = mean_ba(np.ones((1, len(y))))
+    rng = np.random.default_rng(seed)
+    samples = {key: [] for key in mats}
+    done = 0
+    while done < n_resamples:
+        b = min(batch, n_resamples - done)
+        draws = rng.integers(0, n_groups, size=(b, n_groups))
+        counts = np.zeros((b, n_groups))
+        np.add.at(counts, (np.arange(b)[:, None], draws), 1.0)
+        for key, v in mean_ba(counts[:, g]).items():
+            samples[key].append(v)
+        done += b
+    return {key: {"observado": float(observed[key][0]), "remuestreos": np.concatenate(samples[key])}
+            for key in mats}

@@ -2,6 +2,10 @@
 
 Una corrida es una carpeta outputs/runs/<modelo>/<etiqueta>/s<semilla>_f<pliegue>/ con
 config.yaml, history.csv, metrics.json, run_info.json y probabilities_<split>.csv.
+
+Las funciones de tablas y gráficos están decoradas con `report.tolerant`: si reciben un
+`report.Missing` (resultado ausente) o una lista de corridas vacía, devuelven un `Missing`
+que el notebook muestra como mensaje, sin lanzar errores.
 """
 
 from __future__ import annotations
@@ -13,8 +17,10 @@ from pathlib import Path
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+from scipy import stats as ss
 
 from src.data import PROJECT_ROOT, load_json
+from src.report import Missing, is_missing, tolerant
 
 GLOBAL_METRICS = [
     "balanced_accuracy",
@@ -27,6 +33,8 @@ GLOBAL_METRICS = [
     "ece",
 ]
 STAT_ROWS = ["mean", "std"]
+SUMMARY_ROWS = ["mean", "std", "ci95_low", "ci95_high"]
+NO_RUNS = "no hay corridas terminadas para esta sección."
 
 
 # ---------------------------------------------------------------------------
@@ -34,16 +42,62 @@ STAT_ROWS = ["mean", "std"]
 # ---------------------------------------------------------------------------
 
 
-def load_or_run(path: str | Path, run_fn: Callable[[], object], rerun: bool = False) -> tuple[pd.DataFrame, str]:
-    """Lee el CSV `path` si existe y `rerun` es False; si no, llama a `run_fn()` (que debe
-    escribirlo) y lo lee. Devuelve (tabla, "cargado" | "ejecutado")."""
+def load_or_run(path: str | Path, run_fn: Callable[[], object], rerun: bool = False,
+                missing_message: str | None = None) -> tuple[pd.DataFrame | Missing, str]:
+    """Con `rerun`, llama a `run_fn()` (que debe escribir el CSV `path`) y lo lee. Sin `rerun`,
+    lee `path` si existe; si no existe, no ejecuta nada y devuelve un `Missing` con
+    `missing_message`. Si `run_fn` lanza ValueError (p. ej. hiperparámetros null), devuelve un
+    `Missing` con el mensaje. Devuelve (tabla | Missing, "ejecutado" | "cargado" | "no disponible")."""
     path = Path(path)
-    if path.exists() and not rerun:
+    if rerun:
+        try:
+            run_fn()
+        except ValueError as e:
+            return Missing(f"no se pudo ejecutar: {e}"), "error"
+        return pd.read_csv(path), "ejecutado"
+    if path.exists():
         return pd.read_csv(path), "cargado"
-    run_fn()
-    return pd.read_csv(path), "ejecutado"
+    return Missing(missing_message or f"no existe {_rel(path)}."), "no disponible"
 
 
+def _rel(path) -> str:
+    try:
+        return str(Path(path).resolve().relative_to(PROJECT_ROOT))
+    except ValueError:
+        return str(path)
+
+
+def load_status(path: str | Path, table, origin: str, unit: str = "filas") -> pd.DataFrame:
+    """Tabla de una fila con el archivo, el estado de carga y el número de filas (`unit`)."""
+    if is_missing(table):
+        n = 0
+    else:
+        n = int((table["row"] == "run").sum()) if "row" in table.columns else len(table)
+    return pd.Series({"archivo": _rel(path), "estado": origin, unit: n}, name="valor").to_frame()
+
+
+def load_json_or_missing(path: str | Path, message: str | None = None):
+    """Contenido del JSON `path`, o `Missing` si no existe."""
+    path = Path(path)
+    if not path.exists():
+        return Missing(message or f"no existe {_rel(path)}.")
+    return load_json(path)
+
+
+@tolerant()
+def best_table(best: dict) -> pd.DataFrame:
+    """Mejor configuración de best.json: ensayo, hiperparámetros, métrica y época."""
+    return pd.Series({"ensayo": best["trial"], **best["hyperparameters"],
+                      "val_balanced_accuracy": best["val_balanced_accuracy"], "best_epoch": best["best_epoch"]},
+                     name="valor").to_frame()
+
+
+def best_trial(best) -> int | None:
+    """Índice del mejor ensayo de best.json, o None si falta."""
+    return None if is_missing(best) or best is None else int(best["trial"])
+
+
+@tolerant(NO_RUNS, check="table")
 def run_dirs_from_table(table: pd.DataFrame) -> list[Path]:
     """Carpetas de corrida de la columna `run_dir` (relativa a la raíz), sin filas de resumen."""
     if "row" in table.columns:
@@ -63,6 +117,7 @@ def load_run_metrics(run_dir: str | Path) -> dict:
     return load_json(Path(run_dir) / "metrics.json")
 
 
+@tolerant()
 def environment_table(info: dict) -> pd.DataFrame:
     """Versiones y GPU de un dict de utils.environment_info() (o de run_info["environment"])."""
     gpus = info.get("gpus") or []
@@ -70,6 +125,12 @@ def environment_table(info: dict) -> pd.DataFrame:
     out["gpu"] = "; ".join(f"{g.get('name') or g.get('device')} (cc {g.get('compute_capability')})"
                            for g in gpus) or "ninguna"
     return pd.Series(out, name="valor").to_frame()
+
+
+@tolerant(NO_RUNS, check="run_dirs")
+def first_run_environment(run_dirs) -> pd.DataFrame:
+    """environment_table de la primera corrida de `run_dirs`."""
+    return environment_table(load_run_info(run_dirs[0])["environment"])
 
 
 # ---------------------------------------------------------------------------
@@ -96,11 +157,13 @@ def model_parameter_table(model) -> pd.DataFrame:
 # ---------------------------------------------------------------------------
 
 
+@tolerant(check="trials")
 def tuning_table(trials: pd.DataFrame, metric: str = "val_balanced_accuracy") -> pd.DataFrame:
     """Ensayos ordenados por `metric` (descendente; en empate, el de menor índice)."""
     return trials.sort_values([metric, "trial"], ascending=[False, True]).reset_index(drop=True)
 
 
+@tolerant(check="trials")
 def plot_metric_vs_hparams(trials: pd.DataFrame, space: dict, metric: str = "val_balanced_accuracy",
                            best_trial: int | None = None, cell_size: float = 4.0):
     """Un panel por hiperparámetro de `space`: `metric` frente a su valor (eje log si es
@@ -132,7 +195,7 @@ def plot_metric_vs_hparams(trials: pd.DataFrame, space: dict, metric: str = "val
 def compare_hparams(model_cfg: dict, best: dict | None, rtol: float = 1e-9) -> pd.DataFrame:
     """Hiperparámetros del YAML frente a best.json. Emite un warning si alguno es null o difiere."""
     yaml_hp = model_cfg.get("hyperparameters") or {}
-    best_hp = (best or {}).get("hyperparameters") or {}
+    best_hp = ({} if is_missing(best) else (best or {})).get("hyperparameters") or {}
     rows = {}
     for k in dict.fromkeys([*yaml_hp, *best_hp]):
         y, b = yaml_hp.get(k), best_hp.get(k)
@@ -161,6 +224,7 @@ def compare_hparams(model_cfg: dict, best: dict | None, rtol: float = 1e-9) -> p
 # ---------------------------------------------------------------------------
 
 
+@tolerant(check="df")
 def add_mean_std(df: pd.DataFrame, cols=None) -> pd.DataFrame:
     """Añade filas mean y std (ddof = 1) de las columnas numéricas `cols` (por defecto todas)."""
     cols = list(cols) if cols is not None else list(df.select_dtypes("number").columns)
@@ -168,6 +232,29 @@ def add_mean_std(df: pd.DataFrame, cols=None) -> pd.DataFrame:
     return pd.concat([df, stats])
 
 
+def t_interval(x, alpha: float = 0.05) -> tuple[float, float]:
+    """Intervalo de confianza 1 - alpha de la media por t de Student (ddof = 1)."""
+    x = np.asarray(x, dtype=float)
+    x = x[np.isfinite(x)]
+    if len(x) < 2:
+        return float("nan"), float("nan")
+    half = ss.t.ppf(1 - alpha / 2, len(x) - 1) * x.std(ddof=1) / np.sqrt(len(x))
+    return float(x.mean() - half), float(x.mean() + half)
+
+
+@tolerant(check="df")
+def add_summary_rows(df: pd.DataFrame, cols=None, alpha: float = 0.05) -> pd.DataFrame:
+    """Añade filas mean, std (ddof = 1), ci95_low y ci95_high (IC de la media por t de Student,
+    nivel 1 - alpha) de las columnas numéricas `cols` (por defecto todas)."""
+    cols = list(cols) if cols is not None else list(df.select_dtypes("number").columns)
+    ci = {c: t_interval(df[c], alpha) for c in cols}
+    stats = pd.DataFrame([df[cols].mean(), df[cols].std(ddof=1),
+                          pd.Series({c: v[0] for c, v in ci.items()}),
+                          pd.Series({c: v[1] for c, v in ci.items()})], index=SUMMARY_ROWS)
+    return pd.concat([df, stats])
+
+
+@tolerant(NO_RUNS, check="run_dirs")
 def run_metrics_table(run_dirs, split: str = "val", metrics=GLOBAL_METRICS) -> pd.DataFrame:
     """Métricas globales de `split` por corrida (índice s<semilla>_f<pliegue>)."""
     rows = {}
@@ -177,6 +264,7 @@ def run_metrics_table(run_dirs, split: str = "val", metrics=GLOBAL_METRICS) -> p
     return pd.DataFrame(rows).T.astype(float).rename_axis("run")
 
 
+@tolerant(NO_RUNS, check="run_dirs")
 def per_class_table(run_dirs, split: str = "val") -> pd.DataFrame:
     """Precisión, sensibilidad, F1 y soporte por clase y corrida (índice run, class)."""
     rows = []
@@ -187,6 +275,7 @@ def per_class_table(run_dirs, split: str = "val") -> pd.DataFrame:
     return pd.DataFrame(rows).set_index(["run", "class"])
 
 
+@tolerant(check="per_class")
 def per_class_summary(per_class: pd.DataFrame, cols=("precision", "recall", "f1")) -> pd.DataFrame:
     """Media y desviación estándar (ddof = 1) entre corridas de cada métrica por clase."""
     order = list(dict.fromkeys(per_class.index.get_level_values("class")))
@@ -196,6 +285,7 @@ def per_class_summary(per_class: pd.DataFrame, cols=("precision", "recall", "f1"
     return out.loc[order]
 
 
+@tolerant(NO_RUNS, check="run_dirs")
 def pooled_confusion(run_dirs, split: str = "val") -> tuple[np.ndarray, list[str]]:
     """Suma de las matrices de confusión de las corridas (filas = real, columnas = predicha)."""
     total, labels = None, None
@@ -211,6 +301,7 @@ def pooled_confusion(run_dirs, split: str = "val") -> tuple[np.ndarray, list[str
     return total, labels
 
 
+@tolerant()
 def plot_confusion_matrix(cm, labels, normalize: bool = True, title: str | None = None, ax=None):
     """Matriz de confusión; si `normalize`, cada fila se divide por su total (sensibilidad en la diagonal)."""
     cm = np.asarray(cm, dtype=float)
@@ -234,6 +325,16 @@ def plot_confusion_matrix(cm, labels, normalize: bool = True, title: str | None 
     return ax.figure
 
 
+@tolerant(NO_RUNS, check="run_dirs")
+def plot_pooled_confusion(run_dirs, split: str = "val", normalize: bool = True, title: str | None = None):
+    """Matriz de confusión de `split` acumulada sobre las corridas (pooled_confusion) y dibujada."""
+    cm, labels = pooled_confusion(run_dirs, split)
+    if title is None:
+        title = f"{split}, {len(run_dirs)} corridas acumuladas" + (" (normalizada por fila)" if normalize else "")
+    return plot_confusion_matrix(cm, labels, normalize=normalize, title=title)
+
+
+@tolerant(NO_RUNS, check="run_dirs")
 def cost_table(run_dirs) -> pd.DataFrame:
     """Tiempos de entrenamiento por fase, épocas, inferencia por imagen, parámetros y GPU por corrida."""
     rows = {}
@@ -262,6 +363,7 @@ def cost_table(run_dirs) -> pd.DataFrame:
 # ---------------------------------------------------------------------------
 
 
+@tolerant(NO_RUNS, check="run_dirs")
 def load_histories(run_dirs) -> pd.DataFrame:
     """history.csv de cada corrida con columnas run, warmup_epochs y restored_global_epoch
     (época global cuyos pesos se restauraron al final de la fase B)."""
@@ -282,6 +384,7 @@ CURVES = (
 )
 
 
+@tolerant(check="histories")
 def plot_training_curves(histories: pd.DataFrame, curves=CURVES, cell_size: float = 3.2):
     """Una columna por corrida y una fila por par (train, val) de `curves`, con global_epoch en
     el eje x, una línea discontinua en el cambio de fase A a B y una punteada en la época
@@ -312,3 +415,61 @@ def plot_training_curves(histories: pd.DataFrame, curves=CURVES, cell_size: floa
     fig.legend(handles, labels, loc="upper center", ncol=len(labels), bbox_to_anchor=(0.5, 1.02))
     fig.tight_layout()
     return fig
+
+
+@tolerant(check="histories")
+def plot_training_curves_overlay(histories: pd.DataFrame, curves=CURVES, cell_size: float = 4.0):
+    """Curvas de todas las corridas superpuestas, para muchas corridas: una fila por par
+    (train, val) de `curves` y dos columnas (train, val). Cada corrida es una línea fina y la
+    media por época global, una línea gruesa (solo con las corridas que llegan a esa época).
+    La línea discontinua marca el cambio de fase A a B."""
+    runs = list(dict.fromkeys(histories["run"]))
+    fig, axes = plt.subplots(len(curves), 2, figsize=(cell_size * 2.2, cell_size * len(curves) * 0.8),
+                             sharex=True, squeeze=False)
+    warmup = histories["warmup_epochs"].max()
+    for i, (tr, va, title) in enumerate(curves):
+        for j, (col, name) in enumerate(((tr, "train"), (va, "val"))):
+            ax = axes[i][j]
+            if col not in histories.columns:
+                ax.set_visible(False)
+                continue
+            for run in runs:
+                h = histories[histories["run"] == run].sort_values("global_epoch")
+                ax.plot(h["global_epoch"], h[col], color="tab:blue", alpha=0.25, lw=0.8)
+            mean = histories.groupby("global_epoch")[col].mean()
+            ax.plot(mean.index, mean.to_numpy(), color="black", lw=2, label="media")
+            if warmup > 0:
+                ax.axvline(warmup + 0.5, color="gray", ls="--", lw=1, label="fase A → B")
+            ax.set_title(f"{title} ({name})")
+            ax.grid(alpha=0.3)
+            if i == len(curves) - 1:
+                ax.set_xlabel("global_epoch")
+    handles, labels = axes[0][0].get_legend_handles_labels()
+    fig.legend(handles, labels, loc="upper center", ncol=len(labels), bbox_to_anchor=(0.5, 1.02))
+    fig.suptitle(f"{len(runs)} corridas", y=1.06)
+    fig.tight_layout()
+    return fig
+
+
+@tolerant(NO_RUNS, check="run_dirs")
+def restored_epochs_table(run_dirs) -> pd.DataFrame:
+    """Épocas de la fase B ejecutadas y restauradas por corrida, con media y desviación estándar."""
+    rows = {}
+    for d in run_dirs:
+        info = load_run_info(d)
+        rows[run_label(info)] = {"finetune_run": info["epochs"]["finetune_run"],
+                                 "finetune_best": info["epochs"]["finetune_best"]}
+    return add_mean_std(pd.DataFrame(rows).T.rename_axis("run").astype(float))
+
+
+@tolerant()
+def select_columns(table: pd.DataFrame, cols) -> pd.DataFrame:
+    """Columnas `cols` de `table` que existan, en ese orden."""
+    return table[[c for c in cols if c in table.columns]]
+
+
+@tolerant(NO_RUNS, check="run_dirs")
+def runs_summary(run_dirs) -> pd.DataFrame:
+    """Número de corridas terminadas y sus etiquetas s<semilla>_f<pliegue>."""
+    labels = [run_label(load_run_info(d)) for d in run_dirs]
+    return pd.Series({"corridas terminadas": len(labels), "corridas": ", ".join(labels)}, name="valor").to_frame()
