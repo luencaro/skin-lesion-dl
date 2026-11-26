@@ -1,0 +1,11 @@
+# Variante de ablación del modelo original (capítulo 24): Sin pesos aprendidos: p aprendido, pesos espaciales uniformes (no hay red g_φ).
+# Hereda todo de configs/cci.yaml (backbone incluido) salvo lo que se fija aquí. Se ajusta con el
+# mismo presupuesto que el modelo completo: python -m src.tune --model cci_uniform_weights
+extends: cci
+name: cci_uniform_weights
+variant: uniform_weights
+
+hyperparameters:
+  learning_rate: null
+  weight_decay: null
+  dropout: null

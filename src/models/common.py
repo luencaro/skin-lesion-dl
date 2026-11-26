@@ -102,6 +102,21 @@ def set_backbone_trainable(model: keras.Model, trainable: bool) -> None:
     get_backbone(model).trainable = trainable
 
 
+def pre_backbone_layers(model: keras.Model) -> list:
+    """Capas entre la entrada y el backbone, en orden: preprocess en los modelos del benchmark;
+    la capa CCI y preprocess en el modelo original (src/original_model.py)."""
+    names = [layer.name for layer in model.layers]
+    return [layer for layer in model.layers[:names.index(BACKBONE_NAME)]
+            if not isinstance(layer, keras.layers.InputLayer)]
+
+
+def apply_pre_backbone(model: keras.Model, x):
+    """Entrada del backbone para las imágenes `x` (float32 en [0, 255])."""
+    for layer in pre_backbone_layers(model):
+        x = layer(x)
+    return x
+
+
 def head_layers(model: keras.Model) -> list:
     """Capas posteriores al backbone, en orden (la cabeza, terminada en la salida)."""
     names = [layer.name for layer in model.layers]

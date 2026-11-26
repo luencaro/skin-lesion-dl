@@ -1,0 +1,11 @@
+# Variante de ablación del modelo original (capítulo 24): Shades of Gray fijo (barata2015): p = 6 y pesos uniformes; la capa no tiene parámetros entrenables.
+# Hereda todo de configs/cci.yaml (backbone incluido) salvo lo que se fija aquí. Se ajusta con el
+# mismo presupuesto que el modelo completo: python -m src.tune --model cci_shades_of_gray
+extends: cci
+name: cci_shades_of_gray
+variant: shades_of_gray
+
+hyperparameters:
+  learning_rate: null
+  weight_decay: null
+  dropout: null

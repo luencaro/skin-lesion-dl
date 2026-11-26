@@ -1,8 +1,14 @@
 # skin-lesion-dl
 
 Clasificación de imágenes dermatoscópicas del conjunto HAM10000 con TensorFlow/Keras.
-El proyecto compara arquitecturas preentrenadas (ResNet50, MobileNetV2 y VGG16) con una
-partición fija y pruebas estadísticas. El informe se publica como libro con MyST.
+El proyecto compara ocho arquitecturas preentrenadas y dos baselines con una partición agrupada
+por lesión y pruebas estadísticas, y propone un modelo original: una **capa de constancia de color
+invariante a las ganancias de canal (CCI)** que se antepone a cualquier backbone
+(`src/original_model.py`, capítulos 23 a 25 del libro). El informe se publica como libro con
+MyST, y los resultados se exploran en un dashboard de Dash (`dashboard/`).
+
+> El dashboard y los modelos son una herramienta académica: **no son una herramienta
+> diagnóstica** (ver `MODEL_CARD.md`).
 
 ## Requisitos
 
@@ -181,14 +187,121 @@ las corridas terminadas. Cada uno registra su progreso y el tiempo restante esti
     myst start            # o sirve el libro en local
     ```
 
+## Modelo original (capa CCI)
+
+La capa implementa las ecuaciones `cci-guia`, `cci-pesos`, `cci-iluminante` y `cci-correccion` de
+`book/24-modelo-original-diseno.md` como subclase de `keras.layers.Layer`, con el iluminante en
+dominio logarítmico, `p = 1 + softplus(ϑ)` inicializado en 6 y la red de pesos inicializada en
+pesos uniformes (empieza como Shades of Gray). Sus parámetros están en `configs/cci.yaml`.
+
+```python
+from src.original_model import build_cci_model, CCI_NAME
+model = build_cci_model("convnext_tiny", "full")          # cualquier modelo del REGISTRY
+info = model.get_layer(CCI_NAME).explain(images)          # p, pesos espaciales e iluminante
+```
+
+Se registra como `cci` en el REGISTRY y se entrena con el mismo pipeline que los demás modelos.
+Antes hay que fijar `backbone` en `configs/cci.yaml` con la regla del capítulo 24 (el modelo
+del benchmark con mayor exactitud balanceada media en validación en el Entregable 2):
+
+```bash
+uv run python -m src.tune  --model cci
+uv run python -m src.final --model cci
+```
+
+Las variantes de ablación del capítulo 24 son `cci_fixed_p`, `cci_uniform_weights`,
+`cci_no_invariance` y `cci_shades_of_gray` (`configs/cci_*.yaml`, que heredan de `cci.yaml`).
+
+## Pruebas
+
+```bash
+uv sync --group dashboard            # pytest está en el grupo dev (por defecto); dash, en dashboard
+uv run pytest                        # solo CPU, con un backbone diminuto (no descarga pesos)
+uv run pytest --junitxml outputs/tests/junit.xml   # el dashboard muestra este resultado
+```
+
+Las pruebas cubren la capa CCI (sobreajuste de un lote sintético, reproducibilidad, formas y
+errores de entrada, gradientes, invarianza a ganancias y su ausencia en la variante sin
+invarianza, gradiente respecto de p frente a diferencias finitas, guardado, carga y ONNX), la
+exportación (CAM, FP16 con TOST, latencia) y el dashboard (coincidencia con la tabla maestra y
+prueba de humo). `.github/workflows/tests.yml` las ejecuta en cada push.
+
+## Exportación a ONNX
+
+```bash
+uv run python -m src.export --model cci            # corrida export.run (s0_f0) de la etiqueta final
+uv run python -m src.export --all --fp16           # todos los modelos con model.weights.h5
+```
+
+Cada modelo queda en `artifacts/<modelo>/`: `model.onnx` (salidas `logits`, `probabilities`,
+`embedding` y, con pooling global, `feature_map` y `head_weights` para el CAM sin gradientes),
+`model_fp16.onnx` opcional (se usa solo si el TOST frente a δ muestra equivalencia),
+`ood_reference.npz` y `metadata.json` (versiones, semilla, hiperparámetros, preprocesamiento,
+esquema de entrada, temperatura, cuantiles conformes, métricas, prueba de ida y vuelta,
+latencia en CPU, memoria pico y tamaño). Los modelos que superan `export.max_size_mb`
+(`configs/export.yaml`) se marcan `live: false` y el dashboard los muestra con resultados
+precalculados.
+
+## Dashboard
+
+```bash
+uv run python -m src.export_dashboard              # genera dashboard/data/ (EDA, tabla maestra, ONNX)
+cd dashboard && uv run python app.py               # http://127.0.0.1:8050
+cd dashboard && uv run python smoke_test.py        # prueba de humo: cada página y una predicción por modelo
+```
+
+O con un entorno solo de inferencia (el mismo de Render):
+
+```bash
+python -m venv .venv-dash && . .venv-dash/bin/activate
+pip install -r dashboard/requirements.txt
+cd dashboard && gunicorn app:server --workers 1 --threads 2 --timeout 120
+```
+
+Tres páginas (Contexto, EDA y Modelos). Mientras no haya resultados de entrenamiento, el EDA
+funciona completo y Modelos muestra un estado «pendiente». Las imágenes cargadas se procesan en
+memoria y no se guardan ni se registran.
+
+## Despliegue
+
+- **Render**: `render.yaml` define el servicio web (`rootDir: dashboard`,
+  `gunicorn app:server --workers 1 --threads 2 --timeout 120`, `PYTHON_VERSION` fija). Antes de
+  desplegar, regenera y versiona `dashboard/data/` con `python -m src.export_dashboard`.
+  Después: `python dashboard/smoke_test.py --url https://<servicio>.onrender.com`.
+- **Entrenamiento reproducible**: `Dockerfile` (Python 3.11.18, TensorFlow 2.20 con CUDA desde
+  pip, `uv.lock`); ver las instrucciones al inicio del archivo.
+- **Dependencias**: `uv.lock` es la fuente de verdad; `requirements-train.txt` se exporta de él
+  (`uv export --format requirements-txt --frozen --no-hashes --no-emit-project --no-dev -o requirements-train.txt`)
+  y `requirements.txt` / `dashboard/requirements.txt` contienen solo las de inferencia.
+
 ## Estructura
 
 ```
-configs/      configuración común (base.yaml) y de cada modelo
-src/          código: datos, modelos, entrenamiento, evaluación, estadística y utilidades
-data/raw/     HAM10000 (no se versiona)
+configs/        configuración común (base.yaml), de cada modelo, del modelo original (cci*.yaml) y de exportación
+src/            entrenamiento: datos, modelos, entrenamiento, evaluación, estadística, modelo original y exportación
+dashboard/      aplicación Dash autocontenida (app.py, pages/, core/, assets/, data/, requirements.txt)
+tests/          pruebas unitarias (pytest, CPU)
+experiments/    estándar, protocolo, bitácora de diseño y procedencia del mecanismo
+artifacts/      modelos exportados a ONNX y metadata.json (los .onnx no se versionan)
+data/raw/       HAM10000 (no se versiona)
 data/literatura/  exportaciones de Scopus y tablas de síntesis
-outputs/      métricas, predicciones y pesos de cada corrida, ajuste, piloto y logs
-book/         capítulos del informe (MyST)
-preregistro.md
+outputs/        métricas, predicciones y pesos de cada corrida, ajuste, piloto y logs
+book/           capítulos del informe (MyST)
+MODEL_CARD.md, DATA_STATEMENT.md, CITATION.cff, LICENSE, render.yaml, Dockerfile
+preregistro.md, preregistro_e2.md
 ```
+
+**Desviación declarada respecto de la estructura sugerida en el Entregable 3.** El entrenamiento
+vive en `src/` (no en `training/`) y el dashboard en `dashboard/` (no en la raíz con `pages/` y
+`src/inference.py`). El código de entrenamiento ya existía en `src/` desde el Entregable 1 y lo usan
+todos los notebooks del libro; moverlo rompería esas importaciones. La separación que pide el
+enunciado se mantiene: el dashboard no importa TensorFlow ni `src/` (lo comprueba una prueba), solo
+lee `dashboard/data/`, y su lógica está dividida en `dashboard/pages/` (interfaz),
+`dashboard/core/data.py` (datos), `dashboard/core/inference.py` (ONNX) y `dashboard/core/theme.py`
+(figuras). El `requirements.txt` de la raíz remite al de `dashboard/`.
+
+## Licencia y cita
+
+El código se distribuye bajo la licencia MIT (`LICENSE`). Los datos de HAM10000 tienen su propia
+licencia, CC BY-NC 4.0, y no se incluyen en el repositorio (`DATA_STATEMENT.md`). Para citar el
+repositorio, ver `CITATION.cff`.

@@ -2,7 +2,9 @@
 
 Cada módulo de este paquete que defina `build(model_cfg, n_classes, dropout) -> keras.Model`
 se registra con el nombre del módulo (p. ej. src/models/vgg16.py -> "vgg16"). Para añadir un
-modelo basta con su archivo aquí y configs/<nombre>.yaml.
+modelo basta con su archivo aquí y configs/<nombre>.yaml. Un módulo puede declarar `ALIASES`,
+nombres adicionales con el mismo constructor (p. ej. las variantes de ablación de src/models/cci.py,
+cada una con su configs/<alias>.yaml).
 """
 
 from __future__ import annotations
@@ -24,6 +26,8 @@ def _discover() -> dict:
         build = getattr(module, "build", None)
         if callable(build):
             registry[info.name] = build
+            for alias in getattr(module, "ALIASES", ()):
+                registry[alias] = build
     return registry
 
 

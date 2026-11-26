@@ -24,6 +24,9 @@ Este proyecto tiene como propósito proponer una arquitectura de aprendizaje pro
 - [Preguntas de investigación y conjunto de datos](book/12-preguntas-y-datos.md): formulación, preguntas RQ1 a RQ3, justificación y ficha de HAM10000.
 - [Modelos del estado del arte](book/13-modelos-estado-del-arte.md): selección, análisis por modelo, comparación crítica y gap de investigación.
 - [Paper guía](book/14-paper-guia.md): selección, descripción, criterio de replicación y limitación identificada.
+- [Revisión de literatura y novedad](book/23-novedad.md): búsqueda, trabajo cercano, fuente del mecanismo y declaración de novedad.
+- [Modelo original: diseño](book/24-modelo-original-diseno.md): limitación abordada, hipótesis del mecanismo, formulación de la capa CCI, pseudocódigo, demostración de la invarianza, complejidad y ablación.
+- [Modelo original: implementación](book/25-modelo-original-implementacion.ipynb): código de la capa, verificación numérica de la invarianza, comparación con el backbone, complejidad empírica y visualización de $p$, los pesos y el iluminante.
 - [DenseNet-201](book/15-densenet201.ipynb): ajuste de hiperparámetros, estudio piloto, ejecución definitiva y evaluación.
 - [Inception-V3](book/16-inceptionv3.ipynb): ajuste de hiperparámetros, estudio piloto, ejecución definitiva y evaluación.
 - [ConvNeXt-Tiny](book/17-convnext_tiny.ipynb): ajuste de hiperparámetros, estudio piloto, ejecución definitiva y evaluación.

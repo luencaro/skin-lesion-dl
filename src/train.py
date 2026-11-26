@@ -48,17 +48,37 @@ HPARAM_KEYS = ("learning_rate", "weight_decay", "dropout")
 # ---------------------------------------------------------------------------
 
 
-def load_model_config(name: str) -> dict:
-    """Lee configs/<name>.yaml y comprueba que el modelo esté en REGISTRY."""
-    if name not in REGISTRY:
-        raise ValueError(f"Modelo '{name}' no registrado. Disponibles: {sorted(REGISTRY)}")
+def _read_model_yaml(name: str) -> dict:
+    """configs/<name>.yaml; con `extends: <base>`, la config de <base> actualizada con esta
+    (las secciones dict se combinan un nivel; hyperparameters no se hereda)."""
     path = CONFIGS_DIR / f"{name}.yaml"
     if not path.exists():
         raise FileNotFoundError(f"No existe {path}")
     with open(path, encoding="utf-8") as f:
         model_cfg = yaml.safe_load(f) or {}
+    parent = model_cfg.pop("extends", None)
+    if parent:
+        base = _read_model_yaml(parent)
+        base.pop("hyperparameters", None)
+        for k, v in model_cfg.items():
+            base[k] = {**base[k], **v} if isinstance(v, dict) and isinstance(base.get(k), dict) else v
+        model_cfg = base
+    return model_cfg
+
+
+def load_model_config(name: str) -> dict:
+    """Lee configs/<name>.yaml y comprueba que el modelo esté en REGISTRY. Los modelos con
+    `backbone` (el modelo original, src/original_model.py) heredan de configs/<backbone>.yaml las
+    claves de src.original_model.INHERITED_KEYS que no fijan."""
+    if name not in REGISTRY:
+        raise ValueError(f"Modelo '{name}' no registrado. Disponibles: {sorted(REGISTRY)}")
+    model_cfg = _read_model_yaml(name)
     if model_cfg.get("name") != name:
-        raise ValueError(f"{path}: name={model_cfg.get('name')!r} no coincide con '{name}'")
+        raise ValueError(f"configs/{name}.yaml: name={model_cfg.get('name')!r} no coincide con '{name}'")
+    if model_cfg.get("backbone"):
+        from src.original_model import resolve_model_config
+
+        model_cfg = resolve_model_config(model_cfg, load_model_config)
     return model_cfg
 
 
@@ -379,7 +399,7 @@ def run_training(
     _save_yaml(resolved, run_dir / "config.yaml")
 
     model = build_model(cfg, model_name, hp["dropout"])
-    exclude = tcfg.get("weight_decay_exclude") or []
+    exclude = list(tcfg.get("weight_decay_exclude") or []) + list(model_cfg.get("weight_decay_exclude") or [])
     params = {}
     times = {}
     n_train = len(data.train_labels)

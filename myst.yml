@@ -23,6 +23,9 @@ project:
     - file: book/12-preguntas-y-datos.md
     - file: book/13-modelos-estado-del-arte.md
     - file: book/14-paper-guia.md
+    - file: book/23-novedad.md
+    - file: book/24-modelo-original-diseno.md
+    - file: book/25-modelo-original-implementacion.ipynb
     - file: book/15-densenet201.ipynb
     - file: book/16-inceptionv3.ipynb
     - file: book/17-convnext_tiny.ipynb

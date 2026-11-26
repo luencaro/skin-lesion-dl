@@ -429,3 +429,10 @@ mlflow:
   enabled: true                   # registra cada corrida al terminar src.train (los fallos solo avisan)
   experiment: skin-lesion-dl
   backend: sqlite                 # sqlite:///<paths.mlflow_dir>/mlflow.db; artefactos en <mlflow_dir>/artifacts
+
+# ===========================================================================
+# Entregable 3: modelo original (src/original_model.py, configs/cci*.yaml, book/23 a 25)
+# ===========================================================================
+e3:
+  original_model: cci
+  ablation_models: [cci_fixed_p, cci_uniform_weights, cci_no_invariance, cci_shades_of_gray]

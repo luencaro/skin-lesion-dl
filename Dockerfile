@@ -8,6 +8,11 @@
 # Los datos (data/raw) y los resultados (outputs) se montan como volúmenes: no se copian a la
 # imagen. La GPU requiere NVIDIA Container Toolkit; sin --gpus, TensorFlow usa la CPU. Los pesos
 # de ImageNet (keras.applications y keras_hub) se descargan la primera vez en los volúmenes de cache.
+#
+# Es el entorno de ENTRENAMIENTO (y de exportación a ONNX y pruebas). El dashboard se despliega aparte,
+# solo con dashboard/requirements.txt (render.yaml). Dentro del contenedor:
+#   docker run --rm skin-lesion-dl pytest                         # pruebas unitarias en CPU
+#   docker run --rm -v "$PWD/outputs:/app/outputs" skin-lesion-dl python -m src.export --all
 FROM python:3.11.18-slim-bookworm
 
 COPY --from=ghcr.io/astral-sh/uv:0.13.10 /uv /uvx /usr/local/bin/
@@ -23,17 +28,21 @@ RUN apt-get update && apt-get install -y --no-install-recommends git && rm -rf /
 
 WORKDIR /app
 
-# Dependencias exactas de uv.lock (sin el grupo dev); capa separada para aprovechar la cache
+# Dependencias exactas de uv.lock (con el grupo dev: pytest y ruff); capa separada para aprovechar la cache
 COPY pyproject.toml uv.lock .python-version README.md ./
-RUN uv sync --frozen --no-dev --no-install-project
+RUN uv sync --frozen --no-install-project
 
 # Código, configuración, libro y datos versionados (partición, hashes, anotaciones)
 COPY src ./src
 COPY configs ./configs
 COPY book ./book
 COPY data ./data
-COPY index.md myst.yml references.bib preregistro.md preregistro_e2.md requirements.txt ./
-RUN uv sync --frozen --no-dev
+COPY tests ./tests
+COPY dashboard ./dashboard
+COPY experiments ./experiments
+COPY index.md myst.yml references.bib preregistro.md preregistro_e2.md requirements.txt requirements-train.txt \
+     MODEL_CARD.md DATA_STATEMENT.md CITATION.cff LICENSE ./
+RUN uv sync --frozen
 
 EXPOSE 8888
 CMD ["jupyter", "lab", "--ip=0.0.0.0", "--port=8888", "--no-browser", "--allow-root", "--ServerApp.root_dir=/app"]

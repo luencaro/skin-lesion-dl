@@ -1,0 +1,19 @@
+# Despliegue del dashboard en Render (plan gratuito). Solo inferencia: dashboard/requirements.txt,
+# sin TensorFlow. Los datos precalculados y los modelos ONNX servibles están en dashboard/data/
+# (python -m src.export_dashboard). Un worker y dos hilos: el lru_cache de sesiones ONNX (2 modelos)
+# es por proceso y así cabe en 512 MB.
+services:
+  - type: web
+    name: skin-lesion-dashboard
+    runtime: python
+    plan: free
+    rootDir: dashboard
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn app:server --workers 1 --threads 2 --timeout 120
+    healthCheckPath: /
+    autoDeploy: true
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.18
+      - key: ORT_THREADS
+        value: "2"

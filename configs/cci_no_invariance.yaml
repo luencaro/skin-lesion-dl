@@ -1,0 +1,11 @@
+# Variante de ablación del modelo original (capítulo 24): Sin invarianza: p y pesos aprendidos, pero g_φ recibe la imagen reducida sin normalizar, x̄ / 255 (mismos parámetros que el modelo completo).
+# Hereda todo de configs/cci.yaml (backbone incluido) salvo lo que se fija aquí. Se ajusta con el
+# mismo presupuesto que el modelo completo: python -m src.tune --model cci_no_invariance
+extends: cci
+name: cci_no_invariance
+variant: no_invariance
+
+hyperparameters:
+  learning_rate: null
+  weight_decay: null
+  dropout: null

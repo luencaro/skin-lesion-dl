@@ -10,7 +10,7 @@ lógica en `src/` y los notebooks solo llaman funciones y muestran resultados.
 
 | Elemento | Archivo o comando |
 |---|---|
-| Versiones exactas de las dependencias | `uv.lock` y `requirements.txt` (exportado con `uv export --format requirements-txt --frozen --no-hashes --no-emit-project --no-dev`) |
+| Versiones exactas de las dependencias | `uv.lock` y `requirements-train.txt` (exportado con `uv export --format requirements-txt --frozen --no-hashes --no-emit-project --no-dev`); `requirements.txt` y `dashboard/requirements.txt` contienen solo las de inferencia del dashboard |
 | Python | 3.11 (`.python-version`) |
 | Contenedor | `Dockerfile` (Python 3.11, `uv sync --frozen`, TensorFlow 2.20 con CUDA desde pip); datos y resultados como volúmenes |
 | Hardware de referencia | GPU NVIDIA GeForce RTX 3050 de 6 GB; versiones de CUDA, cuDNN y GPU registradas en `run_info.json` de cada corrida |
@@ -51,7 +51,7 @@ no hecho; **desviación** si no se hace, con su motivo.
 | Ítem | Estado | Evidencia |
 |---|---|---|
 | Código versionado y preregistro fechado antes de los entrenamientos | pendiente | repositorio Git y `preregistro_e2.md`; falta crear el tag `e2-preregistro` y completar sus campos antes del primer entrenamiento |
-| Dependencias con versiones exactas | cumple | `uv.lock`, `requirements.txt` |
+| Dependencias con versiones exactas | cumple | `uv.lock`, `requirements-train.txt`, `dashboard/requirements.txt` |
 | Entorno reproducible en contenedor | cumple | `Dockerfile`, `.dockerignore` |
 | Versión de los datos y hashes de archivos | cumple | `data/hashes.json`, `src.verify_data` |
 | Partición congelada y agrupada por lesión, con hash del conjunto de prueba | cumple | `data/splits.csv`, `data/splits_hash.json` |

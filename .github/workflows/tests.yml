@@ -1,0 +1,45 @@
+name: Pruebas
+
+# pytest en CPU en cada push (y en los pull requests). Independiente del flujo del book (deploy.yml).
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: tests-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  pytest:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      CUDA_VISIBLE_DEVICES: ""          # solo CPU
+      TF_CPP_MIN_LOG_LEVEL: "3"
+      MPLBACKEND: Agg
+    steps:
+      - uses: actions/checkout@v4
+      - name: Instalar uv
+        uses: astral-sh/setup-uv@v6
+        with:
+          version: "0.13.10"
+          enable-cache: true
+          cache-dependency-glob: uv.lock
+      - name: Python 3.11
+        run: uv python install 3.11
+      - name: Dependencias (uv.lock; grupos dev y dashboard)
+        run: uv sync --frozen --group dashboard
+      - name: pytest
+        run: |
+          mkdir -p outputs/tests
+          uv run --frozen pytest --junitxml=outputs/tests/junit.xml
+      - name: Resultados de las pruebas
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: junit
+          path: outputs/tests/junit.xml

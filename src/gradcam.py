@@ -4,7 +4,8 @@ Los modelos de src/models tienen la estructura Input -> Lambda(preprocess_input)
 (submodelo anidado) -> cabeza lineal -> Dense softmax. La capa objetivo (`gradcam_layer` de
 configs/<modelo>.yaml: out_relu, conv5_block3_out o block5_conv3) está dentro del backbone, así
 que se construye un submodelo del backbone con dos salidas (la capa objetivo y la salida del
-backbone) y se recorre a mano el resto: preprocess_input antes, la cabeza después. El gradiente
+backbone) y se recorre a mano el resto: las capas previas al backbone antes (preprocess_input y,
+en el modelo original, la capa CCI), la cabeza después. El gradiente
 se toma del logit de la clase (antes de la softmax), como en Selvaraju et al. (2017).
 
 El modelo se reconstruye en float32 (sin precisión mixta, para que los gradientes no pierdan
@@ -108,11 +109,10 @@ def gradcam_heatmaps(model, images: np.ndarray, layer_name: str, class_idx=None,
     import keras
     import tensorflow as tf
 
-    from src.models.common import PREPROCESS_NAME, get_backbone, head_layers
+    from src.models.common import apply_pre_backbone, get_backbone, head_layers
 
     backbone = get_backbone(model)
     feature_model = keras.Model(backbone.inputs, [backbone.get_layer(layer_name).output, backbone.output])
-    preprocess = model.get_layer(PREPROCESS_NAME)
     head = head_layers(model)
     *hidden, output = head
     size = images.shape[1:3]
@@ -120,7 +120,7 @@ def gradcam_heatmaps(model, images: np.ndarray, layer_name: str, class_idx=None,
     for start in range(0, len(images), batch_size):
         x = tf.convert_to_tensor(images[start:start + batch_size], dtype=tf.float32)
         with tf.GradientTape() as tape:
-            conv, y = feature_model(preprocess(x), training=False)
+            conv, y = feature_model(apply_pre_backbone(model, x), training=False)
             for layer in hidden:
                 y = layer(y, training=False)
             logits = tf.matmul(tf.cast(y, tf.float32), output.kernel) + output.bias

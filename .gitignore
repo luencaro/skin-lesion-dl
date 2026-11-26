@@ -24,3 +24,12 @@ outputs/benchmark_e2/
 
 # Pesos de las corridas (VGG-16: ~540 MB por corrida; GitHub rechaza archivos > 100 MB)
 outputs/**/*.weights.h5
+
+# Modelos exportados (pueden superar los 100 MB de GitHub). Se versionan metadata.json y, para el
+# despliegue, las copias servibles en dashboard/data/models/ (por debajo de export.max_size_mb).
+artifacts/**/*.onnx
+artifacts/**/*.npz
+
+# Resultados de pytest
+outputs/tests/
+.pytest_cache/

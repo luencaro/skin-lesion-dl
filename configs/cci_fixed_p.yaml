@@ -1,0 +1,11 @@
+# Variante de ablación del modelo original (capítulo 24): Sin p aprendido: p fijo en 6, pesos aprendidos sobre la representación invariante z.
+# Hereda todo de configs/cci.yaml (backbone incluido) salvo lo que se fija aquí. Se ajusta con el
+# mismo presupuesto que el modelo completo: python -m src.tune --model cci_fixed_p
+extends: cci
+name: cci_fixed_p
+variant: fixed_p
+
+hyperparameters:
+  learning_rate: null
+  weight_decay: null
+  dropout: null

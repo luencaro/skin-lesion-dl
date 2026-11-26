@@ -47,13 +47,13 @@ def vit_attention_maps(model, images: np.ndarray):
     mano los bloques de ViTEncoder con return_attention_scores=True."""
     import tensorflow as tf
 
-    from src.models.common import PREPROCESS_NAME, get_backbone
+    from src.models.common import apply_pre_backbone, get_backbone
     from src.models.vit_b16 import EMBEDDING_LAYER, ENCODER_LAYER
 
     backbone = get_backbone(model)
     embed = backbone.get_layer(EMBEDDING_LAYER)
     encoder = backbone.get_layer(ENCODER_LAYER)
-    x = embed(model.get_layer(PREPROCESS_NAME)(tf.convert_to_tensor(images, tf.float32)))
+    x = embed(apply_pre_backbone(model, tf.convert_to_tensor(images, tf.float32)))
     scores = []
     for block in encoder.encoder_layers:
         h = block.layer_norm_1(x)
