@@ -97,9 +97,38 @@ def resolve_hparams(model_cfg: dict, overrides: dict | None = None) -> dict:
     return {k: float(hp[k]) for k in HPARAM_KEYS}
 
 
+def configure_xla_env(cfg: dict) -> None:
+    """Variables de entorno que XLA y la GPU leen al inicializarse (no cambian ningún valor de la
+    configuración experimental): con train.xla_autotune_cache, los resultados del autotuning de
+    XLA se guardan en paths.xla_cache_dir y los reutilizan las corridas siguientes (cada proceso
+    hijo de isolate_runs volvería a medir los mismos algoritmos); con
+    train.gpu_min_system_memory_mb, la memoria de la GPU que TensorFlow deja fuera de su asignador
+    (por defecto 1536 MiB en GPU de capacidad 8.x); con train.gpu_allocator, TF_GPU_ALLOCATOR
+    (cuda_malloc_async: el asignador de CUDA en lugar del BFC de TensorFlow). Llamar antes de la
+    primera operación en la GPU."""
+    import os
+
+    tcfg = cfg["train"]
+    if tcfg.get("xla_autotune_cache") and cfg["paths"].get("xla_cache_dir"):
+        cache = Path(cfg["paths"]["xla_cache_dir"]) / "autotune"
+        cache.mkdir(parents=True, exist_ok=True)
+        if '"' in str(cache):
+            raise ValueError(f"paths.xla_cache_dir no puede contener comillas: {cache}")
+        # XLA_FLAGS se separa por espacios: la ruta va entre comillas (la del proyecto tiene espacios)
+        flag = f'--xla_gpu_per_fusion_autotune_cache_dir="{cache}"'
+        flags = os.environ.get("XLA_FLAGS", "")
+        if "xla_gpu_per_fusion_autotune_cache_dir" not in flags:
+            os.environ["XLA_FLAGS"] = f"{flags} {flag}".strip()
+    if tcfg.get("gpu_min_system_memory_mb") is not None:
+        os.environ.setdefault("TF_DEVICE_MIN_SYS_MEMORY_IN_MB", str(int(tcfg["gpu_min_system_memory_mb"])))
+    if tcfg.get("gpu_allocator"):
+        os.environ.setdefault("TF_GPU_ALLOCATOR", str(tcfg["gpu_allocator"]))
+
+
 def configure_runtime(cfg: dict) -> None:
     """Memory growth en la GPU y política de precisión. Llamar antes de crear tensores."""
     tcfg = cfg["train"]
+    configure_xla_env(cfg)
     if tcfg.get("gpu_memory_growth", True):
         enable_memory_growth()
     keras.mixed_precision.set_global_policy(
@@ -343,11 +372,14 @@ def run_training(
     save_weights: bool | None = None,
     sources: dict | None = None,
     overwrite: bool = False,
+    hparams_source: dict | None = None,
 ) -> dict:
     """Ejecuta una corrida y guarda sus artefactos. Devuelve load_run_summary(run_dir).
 
     `hparams` sustituye a los del YAML del modelo; `max_epochs` a finetune.max_epochs;
     `sources` (de data.load_split_sources con el mismo val_fold) reutiliza la cache.
+    `hparams_source` (de dónde salen los hiperparámetros, p. ej. best.json del ajuste) se registra
+    en config.yaml (run.hyperparameters_source).
     Con `evaluate_train`, metrics.json incluye también "train": las métricas sobre las imágenes
     de train de la corrida sin aumento y en modo inferencia (sin dropout).
     """
@@ -388,7 +420,8 @@ def run_training(
     resolved = {
         "run": {"model": model_name, "label": label, "seed": seed, "val_fold": val_fold,
                 "evaluate_test": evaluate_test, "evaluate_train": evaluate_train,
-                "save_weights": save_weights, "micro_batch_size": micro, "gradient_accumulation_steps": accum},
+                "save_weights": save_weights, "micro_batch_size": micro, "gradient_accumulation_steps": accum,
+                **({"hyperparameters_source": hparams_source} if hparams_source else {})},
         "model": {**model_cfg, "hyperparameters": hp},
         "train": tcfg,
         "classes": classes,
@@ -506,6 +539,41 @@ def run_training(
     del model, data
     keras.backend.clear_session()
     gc.collect()
+    return load_run_summary(run_dir)
+
+
+def _isolated_child(cfg: dict, model_name: str, seed: int, val_fold: int, kwargs: dict, log_file) -> None:
+    if log_file is not None:
+        setup_logging(log_file)
+    configure_runtime(cfg)
+    run_training(cfg, model_name, seed, val_fold, **kwargs)
+
+
+def run_training_isolated(cfg: dict, model_name: str, seed: int, val_fold: int, *, log_file=None,
+                          **kwargs) -> dict:
+    """run_training en un proceso hijo (multiprocessing con spawn) y load_run_summary de la corrida.
+
+    Con XLA (jit_compile="auto" en la GPU), cada modelo compilado deja en el proceso alrededor de
+    1 GB de RAM que keras.backend.clear_session() no libera; al terminar el hijo, el sistema la
+    recupera. El hijo carga sus propias imágenes (con train.cache = disk solo lee la caché en
+    disco), así que `sources` no se admite. RuntimeError si el hijo no termina la corrida."""
+    import multiprocessing as mp
+
+    if kwargs.get("sources") is not None:
+        raise ValueError("run_training_isolated no admite `sources`: cada proceso carga sus imágenes")
+    kwargs.pop("sources", None)
+    ctx = mp.get_context("spawn")
+    proc = ctx.Process(target=_isolated_child, args=(cfg, model_name, seed, val_fold, kwargs, log_file),
+                       name=f"train-{model_name}-s{seed}-f{val_fold}")
+    proc.start()
+    proc.join()
+    run_dir = run_dir_for(cfg, model_name, kwargs.get("label", "default"), seed, val_fold)
+    if not (run_dir / "metrics.json").exists():
+        hint = " (señal 9: p. ej. el OOM killer del sistema)" if proc.exitcode == -9 else ""
+        raise RuntimeError(f"La corrida {_relpath(run_dir)} no terminó: el proceso hijo salió con código "
+                           f"{proc.exitcode}{hint}")
+    if proc.exitcode != 0:  # metrics.json se escribe al final: la corrida terminó y el fallo fue al liberar
+        log.warning(f"{_relpath(run_dir)}: terminada, pero el proceso hijo salió con código {proc.exitcode}")
     return load_run_summary(run_dir)
 
 

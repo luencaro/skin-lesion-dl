@@ -269,9 +269,18 @@ def load_cost(cfg: dict, models) -> pd.DataFrame | Missing:
     return pd.DataFrame(rows).set_index("model").reindex([m for m in models if cost_path(cfg, m).exists()])
 
 
+# Notas sobre tiempos registrados que no reflejan el costo con el pipeline actual.
+TIME_NOTES = {
+    "mobilenetv2": ("los tiempos registrados de t00 a t06 de MobileNetV2 están inflados unas 5 veces por el uso de "
+                    "swap del 14 de noviembre de 2026 y no reflejan el costo con el pipeline actual "
+                    "(experiments/presupuesto_computo.md)"),
+}
+
+
 def cost_from_runs(cfg: dict, models) -> pd.DataFrame | Missing:
     """Por modelo: tiempo total del ajuste (suma de los ensayos de trials.csv), tiempo de
-    entrenamiento medio por corrida definitiva y total, en horas, y corridas definitivas."""
+    entrenamiento medio por corrida definitiva y total, en horas, y corridas definitivas. La
+    columna `nota` (y attrs["nota"]) señala los tiempos de TIME_NOTES."""
     from src.final import finished_runs
 
     rows = {}
@@ -282,6 +291,8 @@ def cost_from_runs(cfg: dict, models) -> pd.DataFrame | Missing:
             t = pd.read_csv(trials)
             row["ajuste_h"] = float(t["train_time_s"].sum()) / 3600
             row["ensayos"] = len(t)
+            if m in TIME_NOTES:
+                row["nota"] = TIME_NOTES[m]
         runs = finished_runs(cfg, m)
         if runs:
             infos = [D.load_json(Path(d) / "run_info.json") for d in runs]
@@ -294,7 +305,11 @@ def cost_from_runs(cfg: dict, models) -> pd.DataFrame | Missing:
             rows[m] = row
     if not rows:
         return Missing("no hay ajustes ni corridas definitivas con tiempos registrados.")
-    return pd.DataFrame(rows).T
+    out = pd.DataFrame(rows).T
+    notes = [TIME_NOTES[m] for m in rows if m in TIME_NOTES and "nota" in rows[m]]
+    if notes:
+        out.attrs["nota"] = "; ".join(notes)
+    return out
 
 
 def cost_table(measured, times) -> pd.DataFrame | Missing:

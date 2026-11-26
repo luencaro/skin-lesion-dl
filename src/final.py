@@ -3,7 +3,9 @@
     python -m src.final --model mobilenetv2
 
 Las corridas son el producto final.seeds x final.folds, con los hiperparámetros de
-configs/<modelo>.yaml, evaluación de test, métricas de train sin aumento ni dropout y pesos
+configs/<modelo>.yaml o, si allí están todos en null, los de outputs/tuning/<modelo>/best.json
+seleccionado entre t00 y t(n_trials - 1) (final_hparams; el origen queda en el config.yaml de cada
+corrida), evaluación de test, métricas de train sin aumento ni dropout y pesos
 guardados. Cada corrida va en outputs/runs/<modelo>/<final.label>/s<seed>_f<fold>/; si ya
 terminó, se reutiliza (reanudable). El progreso y el tiempo restante se registran en
 outputs/logs/final_<modelo>.log. Resultado: outputs/final/<modelo>/summary.csv (una fila por
@@ -29,6 +31,7 @@ from src.models import REGISTRY
 from src.report import Missing
 from src.results import add_summary_rows
 from src.train import (
+    HPARAM_KEYS,
     _relpath,
     configure_runtime,
     load_model_config,
@@ -36,6 +39,7 @@ from src.train import (
     resolve_hparams,
     run_dir_for,
     run_training,
+    run_training_isolated,
 )
 from src.utils import RunProgress, setup_logging
 
@@ -59,6 +63,51 @@ def final_pairs(cfg: dict) -> list[tuple[int, int]]:
 
 def summary_path(cfg: dict, model_name: str) -> Path:
     return cfg["paths"]["final_dir"] / model_name / "summary.csv"
+
+
+def best_json_hparams(cfg: dict, model_name: str) -> tuple[dict, dict]:
+    """(hiperparámetros, origen) de outputs/tuning/<modelo>/best.json. ValueError si no existe, si
+    no se seleccionó entre t00 y t(n_trials - 1) de train.tuning (desviación D1: t00 a t05) o si
+    sus valores no coinciden con los del muestreador para ese ensayo."""
+    from src.tune import sample_configs
+
+    tun = cfg["train"]["tuning"]
+    n = int(tun["n_trials"])
+    path = cfg["paths"]["tuning_dir"] / model_name / "best.json"
+    last = f"t{n - 1:02d}"
+    if not path.exists():
+        raise ValueError(f"configs/{model_name}.yaml tiene los hiperparámetros en null y no existe {_relpath(path)}. "
+                         f"Ejecuta `python -m src.tune --model {model_name}` (selecciona entre t00 y {last}) o "
+                         f"escribe los valores en la sección hyperparameters de configs/{model_name}.yaml.")
+    best = D.load_json(path)
+    trial = int(best["trial"])
+    if best.get("n_trials") != n or not 0 <= trial < n:
+        raise ValueError(f"{_relpath(path)} no se seleccionó entre t00 y {last} (ensayo {trial}, n_trials "
+                         f"{best.get('n_trials')} frente a {n} de train.tuning). Vuelve a ejecutar "
+                         f"`python -m src.tune --model {model_name}`.")
+    hp = {k: float(best["hyperparameters"][k]) for k in HPARAM_KEYS}
+    expected = sample_configs(tun["space"], n, int(tun["sampler_seed"]))[trial]
+    if not all(np.isclose(hp[k], float(expected[k]), rtol=0.0, atol=0.0) for k in HPARAM_KEYS):
+        raise ValueError(f"{_relpath(path)}: los hiperparámetros del ensayo {trial} ({hp}) no coinciden con el "
+                         f"muestreador ({expected}). Vuelve a ejecutar `python -m src.tune --model {model_name}`.")
+    source = {"source": "best.json", "path": _relpath(path), "trial": trial, "label": f"tuning_t{trial:02d}",
+              "n_trials": n, "val_balanced_accuracy": best.get("val_balanced_accuracy")}
+    return hp, source
+
+
+def final_hparams(cfg: dict, model_name: str) -> tuple[dict, dict]:
+    """(hiperparámetros, origen) de la ejecución definitiva: los de configs/<modelo>.yaml si los
+    tiene todos; si están todos en null, best_json_hparams. ValueError si solo algunos son null."""
+    model_cfg = load_model_config(model_name)
+    yaml_hp = model_cfg.get("hyperparameters") or {}
+    given = [k for k in HPARAM_KEYS if yaml_hp.get(k) is not None]
+    if len(given) == len(HPARAM_KEYS):
+        return resolve_hparams(model_cfg), {"source": f"configs/{model_name}.yaml"}
+    if given:
+        missing = [k for k in HPARAM_KEYS if k not in given]
+        raise ValueError(f"configs/{model_name}.yaml tiene unos hiperparámetros con valor ({given}) y otros en null "
+                         f"({missing}): completa todos o deja todos en null para usar best.json.")
+    return best_json_hparams(cfg, model_name)
 
 
 def _check_run(run_dir: Path, hp: dict, need_train: bool) -> dict:
@@ -110,9 +159,10 @@ def summarize(rows: list[dict], alpha: float) -> pd.DataFrame:
 
 def run_final(cfg: dict, model_name: str) -> pd.DataFrame:
     """Ejecuta las corridas definitivas pendientes y reutiliza las terminadas. Guarda
-    outputs/final/<modelo>/summary.csv y lo devuelve. ValueError si hay hiperparámetros null."""
+    outputs/final/<modelo>/summary.csv y lo devuelve. Hiperparámetros de final_hparams; ValueError si
+    configs/<modelo>.yaml los tiene en null y no hay un best.json válido."""
     fcfg = cfg["final"]
-    hp = resolve_hparams(load_model_config(model_name))
+    hp, hp_source = final_hparams(cfg, model_name)
     label = final_label(cfg)
     evaluate_train = bool(fcfg.get("evaluate_train", True))
     pairs = final_pairs(cfg)
@@ -122,7 +172,10 @@ def run_final(cfg: dict, model_name: str) -> pd.DataFrame:
     setup_logging(log_file)
     log.info(f"Ejecución definitiva de {model_name} | {len(pairs)} corridas (semillas {fcfg['seeds']} x "
              f"pliegues {fcfg['folds']}) | log: {log_file}")
-    configure_runtime(cfg)
+    isolate = bool(cfg["train"].get("isolate_runs", False))
+    if not isolate:  # con isolate_runs, cada hijo configura la GPU
+        configure_runtime(cfg)
+    log.info(f"Hiperparámetros de {model_name}: {hp} (origen: {hp_source})")
 
     run_dirs = [run_dir_for(cfg, model_name, label, s, f) for s, f in pairs]
     progress = RunProgress(len(pairs), [i for i, d in enumerate(run_dirs) if (d / "metrics.json").exists()], log)
@@ -136,13 +189,18 @@ def run_final(cfg: dict, model_name: str) -> pd.DataFrame:
             summary = _check_run(run_dir, hp, evaluate_train)
             progress.reused(i, f"{desc}; val_bal_acc {summary['val_balanced_accuracy']:.4f}")
         else:
-            if sources_fold != fold:
-                sources = None
-                gc.collect()
-                sources, sources_fold = D.load_split_sources(cfg, fold, include_test=True), fold
-            progress.start(i, desc)
-            summary = run_training(cfg, model_name, seed, fold, label=label, evaluate_test=True,
-                                   evaluate_train=evaluate_train, save_weights=True, sources=sources)
+            kwargs = {"label": label, "evaluate_test": True, "evaluate_train": evaluate_train, "save_weights": True,
+                      "hparams": hp, "hparams_source": hp_source}
+            if isolate:
+                progress.start(i, desc)
+                summary = run_training_isolated(cfg, model_name, seed, fold, log_file=log_file, **kwargs)
+            else:
+                if sources_fold != fold:
+                    sources = None
+                    gc.collect()
+                    sources, sources_fold = D.load_split_sources(cfg, fold, include_test=True), fold
+                progress.start(i, desc)
+                summary = run_training(cfg, model_name, seed, fold, sources=sources, **kwargs)
             progress.finish(i, desc, f"val_bal_acc {summary['val_balanced_accuracy']:.4f}, "
                                      f"test_bal_acc {summary['test_balanced_accuracy']:.4f}")
         rows.append(summary)

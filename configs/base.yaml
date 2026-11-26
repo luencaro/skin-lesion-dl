@@ -17,6 +17,8 @@ paths:
   splits_csv: data/splits.csv
   splits_hash_json: data/splits_hash.json
   eda_cache_dir: data/processed/eda_cache
+  resized_cache_dir: data/processed/resized_cache  # imágenes redimensionadas del entrenamiento (train.cache: disk)
+  xla_cache_dir: data/processed/xla_cache         # resultados del autotuning de XLA (train.xla_autotune_cache)
   artifacts_annotation_csv: data/anotacion_artefactos.csv
   train_color_stats_json: data/train_color_stats.json
   outliers_csv: data/atipicos_imagenes.csv
@@ -142,8 +144,27 @@ train:
   mixed_precision: true           # política mixed_float16; la salida softmax queda en float32
   deterministic: false            # true -> tf.config.experimental.enable_op_determinism()
   gpu_memory_growth: true
-  cache_in_memory: true           # cache tras el redimensionado, antes del aumento
-  cache_dtype: float32            # float32 (~0.6 MB por imagen) o uint8 (4 veces menos RAM)
+  # Memoria de la GPU que TensorFlow deja fuera de su asignador (TF_DEVICE_MIN_SYS_MEMORY_IN_MB; por
+  # defecto 1536 MiB en GPU 8.x, lo que deja 4,2 GB de los 6 GB de la RTX 3050). Con 512, TensorFlow
+  # dispone de ~5,2 GB; el pico total medido con nvidia-smi (VGG-16, fase B) es 5,2 de 6 GiB.
+  gpu_min_system_memory_mb: 512
+  # Asignador de memoria de la GPU (TF_GPU_ALLOCATOR). Con el BFC por defecto, VGG-16 con XLA aborta
+  # de forma intermitente al liberar memoria (bfc_allocator.cc: Check failed, en 3 de 4 procesos de
+  # prueba); con cuda_malloc_async no aborta y la velocidad es la misma. No cambia ningún valor.
+  gpu_allocator: cuda_malloc_async
+  # Cache tras el redimensionado, antes del aumento. disk: cada imagen redimensionada se calcula
+  # una sola vez y se guarda en float32 en paths.resized_cache_dir (valores idénticos a memory, sin
+  # ocupar RAM del proceso; la lee la caché de páginas del sistema). memory: tf.data.cache en RAM
+  # (~5,2 GB en float32 con train + val). none: decodifica y redimensiona en cada época.
+  cache: disk
+  cache_dtype: float32            # solo con cache: memory. float32 (~0.6 MB por imagen) o uint8 (4 veces menos RAM; redondeo <= 0,5)
+  resized_cache_verify: true      # con cache: disk, comprueba el SHA-256 de cada imagen al cargar la partición
+  # Cada corrida de src.tune y src.final en un proceso hijo. Con XLA, cada modelo compilado deja
+  # ~1 GB de RAM que keras.backend.clear_session() no libera; con false se acumula entre corridas.
+  isolate_runs: true
+  # Guarda el autotuning de XLA (algoritmo más rápido de cada convolución) en paths.xla_cache_dir:
+  # cada proceso hijo ahorra ~25 s por compilación. Solo cambia qué algoritmo equivalente se elige.
+  xla_autotune_cache: true
   save_weights: true              # guarda model.weights.h5 en las corridas de src.train (no en ajuste ni piloto)
   verbose: 1                      # model.fit: 1 = barra por lote, 2 = una línea por época, 0 = nada (solo terminal)
 
@@ -178,12 +199,13 @@ train:
   class_weight: inverse_frequency # w_k = N / (K * N_k) con el train de cada corrida
   ece_bins: 15
 
+  # D2: el estudio piloto se omite; la sección se conserva solo por compatibilidad del código
   pilot:
     pairs: [[0, 0], [1, 1], [2, 2], [3, 3], [4, 4]]   # (semilla, pliegue de validación)
 
   tuning:
     method: random
-    n_trials: 12
+    n_trials: 6                   # D1: 6 configuraciones (antes 12); las 6 primeras del muestreador con sampler_seed 2026
     sampler_seed: 2026            # misma semilla -> mismas configuraciones para todos los modelos
     val_fold: 0
     seed: 0
@@ -198,10 +220,11 @@ train:
 # ---------------------------------------------------------------------------
 # Corridas = producto semilla x pliegue de validación (validación cruzada repetida), con
 # etiqueta `label`, evaluación de test y métricas de train sin aumento ni dropout.
-# El número de semillas se ajusta tras el piloto editando `seeds` (ver preregistro.md).
+# El número de corridas se fijó por cómputo (desviación D3, capítulo 7).
 final:
   label: final
-  seeds: [0, 1, 2, 3, 4]
+  # D3: 5 corridas por modelo (semilla 0 x 5 pliegues), fijadas por cómputo sin piloto
+  seeds: [0]
   folds: [0, 1, 2, 3, 4]
   evaluate_train: true            # métricas sobre el train de la corrida, sin aumento ni dropout
 

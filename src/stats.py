@@ -383,6 +383,18 @@ def minimum_detectable_difference(sigma_d: float, n: int, alpha: float, power: f
     return float(z_alpha_power(alpha, power) * sigma_d / np.sqrt(n)) if n > 0 else float("nan")
 
 
+def minimum_detectable_difference_nb(sigma_d: float, n: int, alpha: float, power: float,
+                                     val_train_ratio: float) -> float:
+    """Diferencia mínima detectable a posteriori del capítulo 7 («Número de corridas»):
+    (t_{1-alpha/2, n-1} + t_{1-beta, n-1}) sigma_d sqrt(1/n + n_val/n_train), con la corrección de
+    Nadeau y Bengio por el solapamiento de los conjuntos de entrenamiento entre corridas."""
+    if n < 2 or not np.isfinite(sigma_d):
+        return float("nan")
+    df = n - 1
+    t_sum = ss.t.ppf(1 - alpha / 2, df) + ss.t.ppf(power, df)
+    return float(t_sum * sigma_d * np.sqrt(1 / n + val_train_ratio))
+
+
 def power_paired_t(sigma_d: float, n: int, delta: float, alpha: float) -> float:
     """Potencia de la t pareada bilateral para detectar una diferencia `delta` con n corridas
     (t no central con parámetro delta / (sigma_d / sqrt(n)) y n - 1 grados de libertad)."""

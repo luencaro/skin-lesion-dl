@@ -100,6 +100,33 @@ uv run python -m src.verify_data
 Comprueba que existan los archivos registrados en `data/hashes.json` y que su SHA-256 coincida,
 y que estén las 10015 imágenes y máscaras descomprimidas. Termina con código 1 si algo falla.
 
+### Conjuntos externos (evaluación externa)
+
+PAD-UFES-20, Derm7pt y BCN20000 se usan solo para evaluar las corridas definitivas, sin reentrenar
+(desviación D5; `experiments/protocolo.md`, sección 5). La descarga es manual y cada conjunto va en
+su carpeta de `data/external/`, que `.gitignore` excluye. Las rutas, los nombres de archivo y de
+columna, el mapeo de clases y las clases excluidas están en `configs/external.yaml`.
+
+| Conjunto | Fuente y licencia | Carpeta | Contenido esperado |
+|---|---|---|---|
+| PAD-UFES-20 | Mendeley Data, [doi:10.17632/zr7vgbcyr2.1](https://doi.org/10.17632/zr7vgbcyr2.1); CC BY 4.0 | `data/external/pad_ufes_20/` | `metadata.csv` (columnas `img_id`, `diagnostic` y `lesion_id`) y las imágenes PNG, descomprimidas en cualquier subcarpeta (p. ej. `imgs_part_1/` a `imgs_part_3/`) |
+| Derm7pt | [derm.cs.sfu.ca](https://derm.cs.sfu.ca), con registro; uso para investigación (verifica la licencia al descargar) | `data/external/derm7pt/` | `meta/meta.csv` (columnas `case_num`, `diagnosis` y `derm`) y la carpeta `images/` con las rutas de la columna `derm` (imagen dermatoscópica) |
+| BCN20000 | Figshare, [doi:10.6084/m9.figshare.24140028](https://doi.org/10.6084/m9.figshare.24140028); CC BY 4.0 | `data/external/bcn20000/` | El archivo de metadatos de la partición de entrenamiento (`bcn_20k_train.csv`, columnas `bcn_filename`, `diagnosis` y `lesion_id`) y sus imágenes, en cualquier subcarpeta |
+
+Descomprime cada descarga de modo que el archivo de metadatos quede en la ruta indicada, relativa a
+la carpeta del conjunto. Si el archivo o sus columnas tienen otro nombre, `src.external` termina con
+un error que lista lo que encontró: corrige el nombre en `configs/external.yaml`, sin cambiar el
+mapeo. Después de descargar:
+
+```bash
+uv run python -m src.external --hashes        # registra los SHA-256 en data/external_hashes.json y muestra la composición
+uv run python -m src.external --all           # predice con todas las corridas definitivas terminadas
+```
+
+La primera ejecución registra los SHA-256 de todos los archivos de cada carpeta; las siguientes
+los comprueban y terminan con un error si algún archivo cambió. Las predicciones por corrida quedan
+en `outputs/external/<modelo>/<conjunto>/`.
+
 ## Ejecución de extremo a extremo
 
 Los pasos van en este orden. Todos los comandos se ejecutan desde la raíz del proyecto. Los
@@ -127,47 +154,38 @@ las corridas terminadas. Cada uno registra su progreso y el tiempo restante esti
    uv run jupyter nbconvert --to notebook --execute --inplace --ExecutePreprocessor.timeout=-1 book/06-eda_imagenes.ipynb
    ```
 
-4. **Ajuste de hiperparámetros** (pliegue 0, sin test), para cada modelo:
+4. **Ajuste de hiperparámetros** (pliegue 0, sin test): 6 configuraciones por modelo (desviación
+   D1), cada una en su propio proceso. Se reanuda solo: las configuraciones terminadas se
+   reutilizan (MobileNetV2 ya tiene t00 a t05; su t06 se conserva pero se excluye de la selección).
 
    ```bash
-   uv run python -m src.tune --model mobilenetv2
-   uv run python -m src.tune --model resnet50
-   uv run python -m src.tune --model vgg16
+   for m in mobilenetv2 resnet50 vgg16 densenet201 inceptionv3 convnext_tiny vit_b16 efficientnetb0; do
+       uv run python -m src.tune --model "$m"
+   done
    ```
 
-5. **Copia de hiperparámetros**: copia `hyperparameters` de `outputs/tuning/<modelo>/best.json`
-   en la sección `hyperparameters` de `configs/<modelo>.yaml` (`learning_rate`, `weight_decay`,
-   `dropout`). Los pasos siguientes fallan con un mensaje claro si alguno sigue en null.
+5. **Hiperparámetros de la ejecución definitiva**: si la sección `hyperparameters` de
+   `configs/<modelo>.yaml` tiene los tres valores (`learning_rate`, `weight_decay`, `dropout`),
+   `src.final` usa esos. Si están todos en null, los lee de `outputs/tuning/<modelo>/best.json`,
+   que solo se acepta si se seleccionó entre t00 y t05 y coincide con el muestreador; si no existe,
+   `src.final` termina con un mensaje que indica ejecutar `src.tune`. El origen (YAML o best.json, con
+   el ensayo) queda en `run.hyperparameters_source` del `config.yaml` de cada corrida. Unos valores
+   en null y otros no es un error. Antes de la ejecución definitiva, completa `preregistro.md` y crea
+   el tag `e2-preregistro`.
 
-6. **Estudio piloto** (cinco corridas por modelo, sin test):
+6. **Ejecución definitiva** (5 corridas por modelo: semilla 0 en los pliegues 0 a 4, desviación
+   D3; con test, métricas de train sin aumento y pesos guardados), para cada modelo:
 
    ```bash
-   uv run python -m src.pilot --model mobilenetv2
-   uv run python -m src.pilot --model resnet50
-   uv run python -m src.pilot --model vgg16
+   for m in mobilenetv2 resnet50 vgg16 densenet201 inceptionv3 convnext_tiny vit_b16 efficientnetb0; do
+       uv run python -m src.final --model "$m"
+   done
    ```
 
-7. **Preregistro**: ejecuta el notebook del benchmark, cuya sección 2 calcula con el piloto
-   $\hat{\sigma}_d$, $\delta / \hat{\sigma}_d$, el número de corridas $R$ y la diferencia mínima
-   detectable (las secciones que necesitan la ejecución definitiva muestran un aviso):
+   El modelo original sigue los mismos dos pasos (`src.tune` y `src.final` con `--model cci`) después
+   de fijar su backbone (sección «Modelo original»).
 
-   ```bash
-   uv run jupyter nbconvert --to notebook --execute --inplace --ExecutePreprocessor.timeout=-1 book/11-benchmark.ipynb
-   ```
-
-   Completa `preregistro.md` (marcadores `[COMPLETAR]`), ajusta `final.seeds` en
-   `configs/base.yaml` al número de semillas decidido y registra la fecha y el commit.
-
-8. **Ejecución definitiva** (semillas x pliegues, con test, métricas de train sin aumento y
-   pesos guardados), para cada modelo:
-
-   ```bash
-   uv run python -m src.final --model mobilenetv2
-   uv run python -m src.final --model resnet50
-   uv run python -m src.final --model vgg16
-   ```
-
-9. **Notebooks de resultados** por modelo y benchmark:
+7. **Notebooks de resultados** por modelo y benchmark:
 
    ```bash
    uv run jupyter nbconvert --to notebook --execute --inplace --ExecutePreprocessor.timeout=-1 book/08-mobilenetv2.ipynb
@@ -179,13 +197,13 @@ las corridas terminadas. Cada uno registra su progreso y el tiempo restante esti
    Con los flags `RERUN_*` en `False` (valor por defecto), los notebooks no entrenan: solo cargan
    los resultados guardados y muestran un aviso en las secciones que no tienen resultados.
 
-10. **Libro**: MyST no ejecuta los notebooks, usa las salidas guardadas en el paso anterior.
-    Los capítulos que se publican son los de la tabla de contenidos de `myst.yml`.
+8. **Libro**: MyST no ejecuta los notebooks, usa las salidas guardadas en el paso anterior.
+   Los capítulos que se publican son los de la tabla de contenidos de `myst.yml`.
 
-    ```bash
-    myst build --html     # genera _build/html
-    myst start            # o sirve el libro en local
-    ```
+   ```bash
+   myst build --html     # genera _build/html
+   myst start            # o sirve el libro en local
+   ```
 
 ## Modelo original (capa CCI)
 
@@ -285,7 +303,7 @@ experiments/    estándar, protocolo, bitácora de diseño y procedencia del mec
 artifacts/      modelos exportados a ONNX y metadata.json (los .onnx no se versionan)
 data/raw/       HAM10000 (no se versiona)
 data/literatura/  exportaciones de Scopus y tablas de síntesis
-outputs/        métricas, predicciones y pesos de cada corrida, ajuste, piloto y logs
+outputs/        métricas, predicciones y pesos de cada corrida, ajuste y logs
 book/           capítulos del informe (MyST)
 MODEL_CARD.md, DATA_STATEMENT.md, CITATION.cff, LICENSE, render.yaml, Dockerfile
 preregistro.md, preregistro_e2.md

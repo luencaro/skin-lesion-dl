@@ -22,7 +22,7 @@ La hipótesis, formulada antes de los experimentos definitivos, es la siguiente:
 
 Si el mecanismo funciona por esa razón, deben cumplirse también cuatro predicciones secundarias, declaradas a priori:
 
-1. Bajo perturbaciones de ganancia por canal con factores entre 0,5 y 2, la exactitud balanceada del modelo con la capa no cambia, salvo por la saturación de píxeles, mientras que la del backbone sin la capa cae con la severidad.
+1. Bajo perturbaciones de ganancia por canal, la exactitud balanceada del modelo con la capa no cambia, mientras que la del backbone sin la capa cae con la severidad. La predicción se contrasta con ganancias por canal log-uniformes entre 0,5 y 1, que oscurecen la imagen sin saturar píxeles y permiten comprobar la invarianza exacta. Se reporta además, como análisis de sensibilidad, el rango entre 0,5 y 2, donde la saturación de alrededor del 20 % de los píxeles rompe parcialmente la invarianza.
 2. La ventaja desaparece al retirar la invarianza, es decir, al calcular los pesos sobre la imagen sin normalizar.
 3. La capa no aporta ventaja frente al desenfoque, el ruido gaussiano o la compresión JPEG, que no son ganancias de canal.
 4. Un clasificador lineal predice la fuente con menor exactitud balanceada a partir de las representaciones del modelo con la capa que a partir de las del backbone sin ella.
@@ -51,7 +51,7 @@ $$ (cci-correccion)
 
 La ecuación {eq}`cci-guia` centra el logaritmo de cada canal en su media espacial; $g_\phi$ es una red convolucional pequeña (dos convoluciones de 3 × 3 con 16 filtros y ReLU, y una de 1 × 1 con una salida) que asigna a cada píxel un puntaje de confianza, convertido en pesos por la softmax espacial de {eq}`cci-pesos`. La ecuación {eq}`cci-iluminante` es la media de Minkowski ponderada de orden $p \ge 1$, que se reduce a Shades of Gray cuando los pesos son uniformes y $p$ es fijo, y {eq}`cci-correccion` divide cada canal por su iluminante estimado, con una constante $\kappa$ que devuelve las intensidades al rango que espera el backbone. El modelo completo es $f = \operatorname{softmax} \circ b_\psi \circ h$, donde $b_\psi$ es el backbone preentrenado con su cabeza de clasificación, y se entrena con la misma entropía cruzada ponderada que los modelos del benchmark.
 
-Por estabilidad numérica, la ecuación {eq}`cci-iluminante` se calcula en el dominio logarítmico, $\log e_c = \frac{1}{p} \operatorname{logsumexp}_i\big(\log w_i + p \log \bar{x}_{i,c}\big)$, y las intensidades se acotan inferiormente por $\varepsilon = 10^{-3}$ antes de tomar logaritmos.
+Por estabilidad numérica, la ecuación {eq}`cci-iluminante` se calcula en el dominio logarítmico, $\log e_c = \frac{1}{p} \operatorname{logsumexp}_i\big(\log w_i + p \log \bar{x}_{i,c}\big)$, y las intensidades se acotan inferiormente por $\varepsilon = 10^{-3}$ antes de tomar logaritmos. El parámetro $\vartheta$ se excluye del decaimiento de pesos de AdamW. El decaimiento lo empujaría hacia $\vartheta = 0$, es decir, hacia $p = 1 + \log 2 \approx 1{,}69$, sin ninguna justificación en el problema. Los pesos de $g_\phi$ sí llevan decaimiento, como el resto del modelo.
 
 ### Gradientes
 
@@ -130,7 +130,7 @@ Con $\bar{N} = 3136$ píxeles reducidos y 16 filtros, la red $g_\phi$ tiene $3 \
 
 El backbone se fija antes de los experimentos con una regla: es el modelo del benchmark con mayor exactitud balanceada media en validación en el Entregable 2, con los mismos pesos de ImageNet, de modo que el aporte original queda fuera del backbone y la comparación con él aísla el efecto de la capa.
 
-La ablación aísla los tres componentes propios, con el mismo presupuesto de ajuste y una familia de contrastes separada con corrección de Holm:
+La ablación aísla los tres componentes propios con las mismas corridas que el modelo completo (semilla 0 en los pliegues 0 a 4) y una familia de contrastes separada con corrección de Holm:
 
 | Variante | Orden $p$ | Pesos espaciales | Representación de los pesos |
 |---|---|---|---|
@@ -142,3 +142,5 @@ La ablación aísla los tres componentes propios, con el mismo presupuesto de aj
 | Backbone sin la capa | No aplica | No aplica | No aplica |
 
 La variante sin invarianza conserva el número de parámetros del modelo completo y pone a prueba la predicción secundaria 2; la de Shades of Gray fijo reproduce el trabajo cercano más directo.
+
+Por el cómputo disponible, las variantes de ablación no se ajustan por separado: usan los hiperparámetros seleccionados para el modelo completo. Esto favorece ligeramente al modelo completo, cuyos hiperparámetros se eligieron para él, y se declara como desviación. La fila del backbone sin la capa corresponde al modelo del benchmark, que ya se ajustó con su propio presupuesto.

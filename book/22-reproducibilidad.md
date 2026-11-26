@@ -62,7 +62,7 @@ no hecho; **desviación** si no se hace, con su motivo.
 | Determinismo de las operaciones en GPU | parcial | `train.deterministic: false` por costo; la variabilidad entre semillas se mide y se reporta |
 | Mismo pipeline, resolución, espacio de búsqueda y presupuesto para todos los modelos | cumple | `configs/base.yaml` (`train`), `src/tune.py` |
 | Hiperparámetros seleccionados solo con validación | cumple | `outputs/tuning/<modelo>/best.json`; test solo en `src.final` |
-| Número de corridas justificado con un piloto y la potencia | pendiente | `src.pilot` y `book/11-benchmark.ipynb` (sección 2); R se completa en `preregistro_e2.md` tras el piloto |
+| Número de corridas justificado con un piloto y la potencia | parcial | sin piloto: R = 5 fijado por cómputo (desviaciones D2 y D3); diferencia mínima detectable a posteriori (capítulo 7, «Número de corridas») |
 | Regla de exclusión de corridas divergentes | cumple | `e2.divergence`, `benchmark.divergent_runs` |
 | Baselines trivial y no profundo con las mismas corridas | cumple | `src/baselines.py` |
 | Métricas primaria y secundarias con variabilidad e intervalos | cumple | tabla principal de `book/20-benchmark-e2.ipynb` (t de Student y bootstrap por lesión) |

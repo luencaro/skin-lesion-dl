@@ -195,6 +195,34 @@ def pilot_power_table(rs: RunSet, cfg: dict, split: str = "val") -> pd.DataFrame
 
 
 @tolerant()
+def posterior_mdd_table(rs: RunSet, cfg: dict, split: str | None = None) -> pd.DataFrame:
+    """Diferencia mínima detectable a posteriori por par de modelos (capítulo 7, «Número de
+    corridas»), con las corridas definitivas pareadas: sigma_d de las diferencias de la métrica
+    primaria en `split` (por defecto benchmark.split, el conjunto de prueba), delta / sigma_d y
+    (t_{1-a/2, R-1} + t_{1-b, R-1}) sigma_d sqrt(1/R + n_val/n_train). Si supera delta, la
+    ausencia de significancia se interpreta como no concluyente (no como equivalencia)."""
+    m = _need_models(rs, 2, "La diferencia mínima detectable a posteriori")
+    if m is not None:
+        return m
+    b = bench_cfg(cfg)
+    split = split or b["split"]
+    delta, alpha, power = float(b["delta"]), float(b["alpha"]), float(b["power"])
+    ratio = float((rs.info["n_val"] / rs.info["n_train"]).mean())
+    rows = []
+    for d in paired_diffs(rs, split, b["primary_metric"]).values():
+        n = len(d)
+        sd = float(d.std(ddof=1)) if n > 1 else np.nan
+        mdd = S.minimum_detectable_difference_nb(sd, n, alpha, power, ratio)
+        rows.append({"corridas_pareadas": n, "media_d": float(d.mean()) if n else np.nan, "sigma_d": sd,
+                     "delta_sobre_sigma_d": delta / sd if sd else np.nan, "dif_minima_detectable": mdd,
+                     "supera_delta": bool(mdd > delta) if np.isfinite(mdd) else np.nan})
+    out = pd.DataFrame(rows, index=_pair_index(model_pairs(rs)))
+    out.attrs["nota"] = (f"delta = {delta}, alpha = {alpha}, potencia = {power}, n_val/n_train = {ratio:.3f}, "
+                         f"métrica = {b['primary_metric']} ({split})")
+    return out
+
+
+@tolerant()
 def pilot_differences(rs: RunSet, cfg: dict, split: str = "val") -> pd.DataFrame:
     """Diferencias pareadas por corrida (filas) y par de modelos (columnas)."""
     m = _need_models(rs, 2, "Las diferencias pareadas")

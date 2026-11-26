@@ -6,7 +6,10 @@ input_size: 224                   # debe coincidir con train.image_size de base.
 gradcam_layer: block5_conv3       # capa del backbone anidado para Grad-CAM (src/gradcam.py)
 saliency: gradcam                 # gradcam (CNN) o rollout (ViT); src/interpret.py
 expected_params: 134289223        # total con la cabeza de 7 clases; lo verifica src.verify_models
-gradient_accumulation_steps: 2    # micro-lotes de 16 y lote efectivo de 32 (train.batch_size), por memoria de la GPU
+# Sin acumulación de gradientes: lote de 32 (train.batch_size). Medido con src.speed
+# (outputs/speed/vgg16*.csv), fase B con XLA: cabe con train.gpu_min_system_memory_mb = 512 y
+# gpu_allocator = cuda_malloc_async (pico de 4,4 de 6 GiB según nvidia-smi).
+gradient_accumulation_steps: 1
 
 # Se llenan con outputs/tuning/vgg16/best.json tras `python -m src.tune --model vgg16`.
 hyperparameters:

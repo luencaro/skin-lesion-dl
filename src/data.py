@@ -532,12 +532,26 @@ def class_names(cfg: dict) -> list[str]:
 
 @dataclass
 class SplitSource:
-    """Imágenes de una partición: image_id y etiquetas en orden, y el dataset (imagen, etiqueta)
-    sin lotes, ya decodificado, redimensionado y (si `cache_in_memory`) en cache."""
+    """Imágenes de una partición: image_id y etiquetas en orden, y dos datasets sin lotes.
+
+    `stored` es lo que se baraja: (ruta, etiqueta) de la caché en disco, o (imagen, etiqueta) de la
+    caché en memoria. `base` = stored.map(load) da (imagen float32 en [0, 255], etiqueta) ya
+    redimensionada; `load` es None si `stored` ya da esa imagen (caché float32 en memoria).
+    Barajar `stored` en lugar de `base` deja en el búfer de shuffle rutas o imágenes uint8, no
+    copias float32 de todo el train; la permutación es la misma (no depende del contenido)."""
 
     image_ids: np.ndarray
     labels: np.ndarray
-    base: object  # tf.data.Dataset
+    stored: object  # tf.data.Dataset
+    load: object = None  # (x, etiqueta) -> (imagen float32, etiqueta), o None
+
+    @property
+    def base(self):
+        import tensorflow as tf
+
+        if self.load is None:
+            return self.stored
+        return self.stored.map(self.load, num_parallel_calls=tf.data.AUTOTUNE, deterministic=True)
 
 
 @dataclass
@@ -569,9 +583,10 @@ def select_split(splits: pd.DataFrame, which: str, val_fold: int) -> pd.DataFram
     return splits[m].sort_values("image_id").reset_index(drop=True)
 
 
-def _image_loader(cfg: dict, cache_uint8: bool = False):
+def _image_loader(cfg: dict, cache_uint8: bool = False, any_format: bool = False):
     """Función ruta -> imagen redimensionada a image_size x image_size (float32 en [0, 255], o
-    uint8 si `cache_uint8`), con el mismo redimensionado que el entrenamiento."""
+    uint8 si `cache_uint8`), con el mismo redimensionado que el entrenamiento. HAM10000 es JPEG;
+    con `any_format` (conjuntos externos) se decodifica JPEG, PNG o BMP con 3 canales."""
     import tensorflow as tf
 
     tcfg = cfg["train"]
@@ -580,7 +595,12 @@ def _image_loader(cfg: dict, cache_uint8: bool = False):
     antialias = bool(tcfg.get("resize_antialias", True))
 
     def load(path):
-        img = tf.io.decode_jpeg(tf.io.read_file(path), channels=3)
+        data = tf.io.read_file(path)
+        if any_format:
+            img = tf.io.decode_image(data, channels=3, expand_animations=False)
+            img.set_shape([None, None, 3])
+        else:
+            img = tf.io.decode_jpeg(data, channels=3)
         img = tf.image.resize(img, [size, size], method=method, antialias=antialias)  # float32
         img = tf.clip_by_value(img, 0.0, 255.0)
         if cache_uint8:
@@ -597,11 +617,135 @@ def load_resized_images(cfg: dict, image_ids) -> np.ndarray:
     return np.stack([load(str(image_path(cfg, i))).numpy() for i in image_ids]).astype(np.float32)
 
 
+# Caché en disco de las imágenes redimensionadas -----------------------------------------------
+# Cada imagen se guarda una sola vez como float32 little-endian crudo (H x W x 3, RGB), calculada
+# con la misma función que el entrenamiento (_image_loader dentro de tf.data, en CPU), así que los
+# valores son idénticos bit a bit a los de la caché en memoria. manifest.json guarda los
+# parámetros del redimensionado y el SHA-256 de cada archivo; al cargar una partición se comprueba
+# el SHA-256 de cada imagen (train.resized_cache_verify).
+
+RESIZED_CACHE_SUFFIX = ".f32"
+
+
+def cache_mode(tcfg: dict) -> str:
+    """train.cache: disk, memory o none. Sin `cache` (configuraciones anteriores), cache_in_memory."""
+    mode = tcfg.get("cache")
+    if mode is None:
+        mode = "memory" if tcfg.get("cache_in_memory", True) else "none"
+    if mode not in ("disk", "memory", "none"):
+        raise ValueError(f"train.cache no soportado: {mode} (disk, memory o none)")
+    return mode
+
+
+def resized_cache_params(cfg: dict) -> dict:
+    """Parámetros que determinan el contenido de la caché en disco (y su subcarpeta)."""
+    import tensorflow as tf
+
+    tcfg = cfg["train"]
+    return {
+        "image_size": int(tcfg["image_size"]),
+        "resize_method": tcfg.get("resize_method", "bilinear"),
+        "resize_antialias": bool(tcfg.get("resize_antialias", True)),
+        "clip": [0.0, 255.0],
+        "dtype": "float32 little-endian, HWC, RGB",
+        "tensorflow": tf.__version__,
+    }
+
+
+def resized_cache_dir(cfg: dict) -> Path:
+    p = resized_cache_params(cfg)
+    key = f"{p['image_size']}px_{p['resize_method']}_aa{int(p['resize_antialias'])}_tf{p['tensorflow']}"
+    return Path(cfg["paths"]["resized_cache_dir"]) / key
+
+
+def _write_atomic(path: Path, data: bytes) -> None:
+    tmp = path.with_name(f".{path.name}.tmp")
+    tmp.write_bytes(data)
+    tmp.replace(path)
+
+
+def _hash_files(paths, workers: int = 8) -> list[str]:
+    from concurrent.futures import ThreadPoolExecutor
+
+    with ThreadPoolExecutor(workers) as ex:  # hashlib libera el GIL con bloques grandes
+        return list(ex.map(sha256_file, paths))
+
+
+def ensure_resized_cache(cfg: dict, image_ids, verify: bool = True, sources=None, out_dir=None) -> list[str]:
+    """Rutas de la caché en disco de `image_ids`, en orden. Calcula las imágenes que faltan
+    (una sola vez) y, con `verify`, comprueba el tamaño y el SHA-256 de todas las pedidas.
+
+    Por defecto, imágenes de HAM10000 (paths.images_dir) en resized_cache_dir(cfg). Con
+    `sources` (ruta de origen de cada image_id) y `out_dir` (conjuntos externos), cualquier
+    formato de imagen con el mismo redimensionado, en `out_dir`/<clave del redimensionado>."""
+    import tensorflow as tf
+
+    params = resized_cache_params(cfg)
+    external = sources is not None
+    if external:
+        if out_dir is None:
+            raise ValueError("con `sources` hay que indicar `out_dir`")
+        params = {**params, "decode": "tf.io.decode_image, 3 canales"}
+        out_dir = Path(out_dir) / resized_cache_dir(cfg).name
+    else:
+        out_dir = resized_cache_dir(cfg)
+    size = params["image_size"]
+    nbytes = size * size * 3 * 4
+    out_dir.mkdir(parents=True, exist_ok=True)
+    manifest_path = out_dir / "manifest.json"
+    manifest = load_json(manifest_path) if manifest_path.exists() else {"params": params, "sha256": {}}
+    if manifest["params"] != params:
+        raise ValueError(f"{manifest_path}: parámetros {manifest['params']} distintos de {params}")
+    hashes = manifest["sha256"]
+    ids = [str(i) for i in image_ids]
+    files = [out_dir / f"{i}{RESIZED_CACHE_SUFFIX}" for i in ids]
+
+    origin = dict(zip(ids, map(str, sources))) if external else None
+    missing = [(i, f) for i, f in zip(ids, files) if i not in hashes or not f.exists()]
+    if missing:
+        load = _image_loader(cfg, any_format=external)  # el mismo redimensionado, en tf.data (CPU)
+        src = [origin[i] if external else str(image_path(cfg, i)) for i, _ in missing]
+        ds = (tf.data.Dataset.from_tensor_slices(src)
+              .map(load, num_parallel_calls=tf.data.AUTOTUNE, deterministic=True)
+              .prefetch(tf.data.AUTOTUNE))
+        for k, ((i, f), img) in enumerate(tqdm(zip(missing, ds), total=len(missing),
+                                               desc=f"Caché {out_dir.name}")):
+            data = np.ascontiguousarray(img.numpy(), dtype="<f4").tobytes()
+            _write_atomic(f, data)
+            hashes[i] = hashlib.sha256(data).hexdigest()
+            if (k + 1) % 1000 == 0:
+                _write_atomic(manifest_path, json.dumps(manifest, indent=1).encode())
+        _write_atomic(manifest_path, json.dumps(manifest, indent=1).encode())
+
+    if verify:
+        wrong_size = [str(f) for f in files if f.stat().st_size != nbytes]
+        if wrong_size:
+            raise RuntimeError(f"{len(wrong_size)} archivos de la caché con tamaño distinto de {nbytes} B, "
+                               f"p. ej. {wrong_size[0]}; bórralos para recalcularlos")
+        bad = [str(f) for i, f, h in zip(ids, files, _hash_files(files)) if h != hashes[i]]
+        if bad:
+            raise RuntimeError(f"{len(bad)} archivos de la caché no coinciden con el SHA-256 de "
+                               f"{manifest_path}, p. ej. {bad[0]}; bórralos para recalcularlos")
+    return [str(f) for f in files]
+
+
+def _raw_image_loader(size: int):
+    """Función ruta de la caché en disco -> imagen float32 (size, size, 3)."""
+    import tensorflow as tf
+
+    def load(path):
+        return tf.reshape(tf.io.decode_raw(tf.io.read_file(path), tf.float32, little_endian=True),
+                          [size, size, 3])
+
+    return load
+
+
 def _split_source(cfg: dict, df: pd.DataFrame, classes: list[str]):
     import tensorflow as tf
 
     tcfg = cfg["train"]
-    cache_uint8 = tcfg.get("cache_dtype", "float32") == "uint8"
+    mode = cache_mode(tcfg)
+    cache_uint8 = mode == "memory" and tcfg.get("cache_dtype", "float32") == "uint8"
 
     unknown = sorted(set(df["dx"]) - set(classes))
     if unknown:
@@ -611,19 +755,24 @@ def _split_source(cfg: dict, df: pd.DataFrame, classes: list[str]):
     faltan = [p for p in paths if not Path(p).exists()]
     if faltan:
         raise FileNotFoundError(f"{len(faltan)} imágenes no encontradas, p. ej. {faltan[0]}")
+    ids = df["image_id"].to_numpy()
+
+    if mode == "disk":
+        files = ensure_resized_cache(cfg, ids, verify=bool(tcfg.get("resized_cache_verify", True)))
+        read = _raw_image_loader(int(tcfg["image_size"]))
+        return SplitSource(ids, labels, tf.data.Dataset.from_tensor_slices((files, labels)),
+                           lambda f, y: (read(f), y))
 
     load_image = _image_loader(cfg, cache_uint8)
+    if mode == "none":
+        return SplitSource(ids, labels, tf.data.Dataset.from_tensor_slices((paths, labels)),
+                           lambda p, y: (load_image(p), y))
 
-    def load(path, label):
-        return load_image(path), label
-
-    ds = tf.data.Dataset.from_tensor_slices((paths, labels))
-    ds = ds.map(load, num_parallel_calls=tf.data.AUTOTUNE, deterministic=True)
-    if tcfg.get("cache_in_memory", True):
-        ds = ds.cache()
-    if cache_uint8:
-        ds = ds.map(lambda x, y: (tf.cast(x, tf.float32), y), num_parallel_calls=tf.data.AUTOTUNE)
-    return SplitSource(image_ids=df["image_id"].to_numpy(), labels=labels, base=ds)
+    stored = (tf.data.Dataset.from_tensor_slices((paths, labels))
+              .map(lambda p, y: (load_image(p), y), num_parallel_calls=tf.data.AUTOTUNE, deterministic=True)
+              .cache())
+    load = (lambda x, y: (tf.cast(x, tf.float32), y)) if cache_uint8 else None
+    return SplitSource(ids, labels, stored, load)
 
 
 def load_split_sources(cfg: dict, val_fold: int, include_test: bool = False) -> dict:
@@ -727,8 +876,8 @@ def make_datasets(
 
     Train: split == "train" y fold != val_fold; val: fold == val_fold; test: split == "test".
     Las imágenes originales se redimensionan a image_size x image_size sin conservar la
-    relación de aspecto, como float32 en [0, 255]; la cache va tras el redimensionado y el
-    aumento después de la cache. Val y test conservan el orden de `val_ids` / `test_ids`.
+    relación de aspecto, como float32 en [0, 255]; la cache (train.cache: disk, memory o none) va
+    tras el redimensionado, el barajado antes de leer la imagen de la cache y el aumento después. Val y test conservan el orden de `val_ids` / `test_ids`.
     `sources` (de un Datasets anterior con el mismo val_fold) reutiliza la cache. Con
     `accumulation_steps` > 1, cada lote de train.batch_size de train se parte en ese número de
     micro-lotes (split_into_micro_batches) y val, test y train sin aumento usan lotes de
@@ -745,9 +894,17 @@ def make_datasets(
     bs = int(tcfg["batch_size"])
     micro = micro_batch_size(bs, accumulation_steps)
     tr = sources["train"]
+    augment = make_augment_fn(tcfg.get("augmentation") or {}, seed)
+    if tr.load is not None:  # lectura tras barajar (el búfer guarda rutas o uint8) y aumento en un solo map
+        load = tr.load
+
+        def load_and_augment(x, y):
+            return augment(*load(x, y))
+    else:
+        load_and_augment = augment
     train = (
-        tr.base.shuffle(len(tr.labels), seed=seed, reshuffle_each_iteration=True)
-        .map(make_augment_fn(tcfg.get("augmentation") or {}, seed), num_parallel_calls=tf.data.AUTOTUNE)
+        tr.stored.shuffle(len(tr.labels), seed=seed, reshuffle_each_iteration=True)
+        .map(load_and_augment, num_parallel_calls=tf.data.AUTOTUNE)
         .batch(bs)
     )
     if accumulation_steps > 1:

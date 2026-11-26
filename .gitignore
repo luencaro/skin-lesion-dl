@@ -2,6 +2,9 @@
 data/raw/*
 !data/raw/.gitkeep
 
+# Conjuntos externos (evaluación externa, desviación D5); los SHA-256 van en data/external_hashes.json
+data/external/
+
 # Python
 __pycache__/
 *.pyc
