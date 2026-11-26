@@ -20,12 +20,24 @@ paths:
   artifacts_annotation_csv: data/anotacion_artefactos.csv
   train_color_stats_json: data/train_color_stats.json
   outliers_csv: data/atipicos_imagenes.csv
-  embeddings_cache: data/processed/embeddings_mobilenetv2.npz
+  embeddings_cache: data/processed/embeddings_mobilenetv2.npz       # train (EDA)
+  embeddings_test_cache: data/processed/embeddings_mobilenetv2_test.npz  # test (src.baselines, misma función)
+  image_sha256_csv: data/interim/image_sha256.csv  # SHA-256 por imagen (src.audit)
+  data_contract: configs/data_contract.yaml
+  dictionary_csv: data/diccionario.csv
+  error_taxonomy_csv: data/taxonomia_errores.csv  # plantilla de etiquetado manual (src.errors)
   runs_dir: outputs/runs
   tuning_dir: outputs/tuning
   pilot_dir: outputs/pilot
   final_dir: outputs/final
   benchmark_dir: outputs/benchmark
+  benchmark_e2_dir: outputs/benchmark_e2        # tablas en cache del benchmark del Entregable 2
+  robustness_dir: outputs/robustness
+  interpretability_dir: outputs/interpretability
+  cost_dir: outputs/cost
+  audit_dir: outputs/audit
+  reproduce_dir: outputs/reproduce
+  mlflow_dir: outputs/mlflow
   logs_dir: outputs/logs
 
 # Formato de los archivos
@@ -125,7 +137,8 @@ train:
   image_size: 224                 # lado de la entrada; se redimensiona sin conservar la relación de aspecto
   resize_method: bilinear
   resize_antialias: true          # filtro antialias al reducir (600x450 -> 224x224)
-  batch_size: 32
+  batch_size: 32                  # lote efectivo de cada actualización del optimizador
+  gradient_accumulation_steps: 1  # micro-lote del tf.data = batch_size / pasos; configs/<modelo>.yaml puede sobrescribirlo
   mixed_precision: true           # política mixed_float16; la salida softmax queda en float32
   deterministic: false            # true -> tf.config.experimental.enable_op_determinism()
   gpu_memory_growth: true
@@ -267,3 +280,152 @@ benchmark:
       metric: exactitud balanceada
       note: "otra muestra de prueba; valor aproximado"
       source: pinar2026
+
+# ===========================================================================
+# Entregable 2 (preregistro_e2.md). book/15 a 22; src/baselines.py, benchmark.py (sección E2),
+# calibration.py, robustness.py, interpret.py, errors.py, ceiling.py, cost.py, audit.py,
+# tracking.py y reproduce.py. Los parámetros comunes (alpha, delta, bootstrap, ajuste de p) se
+# leen de la sección `benchmark`.
+# ===========================================================================
+e2:
+  base_models: [mobilenetv2, resnet50, vgg16]
+  sota_models: [densenet201, inceptionv3, convnext_tiny, vit_b16, efficientnetb0]
+  baselines: [trivial, logreg]
+  cnn_models: [mobilenetv2, resnet50, vgg16, densenet201, inceptionv3, convnext_tiny, efficientnetb0]
+  transformer_models: [vit_b16]
+  best_base: null                 # null: modelo base con mayor media de la métrica primaria en benchmark.split
+  overfitting_margin: 0.15        # δg: brecha train sin aumento - validación (exactitud balanceada)
+  divergence:                     # regla de exclusión del preregistro (se informa; la corrida se repite a mano)
+    min_val_balanced_accuracy: 0.30
+
+# Baselines (src/baselines.py). Se evalúan en las mismas corridas (semilla, pliegue) de `final`.
+baselines:
+  trivial:
+    majority_class: nv            # predicción constante
+    probabilities: prior          # prior: frecuencias de clase del train de la corrida (argmax = nv)
+  logreg:
+    embeddings: mobilenetv2       # embeddings congelados de paths.embeddings_cache y embeddings_test_cache
+    standardize: true             # StandardScaler ajustado solo con el train de cada corrida
+    class_weight: balanced        # igual que train.class_weight = inverse_frequency
+    solver: lbfgs
+    max_iter: 5000
+    C_grid: [0.001, 0.01, 0.1, 1.0, 10.0]   # se elige en train.tuning.val_fold (exactitud balanceada de val)
+
+# Estadística confirmatoria y exploratoria del Entregable 2 (src/stats.py, src/benchmark.py)
+e2_stats:
+  alternative: greater            # H1: mu_k - mu_ref > 0 (RQ1 y RQ2)
+  table_metrics: [balanced_accuracy, f1_macro, f1_weighted, accuracy, auc_roc_macro_ovr, auc_pr_macro, mcc,
+                  log_loss, brier, ece, ece_adaptativo]   # tabla principal (A.2), en test
+  rq1: {models: sota_models, reference: best_base}
+  rq2: {models: deep_models, reference: logreg}
+  decision_test_normal: nadeau_bengio        # si Shapiro-Wilk no rechaza la normalidad de las diferencias
+  decision_tests_non_normal: [wilcoxon, bootstrap]   # si la rechaza: ambas deben ser significativas
+  tost_se: nadeau_bengio          # error estándar del TOST: nadeau_bengio o naive
+  a12_bootstrap: 2000             # remuestreos de corridas para el IC de A12
+  exploratory_p_adjust: fdr_bh    # RQ3 y subgrupos (Benjamini-Hochberg)
+  exploratory_resamples: 2000     # bootstrap por lesión de las familias exploratorias
+  auc_resamples: 1000             # bootstrap por lesión del AUC macro y del MCC (tabla A)
+  hosmer_lemeshow_groups: 10
+  source_column: dataset
+  source_target: vidir_molemax    # RQ3 y limitación del paper guía: esta fuente frente al resto
+  age_bins: [0, 30, 45, 60, 75, 120]  # edad en años, intervalos [a, b)
+  subgroups: [dataset, sex, age_group, localization, dx_type]
+  mixed_effects:
+    image_level: true             # GLMM binomial (Bayes variacional) de aciertos por imagen
+    run_level: true               # LMM de la exactitud balanceada por corrida
+    vb_seed: 2026
+  global_models: all              # all: todos los modelos con corridas (Friedman, Nemenyi, Cochran)
+
+# Réplica de pinar2026 (capítulo 14)
+replication:
+  model: resnet50
+  value: 0.686
+  ci: [0.653, 0.721]
+  source: pinar2026
+
+# Calibración e incertidumbre (src/calibration.py)
+calibration:
+  n_bins: 15                      # ECE de igual ancho (= train.ece_bins)
+  adaptive_bins: 15               # ECE adaptativo (intervalos de igual frecuencia)
+  temperature_bounds: [0.05, 20.0]
+  eps: 1.0e-12                    # recorte de probabilidades antes del logaritmo
+conformal:
+  alphas: [0.10, 0.05]
+  score: lac                      # 1 - p(y | x) (least ambiguous set-valued classifier)
+  use_temperature: true           # probabilidades con temperature scaling de la misma corrida
+
+# Robustez (src/robustness.py): solo inferencia con model.weights.h5 de las corridas definitivas
+robustness:
+  runs: [[0, 0], [1, 1], [2, 2]]  # (semilla, pliegue)
+  seed: 2026
+  perturbations:                  # 3 niveles de severidad cada una, sobre la imagen redimensionada
+    gaussian_noise: [8.0, 16.0, 32.0]   # desviación estándar en [0, 255]
+    gaussian_blur: [1.0, 2.0, 3.0]      # sigma en píxeles
+    jpeg: [50, 25, 10]                  # calidad JPEG
+    brightness: [0.10, 0.20, 0.30]      # delta aditivo sobre [0, 1]
+
+# Interpretabilidad (src/interpret.py)
+interpretability:
+  top_k: 3                        # mejores modelos profundos por la media de la métrica primaria
+  run: [0, 0]                     # corrida de los mapas y de la prueba de borrado e inserción
+  stability_runs: [[0, 0], [1, 0], [2, 0]]  # mismo pliegue, distinta semilla
+  steps: 20                       # pasos de borrado e inserción
+  baseline: blur                  # imagen de referencia: blur o mean
+  blur_sigma: 12.0
+  rollout_head_fusion: mean       # mean, max o min sobre las cabezas de atención
+  rollout_discard_ratio: 0.0
+  batch_size: 16
+  stability_size: 56              # lado al que se reducen los mapas para la correlación entre semillas
+
+# Errores, subgrupos y atajos (src/errors.py)
+errors:
+  ensemble_top_k: 3               # ensemble simple: media de probabilidades de los k mejores modelos
+  error_frac: 0.5                 # una imagen es un error del modelo si falla en más de esta fracción de corridas
+  shortcut_splits: [test, val]    # val: predicciones fuera de pliegue de las imágenes anotadas de train
+  taxonomy_n: 100
+  taxonomy_seed: 2026
+  taxonomy_categories:
+    - artefacto_de_adquisicion    # regla, tinta, vello, burbujas, viñeteado o parche de color
+    - calidad_de_imagen           # desenfoque, iluminación o color atípicos
+    - lesion_fuera_de_encuadre
+    - morfologia_atipica          # lesión sin rasgos típicos de su clase
+    - clase_vecina_similar        # confusión entre clases visualmente próximas (p. ej. mel-nv, bkl-mel)
+    - lesion_pequena_o_poco_contraste
+    - etiqueta_dudosa             # diagnóstico por seguimiento o consenso discutible
+    - otra
+
+# Techo de desempeño (src/ceiling.py)
+ceiling:
+  knn_k: [1, 5, 15]
+  metric: cosine
+  exclude_same_lesion: true       # los vecinos de la misma lesión no cuentan (evita fuga)
+  readers_bound_name: "Lectores con más de diez años de experiencia"  # cota de benchmark.reference_bounds
+  gamma_reference: best_base      # s_base de γ: best_base, trivial o logreg
+
+# Costo (src/cost.py) y frontera de Pareto
+cost:
+  seed: 0
+  warmup: 3                       # llamadas de calentamiento (compilación) antes de medir
+  train_steps: 5                  # pasos de entrenamiento medidos (mediana)
+  latency_repeats: 50
+  throughput_repeats: 10
+  pareto_costs: [gflops, params_total, latency_ms_per_image, entrenamiento_h_por_corrida]
+  eta_cost: gflops                # η_k = (s_k / C_k) / (s_base / C_base): eficiencia relativa al mejor modelo base
+
+# Auditoría de fuga y contrato de datos (src/audit.py, book/21)
+audit:
+  cosine_threshold: 0.95          # similitud coseno de embeddings para considerar vecino cercano
+  max_neighbor_frac: 0.01         # proporción máxima de imágenes de test con vecino en train (pHash o coseno)
+  metadata_auc_max: 0.80          # AUC univariado macro por encima del cual un metadato se marca
+  adversarial_auc_max: 0.60       # validación adversarial train frente a test
+  permutation:
+    n_permutations: 5
+    seed: 2026
+    tolerance: 0.05               # |BA permutada - 1 / K| máximo
+  synthetic_seed: 2026
+
+# Seguimiento de experimentos (src/tracking.py)
+mlflow:
+  enabled: true                   # registra cada corrida al terminar src.train (los fallos solo avisan)
+  experiment: skin-lesion-dl
+  backend: sqlite                 # sqlite:///<paths.mlflow_dir>/mlflow.db; artefactos en <mlflow_dir>/artifacts

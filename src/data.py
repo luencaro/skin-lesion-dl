@@ -64,6 +64,20 @@ def load_metadata(cfg: dict) -> pd.DataFrame:
     return pd.read_csv(cfg["paths"]["metadata_csv"])
 
 
+def load_metadata_validated(cfg: dict) -> pd.DataFrame:
+    """load_metadata validado con el contrato de datos (paths.data_contract, src.audit). Lanza
+    ValueError con las reglas que fallan."""
+    from src.audit import FALLIDO, load_contract, validate_metadata
+
+    meta = load_metadata(cfg)
+    report = validate_metadata(meta, load_contract(cfg))
+    bad = report[report["resultado"] == FALLIDO]
+    if len(bad):
+        rules = "; ".join(f"{r.columna}: {r.regla} ({r.infracciones})" for r in bad.itertuples())
+        raise ValueError(f"Los metadatos no cumplen el contrato de datos: {rules}")
+    return meta
+
+
 def has_source_column(df: pd.DataFrame, cfg: dict) -> bool:
     col = cfg.get("source_column")
     return bool(col) and col in df.columns
@@ -670,8 +684,44 @@ def make_augment_fn(aug: dict, seed: int):
     return augment
 
 
+def micro_batch_size(batch_size: int, accumulation_steps: int) -> int:
+    """Micro-lote del tf.data con acumulación de gradientes: batch_size / accumulation_steps."""
+    if accumulation_steps < 1 or batch_size % accumulation_steps:
+        raise ValueError(f"train.batch_size ({batch_size}) debe ser múltiplo de gradient_accumulation_steps "
+                         f"({accumulation_steps})")
+    return batch_size // accumulation_steps
+
+
+def check_accumulation(n_train: int, batch_size: int, accumulation_steps: int) -> None:
+    """Error si el último lote de la época tiene menos imágenes que `accumulation_steps` (no podría
+    partirse en ese número de micro-lotes no vacíos)."""
+    last = n_train % batch_size or batch_size
+    if accumulation_steps > 1 and last < accumulation_steps:
+        raise ValueError(f"El último lote de train tiene {last} imágenes, menos que gradient_accumulation_steps "
+                         f"({accumulation_steps})")
+
+
+def split_into_micro_batches(accumulation_steps: int):
+    """Función para flat_map: parte un lote (x, y) de tamaño b en `accumulation_steps` micro-lotes
+    consecutivos de tamaños floor((i + 1) b / a) - floor(i b / a), todos no vacíos si b >= a. Cada
+    actualización acumula exactamente los micro-lotes de un lote efectivo, así que las
+    actualizaciones no se desalinean entre épocas aunque el último lote esté incompleto."""
+    import tensorflow as tf
+
+    a = int(accumulation_steps)
+
+    def split(x, y):
+        b = tf.shape(x)[0]
+        bounds = (tf.range(a + 1) * b) // a
+        return tf.data.Dataset.range(a).map(
+            lambda i: (x[bounds[i]:bounds[i + 1]], y[bounds[i]:bounds[i + 1]]))
+
+    return split
+
+
 def make_datasets(
-    cfg: dict, val_fold: int, seed: int, include_test: bool = False, sources: dict | None = None
+    cfg: dict, val_fold: int, seed: int, include_test: bool = False, sources: dict | None = None,
+    accumulation_steps: int = 1,
 ) -> Datasets:
     """tf.data de train (aumentado y barajado con `seed`), train sin aumento, val y test (opcional).
 
@@ -679,7 +729,10 @@ def make_datasets(
     Las imágenes originales se redimensionan a image_size x image_size sin conservar la
     relación de aspecto, como float32 en [0, 255]; la cache va tras el redimensionado y el
     aumento después de la cache. Val y test conservan el orden de `val_ids` / `test_ids`.
-    `sources` (de un Datasets anterior con el mismo val_fold) reutiliza la cache.
+    `sources` (de un Datasets anterior con el mismo val_fold) reutiliza la cache. Con
+    `accumulation_steps` > 1, cada lote de train.batch_size de train se parte en ese número de
+    micro-lotes (split_into_micro_batches) y val, test y train sin aumento usan lotes de
+    batch_size / accumulation_steps.
     """
     import tensorflow as tf
 
@@ -690,16 +743,20 @@ def make_datasets(
 
     tcfg = cfg["train"]
     bs = int(tcfg["batch_size"])
+    micro = micro_batch_size(bs, accumulation_steps)
     tr = sources["train"]
     train = (
         tr.base.shuffle(len(tr.labels), seed=seed, reshuffle_each_iteration=True)
         .map(make_augment_fn(tcfg.get("augmentation") or {}, seed), num_parallel_calls=tf.data.AUTOTUNE)
         .batch(bs)
-        .prefetch(tf.data.AUTOTUNE)
     )
+    if accumulation_steps > 1:
+        check_accumulation(len(tr.labels), bs, accumulation_steps)
+        train = train.flat_map(split_into_micro_batches(accumulation_steps))
+    train = train.prefetch(tf.data.AUTOTUNE)
 
     def evaluation(src):
-        return src.base.batch(bs).prefetch(tf.data.AUTOTUNE)
+        return src.base.batch(micro).prefetch(tf.data.AUTOTUNE)
 
     te = sources.get("test") if include_test else None
     return Datasets(

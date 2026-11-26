@@ -21,3 +21,14 @@ Este proyecto tiene como propósito proponer una arquitectura de aprendizaje pro
 - [ResNet-50](book/09-resnet50.ipynb): ajuste de hiperparámetros, estudio piloto, ejecución definitiva y evaluación.
 - [VGG-16](book/10-vgg16.ipynb): ajuste de hiperparámetros, estudio piloto, ejecución definitiva y evaluación.
 - [Benchmark](book/11-benchmark.ipynb): piloto conjunto, tabla comparativa, ranking, baseline y pruebas de hipótesis.
+- [Preguntas de investigación y conjunto de datos](book/12-preguntas-y-datos.md): formulación, preguntas RQ1 a RQ3, justificación y ficha de HAM10000.
+- [Modelos del estado del arte](book/13-modelos-estado-del-arte.md): selección, análisis por modelo, comparación crítica y gap de investigación.
+- [Paper guía](book/14-paper-guia.md): selección, descripción, criterio de replicación y limitación identificada.
+- [DenseNet-201](book/15-densenet201.ipynb): ajuste de hiperparámetros, estudio piloto, ejecución definitiva y evaluación.
+- [Inception-V3](book/16-inceptionv3.ipynb): ajuste de hiperparámetros, estudio piloto, ejecución definitiva y evaluación.
+- [ConvNeXt-Tiny](book/17-convnext_tiny.ipynb): ajuste de hiperparámetros, estudio piloto, ejecución definitiva y evaluación.
+- [ViT-B/16](book/18-vit_b16.ipynb): ajuste de hiperparámetros, estudio piloto, ejecución definitiva y evaluación.
+- [EfficientNet-B0](book/19-efficientnetb0.ipynb): ajuste de hiperparámetros, estudio piloto, ejecución definitiva y evaluación.
+- [Benchmark del Entregable 2](book/20-benchmark-e2.ipynb): tabla principal, contrastes confirmatorios, comparación global, bondad de ajuste, sobreajuste, efectos mixtos, calibración, incertidumbre, robustez, interpretabilidad, errores, techo, costo, réplica y limitación del paper guía.
+- [Auditoría de fuga y contrato de datos](book/21-auditoria-fuga.ipynb): intersección de lesiones, duplicados, vecinos cercanos, metadatos, validación adversarial, pruebas de sanidad y contrato de datos.
+- [Reproducibilidad](book/22-reproducibilidad.md): entorno, comandos, seguimiento de experimentos, lista de verificación y desviaciones declaradas.

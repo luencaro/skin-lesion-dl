@@ -1,0 +1,14 @@
+# Configuración propia de Inception-V3 (src/models/inceptionv3.py).
+name: inceptionv3
+keras_application: InceptionV3    # keras.applications.InceptionV3 (resolución nativa 299; aquí 224)
+weights: imagenet
+input_size: 224                   # debe coincidir con train.image_size de base.yaml
+gradcam_layer: mixed10            # capa del backbone anidado para Grad-CAM (src/gradcam.py)
+saliency: gradcam                 # gradcam (CNN) o rollout (ViT); src/interpret.py
+expected_params: 21817127         # total con la cabeza de 7 clases; lo verifica src.verify_models
+
+# Se llenan con outputs/tuning/inceptionv3/best.json tras `python -m src.tune --model inceptionv3`.
+hyperparameters:
+  learning_rate: null             # tasa inicial de la fase B (decaimiento coseno)
+  weight_decay: null              # AdamW, fases A y B
+  dropout: null                   # antes de la capa densa final

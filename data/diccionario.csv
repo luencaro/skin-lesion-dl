@@ -1,0 +1,9 @@
+atributo,tipo,descripcion,dominio,admite_faltantes,unico,fuente,faltantes,pct_faltantes,valores_unicos,ejemplo
+lesion_id,string,Identificador de la lesión; varias imágenes pueden ser de la misma lesión. Unidad de independencia y de agrupación de la partición.,patrón ^HAM_\d{7}$,False,False,metadatos originales,0,0.0,7470,HAM_0000118
+image_id,string,Identificador de la imagen; nombre del archivo JPEG en data/raw/images.,patrón ^ISIC_\d{7}$,False,True,metadatos originales,0,0.0,10015,ISIC_0027419
+dx,category,Diagnóstico (variable objetivo) en 7 clases.,"akiec, bcc, bkl, df, mel, nv, vasc",False,False,metadatos originales,0,0.0,7,bkl
+dx_type,category,"Método de confirmación del diagnóstico (histopatología, seguimiento, consenso de expertos o microscopía confocal).","histo, follow_up, consensus, confocal",False,False,metadatos originales,0,0.0,4,histo
+age,float,Edad del paciente en años (múltiplos de 5); faltante en algunas imágenes.,"[0, 100]",True,False,metadatos originales,57,0.57,18,80.0
+sex,category,Sexo del paciente; unknown cuenta como faltante.,"male, female, unknown",False,False,metadatos originales,57,0.57,3,male
+localization,category,Localización anatómica de la lesión; unknown cuenta como faltante.,"abdomen, acral, back, chest, ear, face, foot, genital, hand, lower extremity, neck, scalp, trunk, unknown, upper extremity",False,False,metadatos originales,234,2.34,15,scalp
+dataset,category,Subconjunto de adquisición (fuente) de la imagen.,"rosendahl, vidir_modern, vidir_molemax, vienna_dias",False,False,metadatos originales,0,0.0,4,vidir_modern

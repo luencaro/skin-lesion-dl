@@ -177,3 +177,27 @@ p(y = k \mid \mathbf{x}) = \frac{\exp\left(\mathbf{w}_k^{\top} \phi_{\theta}(\ma
 $$
 
 que es una regresión logística multinomial sobre $\phi_{\theta}(\mathbf{x})$, con $d$ igual a 4.096, 2.048 y 1.280 en VGG-16, ResNet-50 y MobileNetV2, entrenada con la misma log-verosimilitud negativa. La diferencia está en que la regresión logística usa una representación fija, diseñada a mano, mientras que las redes la aprenden junto con el clasificador; si se congelara el extractor preentrenado, cada modelo sería literalmente una regresión logística sobre características de ImageNet. En capacidad, las redes son no lineales en el espacio de la imagen y lineales solo en el espacio aprendido. En supuestos, trasladan la linealidad del logaritmo de las razones de probabilidades a ese espacio y añaden la localidad, la equivariancia a traslaciones y la composición jerárquica propias de las convoluciones. En propósito, ambas son el modelo más sencillo que se aceptaría como competidor serio. La regresión logística y otros modelos clásicos se usan aquí solo como contexto: un clasificador de histogramas de color con XGBoost alcanzó 0,511 de exactitud balanceada en HAM10000 [@nozdryn2018], una cota que cualquier modelo base debería superar con holgura.
+
+## Búsqueda transversal de mecanismos
+
+Para identificar mecanismos que puedan trasladarse a la clasificación dermatoscópica desde otras modalidades, se ejecutó en Scopus el 25 de noviembre de 2026 la siguiente cadena, que combina la familia del mecanismo, una modalidad de origen distinta y los términos de transferencia o adaptación:
+
+```text
+TITLE-ABS-KEY ( ( "vision transformer" OR "self-attention" OR "dense connection*" OR "compound scaling" ) AND ( "transfer learning" OR "domain adaptation" ) AND ( "medical imag*" OR "natural images" OR "remote sensing" ) ) AND PUBYEAR > 2017 AND PUBYEAR < 2027 AND ( DOCTYPE ( ar ) OR DOCTYPE ( cp ) )
+```
+
+La consulta devolvió 647 registros, de los que se analizaron los diez más citados. Uno de ellos [@ozdemir2025] aborda la propia clasificación de lesiones de piel y no se considera transversal. La transferibilidad de cada mecanismo se valoró según la propiedad estructural que comparte con HAM10000: un conjunto etiquetado pequeño, el desplazamiento de dominio entre fuentes de adquisición documentado en el análisis exploratorio, la disponibilidad de metadatos y de máscaras de segmentación.
+
+| Mecanismo | Aplicación de origen | Fuente | Propiedad compartida con el problema | Transferibilidad |
+|---|---|---|---|---|
+| Normalización adaptativa con autoatención para adaptación de dominio | Resonancia magnética entre modalidades | @tomar2021 | Desplazamiento de dominio entre fuentes de adquisición | Alta |
+| Transformer de visión con aprendizaje por transferencia | Mamografía | @ayana2023 | Conjunto médico pequeño con preentrenamiento en ImageNet | Alta |
+| Transformer de visión con aprendizaje por transferencia | Radiografía de tórax (tuberculosis) | @duong2021 | Conjunto médico pequeño con preentrenamiento en ImageNet | Alta |
+| Autoatención entre modalidades con preentrenamiento multitarea | Preguntas visuales sobre imágenes médicas | @gong2021 | Fusión de la imagen con información no visual, como los metadatos | Media |
+| Ensamble de CNN guiado por segmentación (U-Net) | Ecografía de mama | @islam2024 | Disponibilidad de máscaras de la lesión | Media |
+| Transformer de visión fundacional | Electrocardiogramas | @vaid2023 | Preentrenamiento a gran escala antes del ajuste fino | Media |
+| Transformer para imágenes de alta resolución con pocas etiquetas | Imágenes de dron (cultivos) | @reedha2022 | Pocas imágenes etiquetadas de alta resolución | Media |
+| Conexiones densas con aprendizaje por transferencia | Segmentación de imágenes satelitales | @cui2020 | Reutilización de características en redes profundas | Media |
+| Autocodificador variacional con aprendizaje por refuerzo | Descripción de imágenes satelitales | @shen2020 | Ninguna relevante para la clasificación | Baja |
+
+Esta tabla no compromete la elección del modelo del Entregable 3. Señala, sin embargo, que el mecanismo con mayor transferibilidad es la adaptación al dominio de adquisición, que ataca directamente el principal riesgo de atajo identificado en el análisis exploratorio.

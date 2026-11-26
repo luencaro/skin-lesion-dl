@@ -494,13 +494,14 @@ def paired_t_test(d) -> dict:
     return {"n": len(d), "t": float(t), "gl": len(d) - 1, "p": float(p)}
 
 
-def wilcoxon_exact(d, zero_method: str = "wilcox") -> dict:
+def wilcoxon_exact(d, zero_method: str = "wilcox", alternative: str = "two-sided") -> dict:
     """Wilcoxon de rangos con signo con p-valor exacto.
 
     El p-valor se obtiene de la distribución de permutación exacta de W+ condicionada a los
     rangos observados (2^n asignaciones de signo, por programación dinámica sobre los rangos
     duplicados), así que sigue siendo exacto con empates. Sin empates coincide con
-    scipy.stats.wilcoxon(method="exact"). p = min(1, 2 min(P(W+ <= w), P(W+ >= w))).
+    scipy.stats.wilcoxon(method="exact"). Bilateral: p = min(1, 2 min(P(W+ <= w), P(W+ >= w)));
+    "greater" (H1: d > 0): P(W+ >= w); "less" (H1: d < 0): P(W+ <= w).
     """
     ranks, sign = _signed_ranks(d, zero_method)
     n = len(ranks)
@@ -520,33 +521,47 @@ def wilcoxon_exact(d, zero_method: str = "wilcox") -> dict:
     w2 = int(r2[sign > 0].sum())
     cdf = dist[: w2 + 1].sum()
     sf = dist[w2:].sum()
-    out.update({"W_mas": w2 / 2, "W_menos": (total - w2) / 2, "p": float(min(1.0, 2 * min(cdf, sf)))})
+    p = {"two-sided": min(1.0, 2 * min(cdf, sf)), "greater": sf, "less": cdf}[alternative]
+    out.update({"W_mas": w2 / 2, "W_menos": (total - w2) / 2, "p": float(min(1.0, p))})
     return out
 
 
-def nadeau_bengio_t(d, test_train_ratio: float) -> dict:
+def _t_p(t: float, df: int, alternative: str) -> float:
+    if alternative == "greater":
+        return float(ss.t.sf(t, df))
+    if alternative == "less":
+        return float(ss.t.cdf(t, df))
+    return float(2 * ss.t.sf(abs(t), df))
+
+
+def nadeau_bengio_t(d, test_train_ratio: float, alternative: str = "two-sided") -> dict:
     """t corregida de Nadeau y Bengio (2003) para validación cruzada repetida:
-    t = media(d) / sqrt((1 / n + n_val / n_train) s^2), con n - 1 grados de libertad."""
+    t = media(d) / sqrt((1 / n + n_val / n_train) s^2), con n - 1 grados de libertad.
+    `alternative`: two-sided, greater (H1: media > 0) o less."""
     d = _finite(d)
     n = len(d)
     if n < 2 or d.std(ddof=1) == 0:
         return {"n": n, "t": np.nan, "gl": max(n - 1, 0), "p": np.nan, "ee_corregido": np.nan}
     se = np.sqrt((1 / n + test_train_ratio) * d.var(ddof=1))
     t = d.mean() / se
-    return {"n": n, "t": float(t), "gl": n - 1, "p": float(2 * ss.t.sf(abs(t), n - 1)),
+    return {"n": n, "t": float(t), "gl": n - 1, "p": _t_p(t, n - 1, alternative),
             "ee_corregido": float(se), "ee_sin_corregir": float(d.std(ddof=1) / np.sqrt(n))}
 
 
-def tost_paired(d, delta: float, alpha: float) -> dict:
+def tost_paired(d, delta: float, alpha: float, test_train_ratio: float | None = None) -> dict:
     """Equivalencia por dos pruebas t unilaterales (TOST) con margen (-delta, delta).
     Equivalentes si p_tost = max(p_inferior, p_superior) < alpha, es decir, si el IC
-    1 - 2 alpha de la media de d queda dentro del margen."""
+    1 - 2 alpha de la media de d queda dentro del margen. Con `test_train_ratio`, el error
+    estándar es el corregido de Nadeau y Bengio, sqrt((1 / n + ratio) s^2)."""
     d = _finite(d)
     n = len(d)
     if n < 2 or d.std(ddof=1) == 0:
         return {"n": n, "p_inferior": np.nan, "p_superior": np.nan, "p_tost": np.nan,
                 "ic_bajo": np.nan, "ic_alto": np.nan, "equivalentes": None}
-    se = d.std(ddof=1) / np.sqrt(n)
+    if test_train_ratio is None:
+        se = d.std(ddof=1) / np.sqrt(n)
+    else:
+        se = np.sqrt((1 / n + test_train_ratio) * d.var(ddof=1))
     df = n - 1
     p_low = ss.t.sf((d.mean() + delta) / se, df)    # H0: media <= -delta
     p_up = ss.t.cdf((d.mean() - delta) / se, df)    # H0: media >= delta
@@ -783,33 +798,276 @@ def cluster_bootstrap_balanced_accuracy(y, groups, correct: dict, n_resamples: i
     Devuelve {clave: {"observado": float, "remuestreos": array (n_resamples,)}}.
     """
     y = np.asarray(y)
-    _, g = np.unique(np.asarray(groups), return_inverse=True)
-    n_groups = int(g.max()) + 1
-    classes = np.unique(y)
-    masks = [y == k for k in classes]
     mats = {key: np.asarray(c, dtype=np.float64) for key, c in correct.items()}
 
     def mean_ba(w):  # w: (B, N) pesos por imagen -> {clave: (B,)}
-        n = np.stack([w[:, m].sum(axis=1) for m in masks], axis=1)          # (B, K)
-        out = {}
-        for key, c in mats.items():
-            hits = np.stack([w[:, m] @ c[:, m].T for m in masks], axis=2)    # (B, R, K)
-            with np.errstate(invalid="ignore", divide="ignore"):
-                recall = hits / n[:, None, :]
-            out[key] = np.nanmean(recall, axis=2).mean(axis=1)               # clases presentes, luego corridas
-        return out
+        return {key: weighted_balanced_accuracy(w, y, c).mean(axis=1) for key, c in mats.items()}
 
     observed = mean_ba(np.ones((1, len(y))))
-    rng = np.random.default_rng(seed)
     samples = {key: [] for key in mats}
+    for w in cluster_weight_batches(groups, n_resamples, seed, batch):
+        for key, v in mean_ba(w).items():
+            samples[key].append(v)
+    return {key: {"observado": float(observed[key][0]), "remuestreos": np.concatenate(samples[key])}
+            for key in mats}
+
+
+# ---------------------------------------------------------------------------
+# Bootstrap por conglomerados (lesiones): pesos por imagen y métricas ponderadas
+# ---------------------------------------------------------------------------
+
+
+def cluster_weight_batches(groups, n_resamples: int, seed: int, batch: int = 500):
+    """Generador de matrices (b, N) de pesos por imagen: en cada remuestreo se sortean con
+    reemplazo tantos conglomerados como hay y cada imagen pesa el número de veces que salió su
+    conglomerado. Con la misma semilla y los mismos `groups`, todos los llamadores obtienen los
+    mismos remuestreos, de modo que las métricas de modelos distintos quedan pareadas."""
+    _, g = np.unique(np.asarray(groups), return_inverse=True)
+    n_groups = int(g.max()) + 1
+    rng = np.random.default_rng(seed)
     done = 0
     while done < n_resamples:
         b = min(batch, n_resamples - done)
         draws = rng.integers(0, n_groups, size=(b, n_groups))
         counts = np.zeros((b, n_groups))
         np.add.at(counts, (np.arange(b)[:, None], draws), 1.0)
-        for key, v in mean_ba(counts[:, g]).items():
-            samples[key].append(v)
+        yield counts[:, g]
         done += b
-    return {key: {"observado": float(observed[key][0]), "remuestreos": np.concatenate(samples[key])}
-            for key in mats}
+
+
+def weighted_balanced_accuracy(w, y, correct, mask=None) -> np.ndarray:
+    """Exactitud balanceada ponderada (B, R): `w` (B, N) pesos por imagen, `y` (N,) etiquetas,
+    `correct` (R, N) aciertos por corrida y `mask` (N,) o (R, N) imágenes incluidas (todas por
+    defecto). Media de la sensibilidad de las clases presentes (peso positivo) en cada remuestreo."""
+    w = np.asarray(w, dtype=np.float64)
+    c = np.asarray(correct, dtype=np.float64)
+    y = np.asarray(y)
+    M = np.ones((1, len(y))) if mask is None else np.atleast_2d(np.asarray(mask, dtype=np.float64))
+    rec = []
+    for k in np.unique(y):
+        m = y == k
+        wk, Mk = w[:, m], M[:, m]
+        n = wk @ Mk.T                                                        # (B, 1) o (B, R)
+        hits = wk @ (c[:, m] * Mk).T                                         # (B, R)
+        rec.append(np.where(n > 0, hits / np.where(n > 0, n, 1), np.nan))
+    rec = np.stack(rec, axis=2)                                              # (B, R, K)
+    with np.errstate(invalid="ignore"), _ignore_empty_slice():
+        return np.nanmean(rec, axis=2)
+
+
+class _ignore_empty_slice:
+    def __enter__(self):
+        import warnings
+
+        self._ctx = warnings.catch_warnings()
+        self._ctx.__enter__()
+        warnings.simplefilter("ignore", category=RuntimeWarning)
+
+    def __exit__(self, *exc):
+        return self._ctx.__exit__(*exc)
+
+
+def weighted_auc(w, positive, score) -> np.ndarray:
+    """AUC-ROC ponderada (B,) de `score` (N,) para la clase `positive` (N, bool), con pesos `w`
+    (B, N): P(s_pos > s_neg) + P(s_pos = s_neg) / 2 sobre los pares ponderados (empates por
+    grupos de puntuación idéntica). NaN si en un remuestreo falta una de las dos clases."""
+    w = np.asarray(w, dtype=np.float64)
+    s = np.asarray(score, dtype=np.float64)
+    pos = np.asarray(positive, dtype=bool)
+    order = np.argsort(s, kind="mergesort")
+    s_sorted = s[order]
+    starts = np.flatnonzero(np.r_[True, s_sorted[1:] != s_sorted[:-1]])
+    wp = (w * pos[None, :])[:, order]
+    wn = (w * ~pos[None, :])[:, order]
+    P = np.add.reduceat(wp, starts, axis=1)                                 # (B, G)
+    Nn = np.add.reduceat(wn, starts, axis=1)
+    below = np.cumsum(Nn, axis=1) - Nn                                       # negativos con puntuación menor
+    num = (P * (below + 0.5 * Nn)).sum(axis=1)
+    den = P.sum(axis=1) * Nn.sum(axis=1)
+    with np.errstate(invalid="ignore", divide="ignore"):
+        return np.where(den > 0, num / np.where(den > 0, den, 1), np.nan)
+
+
+def weighted_macro_auc(w, y, proba) -> np.ndarray:
+    """AUC-ROC macro uno contra el resto ponderada (B,), sobre las clases presentes en `y`."""
+    y = np.asarray(y)
+    proba = np.asarray(proba, dtype=np.float64)
+    aucs = np.stack([weighted_auc(w, y == k, proba[:, k]) for k in np.unique(y)], axis=1)
+    with np.errstate(invalid="ignore"), _ignore_empty_slice():
+        return np.nanmean(aucs, axis=1)
+
+
+def weighted_mcc(w, y, pred, k: int) -> np.ndarray:
+    """Coeficiente de Matthews multiclase (B,) de la matriz de confusión ponderada por `w` (B, N)."""
+    w = np.asarray(w, dtype=np.float64)
+    idx = np.asarray(y) * k + np.asarray(pred)
+    onehot = np.zeros((len(idx), k * k))
+    onehot[np.arange(len(idx)), idx] = 1.0
+    cm = (w @ onehot).reshape(-1, k, k)                                      # (B, K, K) filas = real
+    t = cm.sum(axis=2)
+    p = cm.sum(axis=1)
+    c = np.trace(cm, axis1=1, axis2=2)
+    s = cm.sum(axis=(1, 2))
+    num = c * s - (t * p).sum(axis=1)
+    den = np.sqrt((s ** 2 - (p ** 2).sum(axis=1)) * (s ** 2 - (t ** 2).sum(axis=1)))
+    with np.errstate(invalid="ignore", divide="ignore"):
+        return np.where(den > 0, num / np.where(den > 0, den, 1), 0.0)
+
+
+def bootstrap_p(samples, null: float = 0.0, alternative: str = "greater") -> float:
+    """p-valor bootstrap: (1 + #{muestras del lado de H0}) / (B + 1). greater: H0 en <= null;
+    less: H0 en >= null; two-sided: el doble del menor de los dos."""
+    x = _finite(samples)
+    if not len(x):
+        return float("nan")
+    b = len(x)
+    p_g = (1 + (x <= null).sum()) / (b + 1)
+    p_l = (1 + (x >= null).sum()) / (b + 1)
+    return float({"greater": p_g, "less": p_l, "two-sided": min(1.0, 2 * min(p_g, p_l))}[alternative])
+
+
+def percentile_interval(samples, alpha: float) -> tuple[float, float]:
+    x = _finite(samples)
+    if not len(x):
+        return float("nan"), float("nan")
+    lo, hi = np.quantile(x, [alpha / 2, 1 - alpha / 2])
+    return float(lo), float(hi)
+
+
+# ---------------------------------------------------------------------------
+# Entregable 2: tamaños de efecto y comparación global
+# ---------------------------------------------------------------------------
+
+
+def vargha_delaney_a12(a, b) -> float:
+    """A12 de Vargha y Delaney: P(a > b) + P(a = b) / 2 sobre todos los pares (a_i, b_j) = (1 + delta de Cliff) / 2."""
+    c = cliffs_delta(a, b)
+    return float((1 + c) / 2) if np.isfinite(c) else float("nan")
+
+
+def a12_bootstrap_ci(a, b, n_resamples: int, seed: int, alpha: float, paired: bool = True) -> tuple[float, float]:
+    """IC percentil 1 - alpha de A12 remuestreando corridas (con `paired`, el mismo índice en a y b)."""
+    a, b = np.asarray(a, float), np.asarray(b, float)
+    if len(a) < 2 or len(b) < 2:
+        return float("nan"), float("nan")
+    rng = np.random.default_rng(seed)
+    vals = np.empty(n_resamples)
+    for i in range(n_resamples):
+        ia = rng.integers(0, len(a), len(a))
+        ib = ia if paired and len(a) == len(b) else rng.integers(0, len(b), len(b))
+        vals[i] = vargha_delaney_a12(a[ia], b[ib])
+    return percentile_interval(vals, alpha)
+
+
+def iman_davenport(chi2: float, n: int, k: int) -> dict:
+    """Corrección de Iman y Davenport (1980) del estadístico de Friedman:
+    F = (n - 1) chi2 / (n (k - 1) - chi2), con (k - 1, (k - 1)(n - 1)) grados de libertad."""
+    if not np.isfinite(chi2) or n < 2 or k < 3:
+        return {"F": np.nan, "gl1": k - 1, "gl2": (k - 1) * (n - 1), "p": np.nan}
+    den = n * (k - 1) - chi2
+    f = (n - 1) * chi2 / den if den > 0 else np.inf
+    df1, df2 = k - 1, (k - 1) * (n - 1)
+    return {"F": float(f), "gl1": df1, "gl2": df2, "p": float(ss.f.sf(f, df1, df2)) if np.isfinite(f) else 0.0}
+
+
+def friedman_posthoc_holm(wide: pd.DataFrame) -> pd.DataFrame:
+    """Comparaciones por pares tras Friedman con z = (R_i - R_j) / sqrt(k (k + 1) / (6 n)),
+    p bilateral y ajuste de Holm sobre todos los pares (Demšar, 2006)."""
+    n, k = wide.shape
+    r = mean_ranks(wide)
+    se = np.sqrt(k * (k + 1) / (6 * n))
+    cols = list(wide.columns)
+    rows = []
+    for i in range(k):
+        for j in range(i + 1, k):
+            z = (r.iloc[i] - r.iloc[j]) / se
+            rows.append({"modelo_a": cols[i], "modelo_b": cols[j], "rango_a": r.iloc[i], "rango_b": r.iloc[j],
+                         "z": float(z), "p": float(2 * ss.norm.sf(abs(z)))})
+    out = pd.DataFrame(rows)
+    out["p_holm"] = adjust_pvalues(out["p"], "holm") if len(out) else []
+    return out
+
+
+def critical_difference(k: int, n: int, alpha: float) -> float:
+    """Diferencia crítica de Nemenyi: q_alpha sqrt(k (k + 1) / (6 n)), con q_alpha el cuantil
+    del rango studentizado con k grupos e infinitos grados de libertad dividido por sqrt(2)."""
+    if k < 2 or n < 1:
+        return float("nan")
+    q = ss.studentized_range.ppf(1 - alpha, k, np.inf) / np.sqrt(2)
+    return float(q * np.sqrt(k * (k + 1) / (6 * n)))
+
+
+def cochran_q(hits) -> dict:
+    """Q de Cochran sobre una matriz binaria (imágenes x modelos) de aciertos."""
+    from statsmodels.stats.contingency_tables import cochrans_q
+
+    x = np.asarray(hits, dtype=int)
+    if x.shape[1] < 2:
+        return {"Q": np.nan, "gl": 0, "p": np.nan}
+    res = cochrans_q(x)
+    return {"Q": float(res.statistic), "gl": int(res.df), "p": float(res.pvalue)}
+
+
+# ---------------------------------------------------------------------------
+# Entregable 2: bondad de ajuste de la calibración (clase predicha)
+# ---------------------------------------------------------------------------
+
+
+def _logit(p, eps: float = 1e-6) -> np.ndarray:
+    p = np.clip(np.asarray(p, dtype=float), eps, 1 - eps)
+    return np.log(p / (1 - p))
+
+
+def calibration_slope_intercept(correct, confidence) -> dict:
+    """Regresión logística de los aciertos sobre logit(confianza): pendiente e intercepto (ajuste
+    conjunto; 1 y 0 si la calibración es perfecta) e intercepto con la pendiente fijada en 1
+    (calibración en promedio). statsmodels GLM binomial."""
+    import statsmodels.api as sm
+
+    y = np.asarray(correct, dtype=float)
+    lp = _logit(confidence)
+    nan = {"pendiente": np.nan, "intercepto": np.nan, "intercepto_en_promedio": np.nan}
+    if len(y) < 3 or y.min() == y.max() or np.ptp(lp) == 0:  # sin variación: pendiente no identificable
+        return nan
+    try:
+        fit = sm.GLM(y, sm.add_constant(lp, has_constant="add"), family=sm.families.Binomial()).fit()
+        citl = sm.GLM(y, np.ones((len(y), 1)), family=sm.families.Binomial(), offset=lp).fit()
+    except Exception:  # noqa: BLE001 - separación perfecta u otros fallos numéricos
+        return nan
+    return {"pendiente": float(fit.params[1]), "intercepto": float(fit.params[0]),
+            "intercepto_en_promedio": float(citl.params[0])}
+
+
+def hosmer_lemeshow(correct, confidence, groups: int = 10) -> dict:
+    """Hosmer-Lemeshow sobre la clase predicha: `groups` grupos por cuantiles de la confianza,
+    H = suma (O - E)^2 / (E (1 - E / n_g)), con groups - 2 grados de libertad."""
+    y = np.asarray(correct, dtype=float)
+    p = np.asarray(confidence, dtype=float)
+    order = np.argsort(p, kind="mergesort")
+    h, used = 0.0, 0
+    for idx in np.array_split(order, groups):
+        if not len(idx):
+            continue
+        o, e, n = y[idx].sum(), p[idx].sum(), len(idx)
+        v = e * (1 - e / n)
+        if v > 0:
+            h += (o - e) ** 2 / v
+            used += 1
+    df = max(used - 2, 1)
+    return {"H": float(h), "gl": df, "p": float(ss.chi2.sf(h, df))}
+
+
+def spiegelhalter_z(correct, confidence) -> dict:
+    """Z de Spiegelhalter (1986): suma (y - p)(1 - 2p) / sqrt(suma (1 - 2p)^2 p (1 - p)), p bilateral."""
+    y = np.asarray(correct, dtype=float)
+    p = np.asarray(confidence, dtype=float)
+    den = np.sqrt(((1 - 2 * p) ** 2 * p * (1 - p)).sum())
+    if den == 0:
+        return {"Z": np.nan, "p": np.nan}
+    z = ((y - p) * (1 - 2 * p)).sum() / den
+    return {"Z": float(z), "p": float(2 * ss.norm.sf(abs(z)))}
+
+
+def binomial_vs_majority(n_correct: int, n: int, p0: float) -> float:
+    """p-valor unilateral (H1: exactitud > p0) de la binomial exacta."""
+    return float(ss.binomtest(int(n_correct), int(n), float(p0), alternative="greater").pvalue)

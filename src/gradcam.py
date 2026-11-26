@@ -76,6 +76,29 @@ def load_model_float32(cfg: dict, model_name: str, run_dir: Path):
     return model
 
 
+def load_trained_model(cfg: dict, model_name: str, run_dir: Path, float32: bool = False):
+    """Modelo de `model_name` con los pesos de `run_dir`/model.weights.h5, en la política de
+    precisión del entrenamiento (train.mixed_precision) o en float32 si `float32`. No descarga
+    los pesos de ImageNet (la arquitectura se construye con weights=None)."""
+    import keras
+
+    from src.train import configure_runtime
+
+    if float32:
+        return load_model_float32(cfg, model_name, run_dir)
+    from src.models import REGISTRY
+    from src.train import load_model_config, resolve_hparams
+
+    model_cfg = load_model_config(model_name)
+    info = Path(run_dir) / "run_info.json"
+    hp = D.load_json(info)["hyperparameters"] if info.exists() else resolve_hparams(model_cfg)
+    keras.backend.clear_session()
+    configure_runtime(cfg)
+    model = REGISTRY[model_name](dict(model_cfg, weights=None), len(D.class_names(cfg)), hp["dropout"])
+    model.load_weights(Path(run_dir) / WEIGHTS_FILE)
+    return model
+
+
 def gradcam_heatmaps(model, images: np.ndarray, layer_name: str, class_idx=None, batch_size: int = 8) -> np.ndarray:
     """Mapas Grad-CAM (N, H, W) en [0, 1], redimensionados al tamaño de entrada.
 
@@ -156,6 +179,9 @@ def plot_gradcam_grid(result: dict, alpha: float = 0.45, ncols: int = 7, cmap: s
                                  fontsize=7, color="tab:green" if r["resultado"] == "acierto" else "tab:red")
         axes[2 * i + 1][j].imshow(img)
         axes[2 * i + 1][j].imshow(result["heatmaps"][k], cmap=cmap, alpha=alpha, vmin=0, vmax=1)
-    fig.suptitle(f"Grad-CAM ({result['layer']}) respecto de la clase predicha")
+    method = result["layer"]
+    method = method if method.startswith(("Grad-CAM", "attention")) else f"Grad-CAM ({method})"
+    fig.suptitle(f"{method} respecto de la clase predicha" if "rollout" not in method else
+                 f"{method} (token de clase; no depende de la clase)")
     fig.tight_layout()
     return fig

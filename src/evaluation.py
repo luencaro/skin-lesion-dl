@@ -80,11 +80,15 @@ def class_order(preds: pd.DataFrame) -> list[str]:
 
 
 def load_metadata_or_missing(cfg: dict):
-    """Metadatos de HAM10000 indexados por image_id, o `Missing` si falta el CSV."""
+    """Metadatos de HAM10000 indexados por image_id y validados con el contrato de datos
+    (configs/data_contract.yaml), o `Missing` si falta el CSV o no cumple el contrato."""
     path = cfg["paths"]["metadata_csv"]
     if not Path(path).exists():
         return Missing(f"no existe {path}; descarga los datos (README) y ejecuta `python -m src.verify_data`.")
-    return D.load_metadata(cfg).set_index("image_id")
+    try:
+        return D.load_metadata_validated(cfg).set_index("image_id")
+    except ValueError as e:
+        return Missing(str(e))
 
 
 # ---------------------------------------------------------------------------

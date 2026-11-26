@@ -4,6 +4,8 @@ keras_application: ResNet50       # keras.applications.ResNet50
 weights: imagenet
 input_size: 224                   # debe coincidir con train.image_size de base.yaml
 gradcam_layer: conv5_block3_out   # capa del backbone anidado para Grad-CAM (src/gradcam.py)
+saliency: gradcam                 # gradcam (CNN) o rollout (ViT); src/interpret.py
+expected_params: 23602055         # total con la cabeza de 7 clases; lo verifica src.verify_models
 
 # Se llenan con outputs/tuning/resnet50/best.json tras `python -m src.tune --model resnet50`.
 hyperparameters:

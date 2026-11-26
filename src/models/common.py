@@ -78,6 +78,20 @@ def build_transfer_model(
     return keras.Model(inputs, outputs, name=model_cfg["name"])
 
 
+def application_backbone(application: Callable, model_cfg: dict, last_layer: str | None = None,
+                         **kwargs) -> tuple[keras.Model, keras.Model]:
+    """(backbone, full): carga `application` con su cabeza original (include_top=True, para
+    conservar las capas con pesos de ImageNet de la cabeza) y define el backbone anidado como el
+    submodelo que termina en la entrada de `last_layer` (la primera capa de la cabeza). El
+    backbone empieza congelado. `full` se devuelve para copiar los pesos de la cabeza."""
+    check_application(application, model_cfg)
+    full = application(include_top=True, weights=model_cfg.get("weights", "imagenet"),
+                       input_shape=input_shape(model_cfg), **kwargs)
+    backbone = keras.Model(full.inputs, full.get_layer(last_layer).input, name=BACKBONE_NAME)
+    backbone.trainable = False
+    return backbone, full
+
+
 def get_backbone(model: keras.Model) -> keras.Model:
     return model.get_layer(BACKBONE_NAME)
 

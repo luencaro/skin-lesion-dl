@@ -109,16 +109,54 @@ def _save_yaml(obj, path: Path) -> None:
 # ---------------------------------------------------------------------------
 
 
-def make_optimizer(name: str, learning_rate, weight_decay: float, exclude) -> keras.optimizers.Optimizer:
+def accumulation_steps(tcfg: dict, model_cfg: dict) -> int:
+    """gradient_accumulation_steps de configs/<modelo>.yaml si lo define; si no, el de train."""
+    value = model_cfg.get("gradient_accumulation_steps", tcfg.get("gradient_accumulation_steps", 1))
+    return int(value or 1)
+
+
+@keras.saving.register_keras_serializable(package="skin_lesion_dl")
+class UpdateStepSchedule(keras.optimizers.schedules.LearningRateSchedule):
+    """Evalúa `schedule` en el número de actualizaciones, floor(micro-pasos / accumulation_steps).
+
+    Con gradient_accumulation_steps, el optimizador de Keras 3 llama al programa de la tasa con
+    su contador de micro-pasos; así el decaimiento coseno (decay_steps en actualizaciones) avanza
+    una vez por actualización, igual que sin acumulación."""
+
+    def __init__(self, schedule, accumulation_steps: int):
+        self.schedule = schedule
+        self.accumulation_steps = int(accumulation_steps)
+
+    def __call__(self, step):
+        return self.schedule(keras.ops.floor_divide(step, self.accumulation_steps))
+
+    def get_config(self):
+        return {"schedule": keras.saving.serialize_keras_object(self.schedule),
+                "accumulation_steps": self.accumulation_steps}
+
+    @classmethod
+    def from_config(cls, config):
+        return cls(keras.saving.deserialize_keras_object(config["schedule"]), config["accumulation_steps"])
+
+
+def make_optimizer(name: str, learning_rate, weight_decay: float, exclude,
+                   accumulation: int = 1) -> keras.optimizers.Optimizer:
+    """AdamW; con `accumulation` > 1, gradient_accumulation_steps de Keras 3: el optimizador
+    promedia los gradientes de `accumulation` micro-lotes y aplica una actualización (con el
+    decaimiento de pesos) cada `accumulation` pasos."""
     if name != "adamw":
         raise ValueError(f"Optimizador no soportado: {name}")
-    opt = keras.optimizers.AdamW(learning_rate=learning_rate, weight_decay=weight_decay)
+    if accumulation > 1 and isinstance(learning_rate, keras.optimizers.schedules.LearningRateSchedule):
+        learning_rate = UpdateStepSchedule(learning_rate, accumulation)
+    opt = keras.optimizers.AdamW(learning_rate=learning_rate, weight_decay=weight_decay,
+                                 gradient_accumulation_steps=accumulation if accumulation > 1 else None)
     if exclude:
         opt.exclude_from_weight_decay(var_names=[f"^{n}$" for n in exclude])
     return opt
 
 
 def make_schedule(fcfg: dict, learning_rate: float, decay_steps: int):
+    """`decay_steps` en actualizaciones del optimizador (no en micro-lotes)."""
     schedule = fcfg.get("schedule")
     if schedule == "cosine":
         return keras.optimizers.schedules.CosineDecay(
@@ -314,7 +352,10 @@ def run_training(
     configure_runtime(cfg)
     set_seed(seed, deterministic=bool(tcfg.get("deterministic", False)))
 
-    data = D.make_datasets(cfg, val_fold, seed, include_test=evaluate_test, sources=sources)
+    accum = accumulation_steps(tcfg, model_cfg)
+    micro = D.micro_batch_size(int(tcfg["batch_size"]), accum)
+    data = D.make_datasets(cfg, val_fold, seed, include_test=evaluate_test, sources=sources,
+                           accumulation_steps=accum)
     classes = data.class_names
     k = len(classes)
     if tcfg.get("class_weight") == "inverse_frequency":
@@ -327,7 +368,7 @@ def run_training(
     resolved = {
         "run": {"model": model_name, "label": label, "seed": seed, "val_fold": val_fold,
                 "evaluate_test": evaluate_test, "evaluate_train": evaluate_train,
-                "save_weights": save_weights},
+                "save_weights": save_weights, "micro_batch_size": micro, "gradient_accumulation_steps": accum},
         "model": {**model_cfg, "hyperparameters": hp},
         "train": tcfg,
         "classes": classes,
@@ -342,7 +383,7 @@ def run_training(
     params = {}
     times = {}
     n_train = len(data.train_labels)
-    steps = math.ceil(n_train / int(tcfg["batch_size"]))
+    steps = math.ceil(n_train / int(tcfg["batch_size"]))  # actualizaciones por época (lote efectivo)
     run_name = f"{model_name} | {label} s{seed}_f{val_fold}"
     history_csv = run_dir / "history.csv"
     verbose = int(tcfg.get("verbose", 1))
@@ -355,7 +396,7 @@ def run_training(
     t0 = time.perf_counter()
     if epochs_a > 0:
         compile_model(model, make_optimizer(wcfg.get("optimizer", "adamw"), float(wcfg["learning_rate"]),
-                                            hp["weight_decay"], exclude), k)
+                                            hp["weight_decay"], exclude, accum), k)
         log.info(f"{run_name} | Fase A: {epochs_a} épocas, backbone congelado")
         recorder_a = EpochRecorder("warmup", 0, epochs_a, run_name)
         model.fit(data.train, epochs=epochs_a, class_weight=cw, verbose=verbose,
@@ -374,7 +415,7 @@ def run_training(
         restore_best_weights=bool(es.get("restore_best_weights", True)), verbose=0,
     )
     lr = make_schedule(fcfg, hp["learning_rate"], decay_steps=epochs_b * steps)
-    compile_model(model, make_optimizer(fcfg.get("optimizer", "adamw"), lr, hp["weight_decay"], exclude), k)
+    compile_model(model, make_optimizer(fcfg.get("optimizer", "adamw"), lr, hp["weight_decay"], exclude, accum), k)
     log.info(f"{run_name} | Fase B: hasta {epochs_b} épocas, todo descongelado")
     recorder_b = EpochRecorder("finetune", epochs_a, epochs_b, run_name)
     t0 = time.perf_counter()
@@ -424,7 +465,10 @@ def run_training(
         "best_val_balanced_accuracy_during_training": float(early.best) if early.best_weights is not None else None,
         "train_time_s": times,
         "inference_s_per_image": inference,
-        "inference_batch_size": int(tcfg["batch_size"]),
+        "inference_batch_size": micro,
+        "batch_size": int(tcfg["batch_size"]),            # lote efectivo de cada actualización
+        "micro_batch_size": micro,                         # lote del tf.data
+        "gradient_accumulation_steps": accum,
         "params": params,
         "mixed_precision": bool(tcfg.get("mixed_precision")),
         "deterministic": bool(tcfg.get("deterministic")),
@@ -433,6 +477,9 @@ def run_training(
     }
     D.save_json(info, run_dir / "run_info.json")
     D.save_json(metrics, run_dir / "metrics.json")  # se escribe al final: marca la corrida como terminada
+    from src.tracking import safe_log_run
+
+    safe_log_run(cfg, run_dir)  # MLflow (mlflow.enabled); un fallo solo avisa
 
     log.info(f"{run_name} | val balanced_accuracy = {metrics['val']['balanced_accuracy']:.4f} "
              f"(época {best_b} de la fase B) | entrenamiento {format_duration(times['total'])} -> {_relpath(run_dir)}")

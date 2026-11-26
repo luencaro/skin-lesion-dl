@@ -1,0 +1,14 @@
+# Configuración propia de ConvNeXt-Tiny (src/models/convnext_tiny.py).
+name: convnext_tiny
+keras_application: ConvNeXtTiny   # keras.applications.ConvNeXtTiny (include_top=True: conserva la LayerNorm de la cabeza)
+weights: imagenet
+input_size: 224                   # debe coincidir con train.image_size de base.yaml
+gradcam_layer: convnext_tiny_stage_3_block_2_identity   # salida de la última etapa (src/gradcam.py)
+saliency: gradcam                 # gradcam (CNN) o rollout (ViT); src/interpret.py
+expected_params: 27825511         # total con la cabeza de 7 clases; lo verifica src.verify_models
+
+# Se llenan con outputs/tuning/convnext_tiny/best.json tras `python -m src.tune --model convnext_tiny`.
+hyperparameters:
+  learning_rate: null             # tasa inicial de la fase B (decaimiento coseno)
+  weight_decay: null              # AdamW, fases A y B
+  dropout: null                   # entre la LayerNorm de la cabeza y la capa densa final

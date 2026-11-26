@@ -20,5 +20,16 @@ project:
     - file: book/09-resnet50.ipynb
     - file: book/10-vgg16.ipynb
     - file: book/11-benchmark.ipynb
+    - file: book/12-preguntas-y-datos.md
+    - file: book/13-modelos-estado-del-arte.md
+    - file: book/14-paper-guia.md
+    - file: book/15-densenet201.ipynb
+    - file: book/16-inceptionv3.ipynb
+    - file: book/17-convnext_tiny.ipynb
+    - file: book/18-vit_b16.ipynb
+    - file: book/19-efficientnetb0.ipynb
+    - file: book/20-benchmark-e2.ipynb
+    - file: book/21-auditoria-fuga.ipynb
+    - file: book/22-reproducibilidad.md
 site:
   template: book-theme
