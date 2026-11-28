@@ -1,0 +1,3 @@
+techo_nombre,techo,metrica,fuente,mejor_modelo,s_mejor,referencia,s_ref,gamma
+"Bayes (Cover y Hart, 1-NN, embeddings)",0.5992093225245879,exactitud balanceada,estimado,densenet201,0.6836979668399208,resnet50,0.643394048808044,1.9121685573724534
+Lectores con más de diez años de experiencia,0.627,exactitud en lotes de 30 imágenes,tschandl2019,densenet201,0.6836979668399208,resnet50,0.643394048808044,3.4584480931947192

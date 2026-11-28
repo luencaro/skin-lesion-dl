@@ -1,0 +1,141 @@
+2026-11-26 19:05:55 INFO resnet50 | tuning_t00 s0_f0 | Fase A: 5 épocas, backbone congelado
+2026-11-26 19:06:37 INFO resnet50 | tuning_t00 s0_f0 | warmup | época 1/5 | loss 1.5489 | val_bal_acc 0.4845 | mejor 0.4845 | 41.9s
+2026-11-26 19:06:49 INFO resnet50 | tuning_t00 s0_f0 | warmup | época 2/5 | loss 1.1109 | val_bal_acc 0.5461 | mejor 0.5461 | 11.9s
+2026-11-26 19:07:02 INFO resnet50 | tuning_t00 s0_f0 | warmup | época 3/5 | loss 0.9922 | val_bal_acc 0.5603 | mejor 0.5603 | 13.7s
+2026-11-26 19:07:14 INFO resnet50 | tuning_t00 s0_f0 | warmup | época 4/5 | loss 0.9005 | val_bal_acc 0.5948 | mejor 0.5948 | 12.2s
+2026-11-26 19:07:27 INFO resnet50 | tuning_t00 s0_f0 | warmup | época 5/5 | loss 0.8783 | val_bal_acc 0.5669 | mejor 0.5948 | 12.6s
+2026-11-26 19:07:27 INFO resnet50 | tuning_t00 s0_f0 | Fase B: hasta 15 épocas, todo descongelado
+2026-11-26 19:09:26 INFO resnet50 | tuning_t00 s0_f0 | finetune | época 1/15 | loss 1.2291 | val_bal_acc 0.5772 | mejor 0.5772 | 1m 59s
+2026-11-26 19:10:04 INFO resnet50 | tuning_t00 s0_f0 | finetune | época 2/15 | loss 0.7532 | val_bal_acc 0.6228 | mejor 0.6228 | 38.1s
+2026-11-26 19:10:42 INFO resnet50 | tuning_t00 s0_f0 | finetune | época 3/15 | loss 0.6547 | val_bal_acc 0.6438 | mejor 0.6438 | 37.5s
+2026-11-26 19:11:19 INFO resnet50 | tuning_t00 s0_f0 | finetune | época 4/15 | loss 0.5531 | val_bal_acc 0.6413 | mejor 0.6438 | 37.0s
+2026-11-26 19:11:56 INFO resnet50 | tuning_t00 s0_f0 | finetune | época 5/15 | loss 0.4848 | val_bal_acc 0.6603 | mejor 0.6603 | 37.3s
+2026-11-26 19:12:34 INFO resnet50 | tuning_t00 s0_f0 | finetune | época 6/15 | loss 0.4445 | val_bal_acc 0.6675 | mejor 0.6675 | 37.9s
+2026-11-26 19:13:21 INFO resnet50 | tuning_t00 s0_f0 | finetune | época 7/15 | loss 0.3999 | val_bal_acc 0.6442 | mejor 0.6675 | 47.0s
+2026-11-26 19:13:58 INFO resnet50 | tuning_t00 s0_f0 | finetune | época 8/15 | loss 0.3508 | val_bal_acc 0.6656 | mejor 0.6675 | 37.0s
+2026-11-26 19:14:36 INFO resnet50 | tuning_t00 s0_f0 | finetune | época 9/15 | loss 0.3407 | val_bal_acc 0.6511 | mejor 0.6675 | 38.2s
+2026-11-26 19:15:14 INFO resnet50 | tuning_t00 s0_f0 | finetune | época 10/15 | loss 0.3264 | val_bal_acc 0.6855 | mejor 0.6855 | 37.7s
+2026-11-26 19:16:01 INFO resnet50 | tuning_t00 s0_f0 | finetune | época 11/15 | loss 0.2858 | val_bal_acc 0.6644 | mejor 0.6855 | 47.4s
+2026-11-26 19:16:38 INFO resnet50 | tuning_t00 s0_f0 | finetune | época 12/15 | loss 0.2897 | val_bal_acc 0.6644 | mejor 0.6855 | 37.2s
+2026-11-26 19:17:18 INFO resnet50 | tuning_t00 s0_f0 | finetune | época 13/15 | loss 0.2669 | val_bal_acc 0.6734 | mejor 0.6855 | 40.0s
+2026-11-26 19:18:00 INFO resnet50 | tuning_t00 s0_f0 | finetune | época 14/15 | loss 0.2809 | val_bal_acc 0.6691 | mejor 0.6855 | 41.3s
+2026-11-26 19:18:37 INFO resnet50 | tuning_t00 s0_f0 | finetune | época 15/15 | loss 0.2801 | val_bal_acc 0.6601 | mejor 0.6855 | 37.3s
+2026-11-26 19:18:37 INFO resnet50 | tuning_t00 s0_f0 | parada temprana en la época 15
+2026-11-26 19:18:37 INFO resnet50 | tuning_t00 s0_f0 | se restauran los pesos de la época 10 de la fase B
+2026-11-26 19:18:43 INFO resnet50 | tuning_t00 s0_f0 | val balanced_accuracy = 0.6855 (época 10 de la fase B) | entrenamiento 12m 43s -> outputs/runs/resnet50/tuning_t00/s0_f0
+2026-11-26 19:18:57 INFO resnet50 | tuning_t01 s0_f0 | Fase A: 5 épocas, backbone congelado
+2026-11-26 19:19:28 INFO resnet50 | tuning_t01 s0_f0 | warmup | época 1/5 | loss 1.5459 | val_bal_acc 0.4859 | mejor 0.4859 | 30.6s
+2026-11-26 19:19:43 INFO resnet50 | tuning_t01 s0_f0 | warmup | época 2/5 | loss 1.1215 | val_bal_acc 0.5316 | mejor 0.5316 | 14.6s
+2026-11-26 19:19:55 INFO resnet50 | tuning_t01 s0_f0 | warmup | época 3/5 | loss 1.0037 | val_bal_acc 0.5659 | mejor 0.5659 | 12.1s
+2026-11-26 19:20:07 INFO resnet50 | tuning_t01 s0_f0 | warmup | época 4/5 | loss 0.9055 | val_bal_acc 0.5973 | mejor 0.5973 | 12.1s
+2026-11-26 19:20:19 INFO resnet50 | tuning_t01 s0_f0 | warmup | época 5/5 | loss 0.8711 | val_bal_acc 0.5747 | mejor 0.5973 | 12.1s
+2026-11-26 19:20:19 INFO resnet50 | tuning_t01 s0_f0 | Fase B: hasta 15 épocas, todo descongelado
+2026-11-26 19:22:04 INFO resnet50 | tuning_t01 s0_f0 | finetune | época 1/15 | loss 1.0999 | val_bal_acc 0.5801 | mejor 0.5801 | 1m 45s
+2026-11-26 19:22:41 INFO resnet50 | tuning_t01 s0_f0 | finetune | época 2/15 | loss 0.6691 | val_bal_acc 0.6466 | mejor 0.6466 | 36.9s
+2026-11-26 19:23:18 INFO resnet50 | tuning_t01 s0_f0 | finetune | época 3/15 | loss 0.5772 | val_bal_acc 0.6479 | mejor 0.6479 | 36.8s
+2026-11-26 19:23:55 INFO resnet50 | tuning_t01 s0_f0 | finetune | época 4/15 | loss 0.4773 | val_bal_acc 0.6611 | mejor 0.6611 | 36.9s
+2026-11-26 19:24:32 INFO resnet50 | tuning_t01 s0_f0 | finetune | época 5/15 | loss 0.4123 | val_bal_acc 0.6809 | mejor 0.6809 | 37.0s
+2026-11-26 19:25:09 INFO resnet50 | tuning_t01 s0_f0 | finetune | época 6/15 | loss 0.4029 | val_bal_acc 0.6695 | mejor 0.6809 | 36.9s
+2026-11-26 19:25:47 INFO resnet50 | tuning_t01 s0_f0 | finetune | época 7/15 | loss 0.3180 | val_bal_acc 0.6453 | mejor 0.6809 | 37.6s
+2026-11-26 19:26:24 INFO resnet50 | tuning_t01 s0_f0 | finetune | época 8/15 | loss 0.2733 | val_bal_acc 0.6782 | mejor 0.6809 | 37.2s
+2026-11-26 19:27:00 INFO resnet50 | tuning_t01 s0_f0 | finetune | época 9/15 | loss 0.2398 | val_bal_acc 0.6656 | mejor 0.6809 | 36.6s
+2026-11-26 19:27:37 INFO resnet50 | tuning_t01 s0_f0 | finetune | época 10/15 | loss 0.2181 | val_bal_acc 0.6642 | mejor 0.6809 | 36.7s
+2026-11-26 19:27:37 INFO resnet50 | tuning_t01 s0_f0 | parada temprana en la época 10
+2026-11-26 19:27:37 INFO resnet50 | tuning_t01 s0_f0 | se restauran los pesos de la época 5 de la fase B
+2026-11-26 19:27:42 INFO resnet50 | tuning_t01 s0_f0 | val balanced_accuracy = 0.6809 (época 5 de la fase B) | entrenamiento 8m 40s -> outputs/runs/resnet50/tuning_t01/s0_f0
+2026-11-26 19:27:56 INFO resnet50 | tuning_t02 s0_f0 | Fase A: 5 épocas, backbone congelado
+2026-11-26 19:28:25 INFO resnet50 | tuning_t02 s0_f0 | warmup | época 1/5 | loss 1.7594 | val_bal_acc 0.4778 | mejor 0.4778 | 29.2s
+2026-11-26 19:28:41 INFO resnet50 | tuning_t02 s0_f0 | warmup | época 2/5 | loss 1.2603 | val_bal_acc 0.5179 | mejor 0.5179 | 16.2s
+2026-11-26 19:28:53 INFO resnet50 | tuning_t02 s0_f0 | warmup | época 3/5 | loss 1.0778 | val_bal_acc 0.5641 | mejor 0.5641 | 12.0s
+2026-11-26 19:29:14 INFO resnet50 | tuning_t02 s0_f0 | warmup | época 4/5 | loss 0.9918 | val_bal_acc 0.5827 | mejor 0.5827 | 20.8s
+2026-11-26 19:29:26 INFO resnet50 | tuning_t02 s0_f0 | warmup | época 5/5 | loss 0.9758 | val_bal_acc 0.5642 | mejor 0.5827 | 12.0s
+2026-11-26 19:29:26 INFO resnet50 | tuning_t02 s0_f0 | Fase B: hasta 15 épocas, todo descongelado
+2026-11-26 19:31:13 INFO resnet50 | tuning_t02 s0_f0 | finetune | época 1/15 | loss 1.4429 | val_bal_acc 0.4218 | mejor 0.4218 | 1m 47s
+2026-11-26 19:31:50 INFO resnet50 | tuning_t02 s0_f0 | finetune | época 2/15 | loss 1.2073 | val_bal_acc 0.4387 | mejor 0.4387 | 36.8s
+2026-11-26 19:32:30 INFO resnet50 | tuning_t02 s0_f0 | finetune | época 3/15 | loss 1.3487 | val_bal_acc 0.5616 | mejor 0.5616 | 40.2s
+2026-11-26 19:33:08 INFO resnet50 | tuning_t02 s0_f0 | finetune | época 4/15 | loss 1.0191 | val_bal_acc 0.6185 | mejor 0.6185 | 37.8s
+2026-11-26 19:33:45 INFO resnet50 | tuning_t02 s0_f0 | finetune | época 5/15 | loss 0.9037 | val_bal_acc 0.6368 | mejor 0.6368 | 37.0s
+2026-11-26 19:34:21 INFO resnet50 | tuning_t02 s0_f0 | finetune | época 6/15 | loss 1.0188 | val_bal_acc 0.6163 | mejor 0.6368 | 36.9s
+2026-11-26 19:34:58 INFO resnet50 | tuning_t02 s0_f0 | finetune | época 7/15 | loss 0.7868 | val_bal_acc 0.6694 | mejor 0.6694 | 36.9s
+2026-11-26 19:35:35 INFO resnet50 | tuning_t02 s0_f0 | finetune | época 8/15 | loss 0.7060 | val_bal_acc 0.6490 | mejor 0.6694 | 36.8s
+2026-11-26 19:36:12 INFO resnet50 | tuning_t02 s0_f0 | finetune | época 9/15 | loss 0.7473 | val_bal_acc 0.5965 | mejor 0.6694 | 37.0s
+2026-11-26 19:36:48 INFO resnet50 | tuning_t02 s0_f0 | finetune | época 10/15 | loss 0.6890 | val_bal_acc 0.6915 | mejor 0.6915 | 36.2s
+2026-11-26 19:37:25 INFO resnet50 | tuning_t02 s0_f0 | finetune | época 11/15 | loss 0.5485 | val_bal_acc 0.6588 | mejor 0.6915 | 36.5s
+2026-11-26 19:38:02 INFO resnet50 | tuning_t02 s0_f0 | finetune | época 12/15 | loss 0.4964 | val_bal_acc 0.7149 | mejor 0.7149 | 36.7s
+2026-11-26 19:38:46 INFO resnet50 | tuning_t02 s0_f0 | finetune | época 13/15 | loss 0.4546 | val_bal_acc 0.7134 | mejor 0.7149 | 44.6s
+2026-11-26 19:39:23 INFO resnet50 | tuning_t02 s0_f0 | finetune | época 14/15 | loss 0.4339 | val_bal_acc 0.7190 | mejor 0.7190 | 36.5s
+2026-11-26 19:39:59 INFO resnet50 | tuning_t02 s0_f0 | finetune | época 15/15 | loss 0.4332 | val_bal_acc 0.7134 | mejor 0.7190 | 36.7s
+2026-11-26 19:40:00 INFO resnet50 | tuning_t02 s0_f0 | se restauran los pesos de la época 14 de la fase B
+2026-11-26 19:40:04 INFO resnet50 | tuning_t02 s0_f0 | val balanced_accuracy = 0.7190 (época 14 de la fase B) | entrenamiento 12m 04s -> outputs/runs/resnet50/tuning_t02/s0_f0
+2026-11-26 19:40:16 INFO resnet50 | tuning_t03 s0_f0 | Fase A: 5 épocas, backbone congelado
+2026-11-26 19:40:44 INFO resnet50 | tuning_t03 s0_f0 | warmup | época 1/5 | loss 1.3756 | val_bal_acc 0.4966 | mejor 0.4966 | 27.8s
+2026-11-26 19:40:56 INFO resnet50 | tuning_t03 s0_f0 | warmup | época 2/5 | loss 0.9792 | val_bal_acc 0.5459 | mejor 0.5459 | 12.1s
+2026-11-26 19:41:08 INFO resnet50 | tuning_t03 s0_f0 | warmup | época 3/5 | loss 0.8755 | val_bal_acc 0.5776 | mejor 0.5776 | 11.9s
+2026-11-26 19:41:20 INFO resnet50 | tuning_t03 s0_f0 | warmup | época 4/5 | loss 0.8064 | val_bal_acc 0.5853 | mejor 0.5853 | 11.9s
+2026-11-26 19:41:32 INFO resnet50 | tuning_t03 s0_f0 | warmup | época 5/5 | loss 0.7817 | val_bal_acc 0.5679 | mejor 0.5853 | 12.0s
+2026-11-26 19:41:32 INFO resnet50 | tuning_t03 s0_f0 | Fase B: hasta 15 épocas, todo descongelado
+2026-11-26 19:43:21 INFO resnet50 | tuning_t03 s0_f0 | finetune | época 1/15 | loss 1.1565 | val_bal_acc 0.5146 | mejor 0.5146 | 1m 48s
+2026-11-26 19:43:58 INFO resnet50 | tuning_t03 s0_f0 | finetune | época 2/15 | loss 0.8661 | val_bal_acc 0.5740 | mejor 0.5740 | 37.6s
+2026-11-26 19:44:36 INFO resnet50 | tuning_t03 s0_f0 | finetune | época 3/15 | loss 0.8663 | val_bal_acc 0.6185 | mejor 0.6185 | 37.4s
+2026-11-26 19:45:13 INFO resnet50 | tuning_t03 s0_f0 | finetune | época 4/15 | loss 0.6668 | val_bal_acc 0.6661 | mejor 0.6661 | 37.3s
+2026-11-26 19:45:50 INFO resnet50 | tuning_t03 s0_f0 | finetune | época 5/15 | loss 0.5550 | val_bal_acc 0.6217 | mejor 0.6661 | 36.8s
+2026-11-26 19:46:28 INFO resnet50 | tuning_t03 s0_f0 | finetune | época 6/15 | loss 0.4563 | val_bal_acc 0.6778 | mejor 0.6778 | 37.8s
+2026-11-26 19:47:05 INFO resnet50 | tuning_t03 s0_f0 | finetune | época 7/15 | loss 0.4613 | val_bal_acc 0.5976 | mejor 0.6778 | 37.8s
+2026-11-26 19:47:43 INFO resnet50 | tuning_t03 s0_f0 | finetune | época 8/15 | loss 0.4107 | val_bal_acc 0.7596 | mejor 0.7596 | 37.6s
+2026-11-26 19:48:20 INFO resnet50 | tuning_t03 s0_f0 | finetune | época 9/15 | loss 0.3109 | val_bal_acc 0.7413 | mejor 0.7596 | 37.3s
+2026-11-26 19:48:58 INFO resnet50 | tuning_t03 s0_f0 | finetune | época 10/15 | loss 0.2676 | val_bal_acc 0.7316 | mejor 0.7596 | 37.5s
+2026-11-26 19:49:35 INFO resnet50 | tuning_t03 s0_f0 | finetune | época 11/15 | loss 0.2397 | val_bal_acc 0.7306 | mejor 0.7596 | 37.4s
+2026-11-26 19:50:13 INFO resnet50 | tuning_t03 s0_f0 | finetune | época 12/15 | loss 0.2136 | val_bal_acc 0.7070 | mejor 0.7596 | 37.4s
+2026-11-26 19:50:50 INFO resnet50 | tuning_t03 s0_f0 | finetune | época 13/15 | loss 0.1906 | val_bal_acc 0.7376 | mejor 0.7596 | 37.8s
+2026-11-26 19:50:50 INFO resnet50 | tuning_t03 s0_f0 | parada temprana en la época 13
+2026-11-26 19:50:50 INFO resnet50 | tuning_t03 s0_f0 | se restauran los pesos de la época 8 de la fase B
+2026-11-26 19:50:56 INFO resnet50 | tuning_t03 s0_f0 | val balanced_accuracy = 0.7596 (época 8 de la fase B) | entrenamiento 10m 34s -> outputs/runs/resnet50/tuning_t03/s0_f0
+2026-11-26 19:51:12 INFO resnet50 | tuning_t04 s0_f0 | Fase A: 5 épocas, backbone congelado
+2026-11-26 19:51:45 INFO resnet50 | tuning_t04 s0_f0 | warmup | época 1/5 | loss 1.3694 | val_bal_acc 0.5393 | mejor 0.5393 | 33.4s
+2026-11-26 19:51:58 INFO resnet50 | tuning_t04 s0_f0 | warmup | época 2/5 | loss 0.9752 | val_bal_acc 0.5758 | mejor 0.5758 | 12.9s
+2026-11-26 19:52:14 INFO resnet50 | tuning_t04 s0_f0 | warmup | época 3/5 | loss 0.8604 | val_bal_acc 0.5849 | mejor 0.5849 | 15.2s
+2026-11-26 19:52:26 INFO resnet50 | tuning_t04 s0_f0 | warmup | época 4/5 | loss 0.8123 | val_bal_acc 0.5921 | mejor 0.5921 | 12.1s
+2026-11-26 19:52:38 INFO resnet50 | tuning_t04 s0_f0 | warmup | época 5/5 | loss 0.7544 | val_bal_acc 0.5782 | mejor 0.5921 | 12.5s
+2026-11-26 19:52:38 INFO resnet50 | tuning_t04 s0_f0 | Fase B: hasta 15 épocas, todo descongelado
+2026-11-26 19:54:26 INFO resnet50 | tuning_t04 s0_f0 | finetune | época 1/15 | loss 1.8610 | val_bal_acc 0.2595 | mejor 0.2595 | 1m 47s
+2026-11-26 19:55:04 INFO resnet50 | tuning_t04 s0_f0 | finetune | época 2/15 | loss 1.9305 | val_bal_acc 0.2524 | mejor 0.2595 | 38.1s
+2026-11-26 19:55:42 INFO resnet50 | tuning_t04 s0_f0 | finetune | época 3/15 | loss 1.5615 | val_bal_acc 0.1671 | mejor 0.2595 | 38.4s
+2026-11-26 19:56:20 INFO resnet50 | tuning_t04 s0_f0 | finetune | época 4/15 | loss 2.0454 | val_bal_acc 0.3123 | mejor 0.3123 | 37.9s
+2026-11-26 19:56:58 INFO resnet50 | tuning_t04 s0_f0 | finetune | época 5/15 | loss 1.8636 | val_bal_acc 0.3311 | mejor 0.3311 | 37.5s
+2026-11-26 19:57:35 INFO resnet50 | tuning_t04 s0_f0 | finetune | época 6/15 | loss 1.5569 | val_bal_acc 0.4077 | mejor 0.4077 | 37.2s
+2026-11-26 19:58:13 INFO resnet50 | tuning_t04 s0_f0 | finetune | época 7/15 | loss 1.4580 | val_bal_acc 0.5088 | mejor 0.5088 | 38.2s
+2026-11-26 19:58:51 INFO resnet50 | tuning_t04 s0_f0 | finetune | época 8/15 | loss 1.2890 | val_bal_acc 0.5315 | mejor 0.5315 | 38.0s
+2026-11-26 19:59:29 INFO resnet50 | tuning_t04 s0_f0 | finetune | época 9/15 | loss 1.1880 | val_bal_acc 0.5924 | mejor 0.5924 | 38.2s
+2026-11-26 20:00:07 INFO resnet50 | tuning_t04 s0_f0 | finetune | época 10/15 | loss 1.1257 | val_bal_acc 0.5909 | mejor 0.5924 | 38.3s
+2026-11-26 20:00:46 INFO resnet50 | tuning_t04 s0_f0 | finetune | época 11/15 | loss 1.0369 | val_bal_acc 0.6270 | mejor 0.6270 | 38.1s
+2026-11-26 20:01:24 INFO resnet50 | tuning_t04 s0_f0 | finetune | época 12/15 | loss 0.9971 | val_bal_acc 0.6227 | mejor 0.6270 | 38.0s
+2026-11-26 20:02:02 INFO resnet50 | tuning_t04 s0_f0 | finetune | época 13/15 | loss 0.9432 | val_bal_acc 0.6254 | mejor 0.6270 | 38.0s
+2026-11-26 20:02:39 INFO resnet50 | tuning_t04 s0_f0 | finetune | época 14/15 | loss 0.9151 | val_bal_acc 0.6140 | mejor 0.6270 | 37.6s
+2026-11-26 20:03:16 INFO resnet50 | tuning_t04 s0_f0 | finetune | época 15/15 | loss 0.9075 | val_bal_acc 0.6272 | mejor 0.6272 | 37.0s
+2026-11-26 20:03:16 INFO resnet50 | tuning_t04 s0_f0 | se restauran los pesos de la época 15 de la fase B
+2026-11-26 20:03:21 INFO resnet50 | tuning_t04 s0_f0 | val balanced_accuracy = 0.6272 (época 15 de la fase B) | entrenamiento 12m 04s -> outputs/runs/resnet50/tuning_t04/s0_f0
+2026-11-26 20:03:36 INFO resnet50 | tuning_t05 s0_f0 | Fase A: 5 épocas, backbone congelado
+2026-11-26 20:04:09 INFO resnet50 | tuning_t05 s0_f0 | warmup | época 1/5 | loss 1.5349 | val_bal_acc 0.4965 | mejor 0.4965 | 32.6s
+2026-11-26 20:04:22 INFO resnet50 | tuning_t05 s0_f0 | warmup | época 2/5 | loss 1.1016 | val_bal_acc 0.5239 | mejor 0.5239 | 12.5s
+2026-11-26 20:04:34 INFO resnet50 | tuning_t05 s0_f0 | warmup | época 3/5 | loss 0.9988 | val_bal_acc 0.5514 | mejor 0.5514 | 12.3s
+2026-11-26 20:04:46 INFO resnet50 | tuning_t05 s0_f0 | warmup | época 4/5 | loss 0.9267 | val_bal_acc 0.5685 | mejor 0.5685 | 12.3s
+2026-11-26 20:04:59 INFO resnet50 | tuning_t05 s0_f0 | warmup | época 5/5 | loss 0.8878 | val_bal_acc 0.5645 | mejor 0.5685 | 12.4s
+2026-11-26 20:04:59 INFO resnet50 | tuning_t05 s0_f0 | Fase B: hasta 15 épocas, todo descongelado
+2026-11-26 20:06:55 INFO resnet50 | tuning_t05 s0_f0 | finetune | época 1/15 | loss 1.5228 | val_bal_acc 0.4709 | mejor 0.4709 | 1m 56s
+2026-11-26 20:07:32 INFO resnet50 | tuning_t05 s0_f0 | finetune | época 2/15 | loss 1.4872 | val_bal_acc 0.4577 | mejor 0.4709 | 37.4s
+2026-11-26 20:08:10 INFO resnet50 | tuning_t05 s0_f0 | finetune | época 3/15 | loss 1.0630 | val_bal_acc 0.5929 | mejor 0.5929 | 38.0s
+2026-11-26 20:08:55 INFO resnet50 | tuning_t05 s0_f0 | finetune | época 4/15 | loss 0.8565 | val_bal_acc 0.6161 | mejor 0.6161 | 45.0s
+2026-11-26 20:09:32 INFO resnet50 | tuning_t05 s0_f0 | finetune | época 5/15 | loss 0.7782 | val_bal_acc 0.6130 | mejor 0.6161 | 36.6s
+2026-11-26 20:10:09 INFO resnet50 | tuning_t05 s0_f0 | finetune | época 6/15 | loss 0.6937 | val_bal_acc 0.6519 | mejor 0.6519 | 36.9s
+2026-11-26 20:10:46 INFO resnet50 | tuning_t05 s0_f0 | finetune | época 7/15 | loss 0.6278 | val_bal_acc 0.6581 | mejor 0.6581 | 37.5s
+2026-11-26 20:11:24 INFO resnet50 | tuning_t05 s0_f0 | finetune | época 8/15 | loss 0.6200 | val_bal_acc 0.6924 | mejor 0.6924 | 37.5s
+2026-11-26 20:12:01 INFO resnet50 | tuning_t05 s0_f0 | finetune | época 9/15 | loss 0.5213 | val_bal_acc 0.7186 | mejor 0.7186 | 37.6s
+2026-11-26 20:12:39 INFO resnet50 | tuning_t05 s0_f0 | finetune | época 10/15 | loss 0.4648 | val_bal_acc 0.7237 | mejor 0.7237 | 37.3s
+2026-11-26 20:13:16 INFO resnet50 | tuning_t05 s0_f0 | finetune | época 11/15 | loss 0.4010 | val_bal_acc 0.6432 | mejor 0.7237 | 37.2s
+2026-11-26 20:13:53 INFO resnet50 | tuning_t05 s0_f0 | finetune | época 12/15 | loss 0.3493 | val_bal_acc 0.6710 | mejor 0.7237 | 37.2s
+2026-11-26 20:14:39 INFO resnet50 | tuning_t05 s0_f0 | finetune | época 13/15 | loss 0.3147 | val_bal_acc 0.6899 | mejor 0.7237 | 46.0s
+2026-11-26 20:15:16 INFO resnet50 | tuning_t05 s0_f0 | finetune | época 14/15 | loss 0.2889 | val_bal_acc 0.6916 | mejor 0.7237 | 37.0s
+2026-11-26 20:16:01 INFO resnet50 | tuning_t05 s0_f0 | finetune | época 15/15 | loss 0.2961 | val_bal_acc 0.6920 | mejor 0.7237 | 44.7s
+2026-11-26 20:16:01 INFO resnet50 | tuning_t05 s0_f0 | parada temprana en la época 15
+2026-11-26 20:16:01 INFO resnet50 | tuning_t05 s0_f0 | se restauran los pesos de la época 10 de la fase B
+2026-11-26 20:16:06 INFO resnet50 | tuning_t05 s0_f0 | val balanced_accuracy = 0.7237 (época 10 de la fase B) | entrenamiento 12m 24s -> outputs/runs/resnet50/tuning_t05/s0_f0

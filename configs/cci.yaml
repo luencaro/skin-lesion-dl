@@ -1,0 +1,46 @@
+# Modelo original: capa de constancia de color invariante (CCI) antepuesta a un backbone del
+# benchmark (src/original_model.py, book/24-modelo-original-diseno.md). Se registra como "cci" en
+# src.models.REGISTRY y se entrena con el mismo pipeline que los demás modelos:
+#
+#   python -m src.tune  --model cci
+#   python -m src.final --model cci
+#
+# Las variantes de ablación del capítulo 24 son configs/cci_<variante>.yaml (extends: cci).
+name: cci
+
+# Backbone: modelo del REGISTRY al que se antepone la capa. Regla del capítulo 24: el modelo del
+# benchmark con mayor exactitud balanceada media en validación en el Entregable 2, con los mismos
+# pesos de ImageNet. Queda en null hasta aplicar la regla (book/20-benchmark-e2.ipynb); mientras
+# sea null, construir el modelo da un error que lo explica.
+backbone: mobilenetv2
+
+# Variante (src.original_model.VARIANTS): full | fixed_p | uniform_weights | no_invariance | shades_of_gray
+variant: full
+
+weights: imagenet                 # pesos del backbone (null: misma arquitectura sin descargar pesos)
+input_size: 224                   # debe coincidir con train.image_size de base.yaml
+# gradcam_layer, saliency y keras_hub_preset se heredan de configs/<backbone>.yaml si no se fijan aquí.
+
+# Parámetros de la capa (ecuaciones cci-guia a cci-correccion del capítulo 24)
+cci:
+  reduced_size: 56                # lado de x̄ (promedio de áreas): N̄ = 56 x 56 = 3136
+  filters: 16                     # filtros de las dos convoluciones 3 x 3 de g_φ
+  kernel_size: 3
+  eps: 1.0e-3                     # cota inferior ε de las intensidades antes del logaritmo
+  # κ: con p = 6 y pesos uniformes (inicio del entrenamiento), la media de h(x) en 400 imágenes de
+  # train es 0,936 κ; κ = 170 la iguala a la intensidad media de train (159,8 en [0, 255],
+  # data/train_color_stats.json), así que el backbone recibe intensidades en su rango habitual.
+  kappa: 170.0
+  p_init: 6.0                     # p = 1 + softplus(ϑ) se inicializa en 6 (Shades of Gray de barata2015)
+  input_range: [0.0, 255.0]       # rango válido de la entrada (se comprueba en modo eager)
+
+# ϑ no lleva decaimiento de pesos (AdamW lo llevaría hacia p = 1 + softplus(0) ≈ 1,69). Se añade a
+# train.weight_decay_exclude solo en las corridas de este modelo.
+weight_decay_exclude: [cci_theta]
+
+# Se llenan con outputs/tuning/cci/best.json tras `python -m src.tune --model cci`, con el mismo
+# espacio y el mismo número de pruebas que los demás modelos (train.tuning de base.yaml).
+hyperparameters:
+  learning_rate: 0.00020210153187856742
+  weight_decay: 7.850698556587388e-06
+  dropout: 0.0

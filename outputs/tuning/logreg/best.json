@@ -1,0 +1,10 @@
+{
+  "model": "logreg",
+  "trial": 0,
+  "hyperparameters": {
+    "C": 0.001
+  },
+  "val_balanced_accuracy": 0.6065352239485031,
+  "val_fold": 0,
+  "selection": "máxima val_balanced_accuracy; en empate, el menor C"
+}

@@ -2,6 +2,9 @@
 data/raw/*
 !data/raw/.gitkeep
 
+# Conjuntos externos (evaluación externa, desviación D5); los SHA-256 van en data/external_hashes.json
+data/external/
+
 # Python
 __pycache__/
 *.pyc
@@ -12,3 +15,28 @@ _build/
 
 # Entorno virtual (uv)
 .venv/
+
+# Datos procesados (caché del EDA, etc.)
+data/processed/
+
+.ruff_cache/
+
+# MLflow local y tablas en cache del benchmark (se regeneran desde outputs/runs)
+outputs/mlflow/
+outputs/benchmark_e2/
+
+# Pesos de las corridas (VGG-16: ~540 MB por corrida; GitHub rechaza archivos > 100 MB)
+outputs/**/*.weights.h5
+
+# Modelos exportados (pueden superar los 100 MB de GitHub). Se versionan metadata.json y, para el
+# despliegue, las copias servibles en dashboard/data/models/ (por debajo de export.max_size_mb).
+artifacts/**/*.onnx
+artifacts/**/*.npz
+
+# Paquetes .zip en la raíz: descargas de Colab (*_colab*.zip, con pesos; hasta ~8 GB), el handoff
+# de diseño de Cromia y el dataset comprimido. Su contenido útil ya está desempaquetado en el repo.
+/*.zip
+
+# Resultados de pytest
+outputs/tests/
+.pytest_cache/

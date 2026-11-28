@@ -1,0 +1,61 @@
+# Contrato de datos de HAM10000_metadata.csv (src/audit.py valida los metadatos contra este
+# esquema al cargarlos con src.data.load_metadata_validated; src/audit.build_dictionary genera
+# data/diccionario.csv a partir de él). Los valores permitidos de las categóricas son los de
+# valid_categories de base.yaml más "unknown", que el conjunto usa como faltante.
+dataset: HAM10000
+version: "4 (doi: 10.7910/DVN/DBW86T)"
+rows: 10015                       # filas esperadas (una por imagen)
+unique_key: image_id
+columns:
+  lesion_id:
+    dtype: string
+    nullable: false
+    pattern: "^HAM_\\d{7}$"
+    description: Identificador de la lesión; varias imágenes pueden ser de la misma lesión. Unidad de independencia y de agrupación de la partición.
+    source: metadatos originales
+  image_id:
+    dtype: string
+    nullable: false
+    unique: true
+    pattern: "^ISIC_\\d{7}$"
+    description: Identificador de la imagen; nombre del archivo JPEG en data/raw/images.
+    source: metadatos originales
+  dx:
+    dtype: category
+    nullable: false
+    allowed: [akiec, bcc, bkl, df, mel, nv, vasc]
+    description: Diagnóstico (variable objetivo) en 7 clases.
+    source: metadatos originales
+  dx_type:
+    dtype: category
+    nullable: false
+    allowed: [histo, follow_up, consensus, confocal]
+    description: Método de confirmación del diagnóstico (histopatología, seguimiento, consenso de expertos o microscopía confocal).
+    source: metadatos originales
+  age:
+    dtype: float
+    nullable: true
+    min: 0
+    max: 100
+    description: Edad del paciente en años (múltiplos de 5); faltante en algunas imágenes.
+    source: metadatos originales
+  sex:
+    dtype: category
+    nullable: false
+    allowed: [male, female, unknown]
+    description: Sexo del paciente; unknown cuenta como faltante.
+    source: metadatos originales
+  localization:
+    dtype: category
+    nullable: false
+    allowed: [abdomen, acral, back, chest, ear, face, foot, genital, hand, lower extremity, neck, scalp, trunk, unknown, upper extremity]
+    description: Localización anatómica de la lesión; unknown cuenta como faltante.
+    source: metadatos originales
+  dataset:
+    dtype: category
+    nullable: false
+    allowed: [rosendahl, vidir_modern, vidir_molemax, vienna_dias]
+    description: Subconjunto de adquisición (fuente) de la imagen.
+    source: metadatos originales
+consistency:
+  lesion_constant: [dx]           # columnas que deben ser constantes dentro de cada lesion_id

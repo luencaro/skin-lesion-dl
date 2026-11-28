@@ -1,0 +1,73 @@
+# Evaluación externa (desviación D5; experiments/protocolo.md, sección 5). src/external.py.
+#
+# Solo evaluación: cada corrida definitiva de cada modelo predice los tres conjuntos con el mismo
+# redimensionado de HAM10000 (train.image_size, train.resize_method, train.resize_antialias de
+# base.yaml), sin reentrenar ni ajustar. Las rutas son relativas a la raíz del proyecto. Los
+# nombres de archivo y de columna son los de la publicación de cada conjunto; si al descargar no
+# coinciden, src.external falla con un mensaje que lista lo encontrado (no adivina): corrige aquí
+# el nombre y vuelve a ejecutar.
+#
+# Mapeo: etiqueta original -> clase de HAM10000 (valid_categories.dx). exclude: etiquetas sin
+# equivalente, cuyas imágenes se descartan. Una etiqueta que no esté en mapping ni en exclude es un
+# error. La exactitud balanceada de cada conjunto es la media de la sensibilidad sobre las clases
+# presentes en él; el modelo predice siempre sobre las 7 clases.
+
+hashes_json: data/external_hashes.json       # SHA-256 de los archivos descargados
+results_dir: outputs/external                # probabilidades por corrida y tablas
+cache_dir: data/processed/external_resized   # imágenes redimensionadas en float32 (como train.cache: disk)
+ham10000_split: test                         # cuarto conjunto de la prueba de Friedman (HAM10000)
+
+datasets:
+  pad_ufes_20:
+    name: PAD-UFES-20
+    root: data/external/pad_ufes_20
+    metadata: metadata.csv                   # relativo a root
+    image_column: img_id                     # nombre del archivo de imagen (p. ej. PAT_8_15_820.png)
+    image_dir: .                             # se busca el archivo en root y sus subcarpetas (imgs_part_1, ...)
+    image_search: recursive
+    label_column: diagnostic
+    group_column: lesion_id                  # bootstrap por lesión
+    mapping: {ACK: akiec, BCC: bcc, MEL: mel, NEV: nv, SEK: bkl}
+    exclude: [SCC]
+
+  derm7pt:
+    name: Derm7pt
+    root: data/external/derm7pt
+    metadata: meta/meta.csv
+    image_column: derm                       # imagen dermatoscópica (ruta relativa a image_dir)
+    image_dir: images
+    image_search: direct
+    label_column: diagnosis
+    group_column: case_num                   # un caso por lesión: bootstrap por caso
+    mapping:
+      melanoma: mel
+      melanoma (in situ): mel
+      melanoma (less than 0.76 mm): mel
+      melanoma (0.76 to 1.5 mm): mel
+      melanoma (more than 1.5 mm): mel
+      melanoma metastasis: mel
+      blue nevus: nv
+      clark nevus: nv
+      combined nevus: nv
+      congenital nevus: nv
+      dermal nevus: nv
+      recurrent nevus: nv
+      reed or spitz nevus: nv
+      basal cell carcinoma: bcc
+      seborrheic keratosis: bkl
+      lentigo: bkl
+      dermatofibroma: df
+      vascular lesion: vasc
+    exclude: [melanosis, miscellaneous]
+
+  bcn20000:
+    name: BCN20000
+    root: data/external/bcn20000
+    metadata: bcn_20k_train.csv              # partición de entrenamiento etiquetada (12 413 imágenes)
+    image_column: bcn_filename
+    image_dir: .
+    image_search: recursive
+    label_column: diagnosis
+    group_column: lesion_id                  # bootstrap por lesión
+    mapping: {NV: nv, MEL: mel, BCC: bcc, BKL: bkl, AK: akiec, DF: df, VASC: vasc}
+    exclude: [SCC]

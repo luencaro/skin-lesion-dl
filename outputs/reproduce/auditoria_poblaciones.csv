@@ -1,0 +1,14 @@
+,imagenes,lesiones,akiec,bcc,bkl,df,mel,nv,vasc
+total,10015,7470,327,514,1099,115,1113,6705,142
+entrenamiento (todos los pliegues),8584,6403,281,440,942,98,954,5747,122
+test,1431,1067,46,74,157,17,159,958,20
+train de la corrida (pliegue 0 fuera),6867,5123,225,352,754,78,763,4597,98
+validación (pliegue 0),1717,1280,56,88,188,20,191,1150,24
+train de la corrida (pliegue 1 fuera),6867,5123,225,352,754,78,763,4598,97
+validación (pliegue 1),1717,1280,56,88,188,20,191,1149,25
+train de la corrida (pliegue 2 fuera),6867,5122,225,352,754,78,763,4598,97
+validación (pliegue 2),1717,1281,56,88,188,20,191,1149,25
+train de la corrida (pliegue 3 fuera),6867,5121,224,352,753,79,763,4598,98
+validación (pliegue 3),1717,1282,57,88,189,19,191,1149,24
+train de la corrida (pliegue 4 fuera),6868,5123,225,352,753,79,764,4597,98
+validación (pliegue 4),1716,1280,56,88,189,19,190,1150,24

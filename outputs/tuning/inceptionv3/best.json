@@ -1,0 +1,43 @@
+{
+  "model": "inceptionv3",
+  "trial": 2,
+  "hyperparameters": {
+    "learning_rate": 0.0003810978438937071,
+    "weight_decay": 0.0005193157688849777,
+    "dropout": 0.4
+  },
+  "val_balanced_accuracy": 0.7610581616791793,
+  "best_epoch": 12,
+  "selection": "máxima val_balanced_accuracy; en empate, el ensayo de menor índice",
+  "tuning": {
+    "method": "random",
+    "n_trials": 6,
+    "sampler_seed": 2026,
+    "val_fold": 0,
+    "seed": 0,
+    "max_epochs": 15,
+    "space": {
+      "learning_rate": {
+        "type": "loguniform",
+        "low": 1e-05,
+        "high": 0.001
+      },
+      "weight_decay": {
+        "type": "loguniform",
+        "low": 1e-06,
+        "high": 0.001
+      },
+      "dropout": {
+        "type": "choice",
+        "values": [
+          0.0,
+          0.2,
+          0.4
+        ]
+      }
+    }
+  },
+  "n_trials": 6,
+  "excluded_trials": [],
+  "run_dir": "outputs/runs/inceptionv3/tuning_t02/s0_f0"
+}

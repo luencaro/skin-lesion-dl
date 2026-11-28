@@ -1,0 +1,486 @@
+{
+  "model": "cci_uniform_weights",
+  "family": "Ablación (CCI)",
+  "created_at": "2026-11-28T12:44:15+00:00",
+  "format": "onnx",
+  "opset": 17,
+  "run": {
+    "label": "final",
+    "seed": 0,
+    "val_fold": 0,
+    "run_dir": "outputs/runs/cci_uniform_weights/final/s0_f0"
+  },
+  "global_seed": 42,
+  "versions": {
+    "python": "3.11.18",
+    "tensorflow": "2.20.0",
+    "keras": "3.15.1",
+    "tf2onnx": "1.17.0",
+    "onnx": "1.23.2",
+    "onnxruntime": "1.32.0",
+    "numpy": "2.4.6"
+  },
+  "hyperparameters": {
+    "learning_rate": 0.00020210153187856742,
+    "weight_decay": 7.850698556587388e-06,
+    "dropout": 0.0
+  },
+  "model_config": {
+    "backbone": "mobilenetv2",
+    "variant": "uniform_weights",
+    "cci": {
+      "reduced_size": 56,
+      "filters": 16,
+      "kernel_size": 3,
+      "eps": 0.001,
+      "kappa": 170.0,
+      "p_init": 6.0,
+      "input_range": [
+        0.0,
+        255.0
+      ]
+    },
+    "weights": "imagenet"
+  },
+  "classes": [
+    "akiec",
+    "bcc",
+    "bkl",
+    "df",
+    "mel",
+    "nv",
+    "vasc"
+  ],
+  "resolution": [
+    224,
+    224
+  ],
+  "input": {
+    "name": "image",
+    "shape": [
+      null,
+      224,
+      224,
+      3
+    ],
+    "dtype": "float32",
+    "range": [
+      0.0,
+      255.0
+    ],
+    "layout": "NHWC",
+    "color": "RGB"
+  },
+  "preprocessing": {
+    "color": "RGB",
+    "layout": "NHWC",
+    "dtype": "float32",
+    "range": [
+      0.0,
+      255.0
+    ],
+    "resize": [
+      224,
+      224
+    ],
+    "resize_method": "bilinear",
+    "antialias": true,
+    "keep_aspect_ratio": false,
+    "clip": [
+      0.0,
+      255.0
+    ],
+    "normalization": "dentro del modelo (capa preprocess precedida de la capa CCI)",
+    "steps": [
+      "decodificar JPEG/PNG a RGB de 8 bits",
+      "redimensionar a 224 x 224 (bilinear, antialias, sin conservar la relación de aspecto)",
+      "convertir a float32 sin normalizar, en [0, 255]"
+    ]
+  },
+  "outputs": {
+    "logits": {
+      "shape": [
+        null,
+        7
+      ]
+    },
+    "probabilities": {
+      "shape": [
+        null,
+        7
+      ]
+    },
+    "embedding": {
+      "shape": [
+        null,
+        1280
+      ]
+    },
+    "feature_map": {
+      "shape": [
+        null,
+        7,
+        7,
+        1280
+      ]
+    },
+    "head_weights": {
+      "shape": [
+        1280,
+        7
+      ]
+    }
+  },
+  "cam": {
+    "supported": true,
+    "kind": "gap_linear",
+    "formula": "CAM_k = sum_c feature_map[..., c] * head_weights[c, k]"
+  },
+  "temperature": 1.8484828035286185,
+  "conformal": {
+    "score": "lac",
+    "use_temperature": true,
+    "calibration_split": "val",
+    "n_calibration": 1717,
+    "quantiles": {
+      "0.1": 0.8156950874410706,
+      "0.05": 0.9077519790412195
+    }
+  },
+  "metrics": {
+    "val": {
+      "n": 1717,
+      "balanced_accuracy": 0.7144557269010755,
+      "accuracy": 0.7303436225975539,
+      "f1_macro": 0.6349770860209664,
+      "f1_weighted": 0.7523433336099985,
+      "auc_roc_macro_ovr": 0.950599655831648,
+      "auc_pr_macro": 0.7381721618374149,
+      "mcc": 0.5716324907351064,
+      "ece": 0.12164744188939747,
+      "cross_entropy": 0.7864392504950544,
+      "per_class": {
+        "akiec": {
+          "precision": 0.6923076923076923,
+          "recall": 0.32142857142857145,
+          "f1": 0.43902439024390244,
+          "support": 56
+        },
+        "bcc": {
+          "precision": 0.5966386554621849,
+          "recall": 0.8068181818181818,
+          "f1": 0.6859903381642513,
+          "support": 88
+        },
+        "bkl": {
+          "precision": 0.6277777777777778,
+          "recall": 0.601063829787234,
+          "f1": 0.6141304347826086,
+          "support": 188
+        },
+        "df": {
+          "precision": 0.53125,
+          "recall": 0.85,
+          "f1": 0.6538461538461539,
+          "support": 20
+        },
+        "mel": {
+          "precision": 0.34793187347931875,
+          "recall": 0.7486910994764397,
+          "f1": 0.4750830564784053,
+          "support": 191
+        },
+        "nv": {
+          "precision": 0.9529025191675794,
+          "recall": 0.7565217391304347,
+          "f1": 0.8434318952981096,
+          "support": 1150
+        },
+        "vasc": {
+          "precision": 0.6111111111111112,
+          "recall": 0.9166666666666666,
+          "f1": 0.7333333333333333,
+          "support": 24
+        }
+      },
+      "confusion_matrix": {
+        "labels": [
+          "akiec",
+          "bcc",
+          "bkl",
+          "df",
+          "mel",
+          "nv",
+          "vasc"
+        ],
+        "matrix": [
+          [
+            18,
+            8,
+            12,
+            1,
+            16,
+            1,
+            0
+          ],
+          [
+            3,
+            71,
+            5,
+            1,
+            3,
+            2,
+            3
+          ],
+          [
+            2,
+            15,
+            113,
+            1,
+            38,
+            18,
+            1
+          ],
+          [
+            1,
+            0,
+            0,
+            17,
+            1,
+            1,
+            0
+          ],
+          [
+            0,
+            2,
+            19,
+            3,
+            143,
+            21,
+            3
+          ],
+          [
+            2,
+            23,
+            31,
+            9,
+            208,
+            870,
+            7
+          ],
+          [
+            0,
+            0,
+            0,
+            0,
+            2,
+            0,
+            22
+          ]
+        ]
+      }
+    },
+    "test": {
+      "n": 1431,
+      "balanced_accuracy": 0.6548243305453123,
+      "accuracy": 0.7253668763102725,
+      "f1_macro": 0.5970543672566695,
+      "f1_weighted": 0.7486382203670717,
+      "auc_roc_macro_ovr": 0.9427394431513142,
+      "auc_pr_macro": 0.6733691356729384,
+      "mcc": 0.5684645479961358,
+      "ece": 0.12623130294488072,
+      "cross_entropy": 0.8358834673185153,
+      "per_class": {
+        "akiec": {
+          "precision": 0.5217391304347826,
+          "recall": 0.2608695652173913,
+          "f1": 0.34782608695652173,
+          "support": 46
+        },
+        "bcc": {
+          "precision": 0.6588235294117647,
+          "recall": 0.7567567567567568,
+          "f1": 0.7044025157232704,
+          "support": 74
+        },
+        "bkl": {
+          "precision": 0.5882352941176471,
+          "recall": 0.5732484076433121,
+          "f1": 0.5806451612903226,
+          "support": 157
+        },
+        "df": {
+          "precision": 0.32,
+          "recall": 0.47058823529411764,
+          "f1": 0.38095238095238093,
+          "support": 17
+        },
+        "mel": {
+          "precision": 0.3532608695652174,
+          "recall": 0.8176100628930818,
+          "f1": 0.49335863377609107,
+          "support": 159
+        },
+        "nv": {
+          "precision": 0.96271637816245,
+          "recall": 0.7546972860125261,
+          "f1": 0.8461088355763604,
+          "support": 958
+        },
+        "vasc": {
+          "precision": 0.7307692307692307,
+          "recall": 0.95,
+          "f1": 0.8260869565217391,
+          "support": 20
+        }
+      },
+      "confusion_matrix": {
+        "labels": [
+          "akiec",
+          "bcc",
+          "bkl",
+          "df",
+          "mel",
+          "nv",
+          "vasc"
+        ],
+        "matrix": [
+          [
+            12,
+            7,
+            16,
+            0,
+            11,
+            0,
+            0
+          ],
+          [
+            1,
+            56,
+            7,
+            1,
+            3,
+            4,
+            2
+          ],
+          [
+            8,
+            7,
+            90,
+            7,
+            38,
+            6,
+            1
+          ],
+          [
+            0,
+            5,
+            2,
+            8,
+            1,
+            1,
+            0
+          ],
+          [
+            1,
+            3,
+            9,
+            0,
+            130,
+            16,
+            0
+          ],
+          [
+            1,
+            7,
+            29,
+            9,
+            185,
+            723,
+            4
+          ],
+          [
+            0,
+            0,
+            0,
+            0,
+            0,
+            1,
+            19
+          ]
+        ]
+      }
+    }
+  },
+  "roundtrip": {
+    "n_images": 32,
+    "max_abs_error": 4.947185516357422e-06,
+    "atol": 0.0001,
+    "same_predicted_class": true,
+    "passed": true,
+    "images": "val"
+  },
+  "fp16": {
+    "enabled": true,
+    "ba_fp32": 0.7122773773003657,
+    "ba_fp16": 0.7132737676616548,
+    "diferencia": 0.000996390361289179,
+    "ic_bajo": 0.0,
+    "ic_alto": 0.002368532477281037,
+    "nivel_ic": 0.9,
+    "delta": 0.02,
+    "p_tost": 0.0,
+    "equivalentes": true,
+    "n_images": 1717,
+    "same_class_frac": 0.9959231217239372,
+    "n_resamples": 2000,
+    "size_mb": 4.314484596252441,
+    "benchmark": {
+      "latency_ms_median": 5.364647000533296,
+      "latency_ms_p95": 6.005109604666359,
+      "latency_ms_mean": 5.457814770416007,
+      "repeats": 100,
+      "warmup": 10,
+      "intra_op_threads": 2,
+      "peak_rss_mb": 113.24609375,
+      "rss_before_load_mb": 51.16796875,
+      "file_size_mb": 4.314484596252441,
+      "onnxruntime": "1.32.0",
+      "provider": "CPUExecutionProvider"
+    }
+  },
+  "benchmark": {
+    "latency_ms_median": 3.951894999772776,
+    "latency_ms_p95": 4.0861356479581445,
+    "latency_ms_mean": 3.968734710433637,
+    "repeats": 100,
+    "warmup": 10,
+    "intra_op_threads": 2,
+    "peak_rss_mb": 100.7265625,
+    "rss_before_load_mb": 51.48046875,
+    "file_size_mb": 8.525409698486328,
+    "onnxruntime": "1.32.0",
+    "provider": "CPUExecutionProvider"
+  },
+  "params": {
+    "trainable": 2232840,
+    "non_trainable": 34112,
+    "total": 2266952
+  },
+  "size_mb": 8.525409698486328,
+  "size_limit_mb": 95.0,
+  "serving_file": "model_fp16.onnx",
+  "live": true,
+  "ood": {
+    "metric": "cosine_knn_mean",
+    "k": 5,
+    "quantile": 0.99,
+    "threshold": 0.42011502385139465,
+    "n_reference": 1000,
+    "n_calibration": 500,
+    "calibration_split": "val",
+    "distance_median_val": 0.2572479546070099,
+    "file": "ood_reference.npz"
+  }
+}

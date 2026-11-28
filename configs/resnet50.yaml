@@ -1,4 +1,14 @@
-# Configuración propia de resnet50.
-# Irá aquí:
-#   - hiperparámetros (learning rate, batch size, dropout, capas a descongelar, ...)
-#   - espacio de búsqueda de hiperparámetros
+# Configuración propia de ResNet-50 (src/models/resnet50.py).
+name: resnet50
+keras_application: ResNet50       # keras.applications.ResNet50
+weights: imagenet
+input_size: 224                   # debe coincidir con train.image_size de base.yaml
+gradcam_layer: conv5_block3_out   # capa del backbone anidado para Grad-CAM (src/gradcam.py)
+saliency: gradcam                 # gradcam (CNN) o rollout (ViT); src/interpret.py
+expected_params: 23602055         # total con la cabeza de 7 clases; lo verifica src.verify_models
+
+# Se llenan con outputs/tuning/resnet50/best.json tras `python -m src.tune --model resnet50`.
+hyperparameters:
+  learning_rate: null             # tasa inicial de la fase B (decaimiento coseno)
+  weight_decay: null              # AdamW, fases A y B
+  dropout: null                   # antes de la capa densa final

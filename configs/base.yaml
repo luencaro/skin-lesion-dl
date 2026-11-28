@@ -1,7 +1,461 @@
-# Configuración común a todos los modelos.
-# Irá aquí:
-#   - semillas para la reproducibilidad
-#   - partición (ruta del split, proporciones, agrupación por lesión)
-#   - resolución de entrada de las imágenes
-#   - métricas a reportar
-#   - número de épocas y early stopping
+# Configuración común a todos los modelos y al EDA.
+# El entrenamiento usa la sección `train` y las rutas runs_dir, tuning_dir, pilot_dir y final_dir;
+# la evaluación y el benchmark, las secciones `final`, `evaluation` y `benchmark` (al final).
+
+seed: 42
+
+# Rutas relativas a la raíz del proyecto (src/data.py las resuelve como absolutas).
+paths:
+  raw_dir: data/raw
+  images_dir: data/raw/images
+  metadata_csv: data/raw/HAM10000_metadata.csv
+  segmentations_dir: data/raw/segmentations
+  hashes_json: data/hashes.json
+  phash_csv: data/interim/phash.csv
+  duplicates_candidates_csv: data/duplicados_candidatos.csv
+  duplicates_confirmed_csv: data/duplicados_confirmados.csv
+  splits_csv: data/splits.csv
+  splits_hash_json: data/splits_hash.json
+  eda_cache_dir: data/processed/eda_cache
+  resized_cache_dir: data/processed/resized_cache  # imágenes redimensionadas del entrenamiento (train.cache: disk)
+  xla_cache_dir: data/processed/xla_cache         # resultados del autotuning de XLA (train.xla_autotune_cache)
+  artifacts_annotation_csv: data/anotacion_artefactos.csv
+  train_color_stats_json: data/train_color_stats.json
+  outliers_csv: data/atipicos_imagenes.csv
+  embeddings_cache: data/processed/embeddings_mobilenetv2.npz       # train (EDA)
+  embeddings_test_cache: data/processed/embeddings_mobilenetv2_test.npz  # test (src.baselines, misma función)
+  image_sha256_csv: data/interim/image_sha256.csv  # SHA-256 por imagen (src.audit)
+  data_contract: configs/data_contract.yaml
+  dictionary_csv: data/diccionario.csv
+  error_taxonomy_csv: data/taxonomia_errores.csv  # plantilla de etiquetado manual (src.errors)
+  runs_dir: outputs/runs
+  tuning_dir: outputs/tuning
+  pilot_dir: outputs/pilot
+  final_dir: outputs/final
+  benchmark_dir: outputs/benchmark
+  benchmark_e2_dir: outputs/benchmark_e2        # tablas en cache del benchmark del Entregable 2
+  robustness_dir: outputs/robustness
+  interpretability_dir: outputs/interpretability
+  cost_dir: outputs/cost
+  audit_dir: outputs/audit
+  reproduce_dir: outputs/reproduce
+  mlflow_dir: outputs/mlflow
+  logs_dir: outputs/logs
+
+# Formato de los archivos
+image_ext: .jpg
+mask_suffix: _segmentation.png
+source_column: dataset          # columna opcional con la fuente de cada imagen
+missing_tokens: ["unknown", ""] # valores que se cuentan como faltantes
+missing_indicator_columns: [age, sex, localization]  # columnas con indicador de faltante
+
+# Calidad de los metadatos
+age_min_valid: 1
+age_max_valid: 100
+valid_categories:              # categorías documentadas de HAM10000
+  sex: [male, female, unknown]
+  localization: [abdomen, acral, back, chest, ear, face, foot, genital, hand, lower extremity,
+                 neck, scalp, trunk, unknown, upper extremity]
+  dx: [akiec, bcc, bkl, df, mel, nv, vasc]
+  dx_type: [histo, follow_up, consensus, confocal]
+  dataset: [rosendahl, vidir_modern, vidir_molemax, vienna_dias]
+lesion_consistency_columns: [age, sex, localization, dx_type, dataset]
+eda_inconsistency_examples: 20  # filas de ejemplo de lesiones inconsistentes
+
+# Partición
+test_size: 0.15
+n_folds: 5
+overwrite_splits: false
+
+# Duplicados (pHash)
+phash_hash_size: 8              # hash de 8 x 8 = 64 bits
+phash_threshold: 2              # distancia de Hamming máxima para proponer un par
+phash_dist_max: 16              # distancia máxima que muestra la tabla de distribución
+eda_pairs_page_size: 20         # pares por página en la revisión visual
+eda_pairs_pages_per_figure: 2   # páginas que se muestran una al lado de la otra
+
+# Caché e inspección visual
+eda_cache_max_side: 300
+eda_cache_format: jpg
+eda_cache_jpeg_quality: 95
+eda_grid_per_class: 16
+eda_grid_ncols: 8
+
+# Artefactos
+eda_annotation_per_class: 40
+eda_annotation_page_size: 20
+artifact_columns: [regla, tinta, vello, burbujas, vineteado, parche_color]
+eda_vignette_corner_frac: 0.1   # lado de cada esquina, fracción del lado menor
+
+# Color
+eda_luma_weights: [0.299, 0.587, 0.114]  # luminancia ITU-R BT.601
+shades_of_gray_p: 6
+eda_sog_examples_per_class: 1
+
+# Máscaras de lesión
+mask_threshold: 127
+mask_min_frac: 0.001            # fracción de área por debajo de la cual la máscara está casi vacía
+mask_max_frac: 0.95             # fracción de área por encima de la cual la máscara está casi completa
+eda_mask_overlay_n: 16          # imágenes por cuadrícula de contornos de máscara
+
+# Mapas medios, imágenes media y capacidad predictiva del fondo
+eda_mean_image_size: [64, 48]   # (ancho, alto)
+min_background_frac: 0.05       # fracción mínima de fondo para incluir una imagen
+bg_probe_max_iter: 2000         # iteraciones de la regresión logística multinomial
+
+# Validación adversarial
+adv_hist_bins: 16
+adv_cv_folds: 5
+adv_max_iter: 1000
+
+# Calidad de imagen
+clip_low: 0                     # valor de píxel recortado por abajo (<=)
+clip_high: 255                  # valor de píxel recortado por arriba (>=)
+clip_frac_alert: 0.01           # proporción de píxeles recortados que activa la alerta
+
+# Atípicos en las características de imagen
+iqr_factor: 1.5
+robust_z: 3.5
+mahal_quantile: 0.975
+eda_outlier_grid_n: 16
+
+# Estadística
+chi2_mc_iterations: 10000       # permutaciones para el p-valor simulado de chi-cuadrado
+eda_hist_bins: auto             # intervalos de los histogramas univariados (numpy)
+eda_spearman_top_pairs: 15      # pares con mayor |rho| que se muestran
+
+# Embeddings
+eda_embeddings: true
+eda_embeddings_input_size: 224
+eda_embeddings_batch_size: 64
+eda_tsne_perplexity: 30
+emb_probe_max_iter: 2000        # iteraciones de la regresión logística sobre los embeddings
+
+# ---------------------------------------------------------------------------
+# Entrenamiento (src/train.py, src/tune.py, src/pilot.py)
+# ---------------------------------------------------------------------------
+# Las clases y su orden (índice de la etiqueta) son valid_categories.dx.
+train:
+  image_size: 224                 # lado de la entrada; se redimensiona sin conservar la relación de aspecto
+  resize_method: bilinear
+  resize_antialias: true          # filtro antialias al reducir (600x450 -> 224x224)
+  batch_size: 32                  # lote efectivo de cada actualización del optimizador
+  gradient_accumulation_steps: 1  # micro-lote del tf.data = batch_size / pasos; configs/<modelo>.yaml puede sobrescribirlo
+  mixed_precision: true           # política mixed_float16; la salida softmax queda en float32
+  deterministic: false            # true -> tf.config.experimental.enable_op_determinism()
+  gpu_memory_growth: true
+  # Memoria de la GPU que TensorFlow deja fuera de su asignador (TF_DEVICE_MIN_SYS_MEMORY_IN_MB; por
+  # defecto 1536 MiB en GPU 8.x, lo que deja 4,2 GB de los 6 GB de la RTX 3050). Con 512, TensorFlow
+  # dispone de ~5,2 GB; el pico total medido con nvidia-smi (VGG-16, fase B) es 5,2 de 6 GiB.
+  gpu_min_system_memory_mb: 512
+  # Asignador de memoria de la GPU (TF_GPU_ALLOCATOR). Con el BFC por defecto, VGG-16 con XLA aborta
+  # de forma intermitente al liberar memoria (bfc_allocator.cc: Check failed, en 3 de 4 procesos de
+  # prueba); con cuda_malloc_async no aborta y la velocidad es la misma. No cambia ningún valor.
+  gpu_allocator: cuda_malloc_async
+  # Cache tras el redimensionado, antes del aumento. disk: cada imagen redimensionada se calcula
+  # una sola vez y se guarda en float32 en paths.resized_cache_dir (valores idénticos a memory, sin
+  # ocupar RAM del proceso; la lee la caché de páginas del sistema). memory: tf.data.cache en RAM
+  # (~5,2 GB en float32 con train + val). none: decodifica y redimensiona en cada época.
+  cache: disk
+  cache_dtype: float32            # solo con cache: memory. float32 (~0.6 MB por imagen) o uint8 (4 veces menos RAM; redondeo <= 0,5)
+  resized_cache_verify: true      # con cache: disk, comprueba el SHA-256 de cada imagen al cargar la partición
+  # Cada corrida de src.tune y src.final en un proceso hijo. Con XLA, cada modelo compilado deja
+  # ~1 GB de RAM que keras.backend.clear_session() no libera; con false se acumula entre corridas.
+  isolate_runs: true
+  # Guarda el autotuning de XLA (algoritmo más rápido de cada convolución) en paths.xla_cache_dir:
+  # cada proceso hijo ahorra ~25 s por compilación. Solo cambia qué algoritmo equivalente se elige.
+  xla_autotune_cache: true
+  save_weights: true              # guarda model.weights.h5 en las corridas de src.train (no en ajuste ni piloto)
+  verbose: 1                      # model.fit: 1 = barra por lote, 2 = una línea por época, 0 = nada (solo terminal)
+
+  augmentation:                   # solo en train, después de la cache; valores en [0, 255]
+    flip_horizontal: true
+    flip_vertical: true
+    rotate_90: true               # rotación de k * 90 grados, k uniforme en {0, 1, 2, 3}
+    zoom_max: 0.10                # acercamiento: recorte aleatorio de lado 1 / U(1, 1 + zoom_max) y redimensionado
+    brightness: 0.10              # delta aditivo U(-b, b) sobre la escala [0, 1]
+    contrast: 0.10                # factor U(1 - c, 1 + c)
+    saturation: 0.10              # factor U(1 - s, 1 + s)
+    hue: 0.02                     # delta U(-h, h)
+
+  warmup:                         # fase A: backbone congelado, tasa constante
+    epochs: 5
+    learning_rate: 1.0e-3
+    optimizer: adamw              # usa el weight_decay de los hiperparámetros del modelo
+
+  finetune:                       # fase B: todo descongelado (BatchNormalization en modo inferencia)
+    max_epochs: 30
+    optimizer: adamw
+    schedule: cosine              # CosineDecay desde learning_rate hasta alpha * learning_rate en max_epochs
+    cosine_alpha: 0.0
+    early_stopping:
+      monitor: val_balanced_accuracy
+      mode: max
+      patience: 5
+      min_delta: 0.0
+      restore_best_weights: true
+
+  weight_decay_exclude: [bias, gamma, beta]  # variables sin decaimiento de pesos en AdamW
+  class_weight: inverse_frequency # w_k = N / (K * N_k) con el train de cada corrida
+  ece_bins: 15
+
+  # D2: el estudio piloto se omite; la sección se conserva solo por compatibilidad del código
+  pilot:
+    pairs: [[0, 0], [1, 1], [2, 2], [3, 3], [4, 4]]   # (semilla, pliegue de validación)
+
+  tuning:
+    method: random
+    n_trials: 6                   # D1: 6 configuraciones (antes 12); las 6 primeras del muestreador con sampler_seed 2026
+    sampler_seed: 2026            # misma semilla -> mismas configuraciones para todos los modelos
+    val_fold: 0
+    seed: 0
+    max_epochs: 15                # sustituye a finetune.max_epochs durante el ajuste
+    space:                        # se muestrea en este orden
+      learning_rate: {type: loguniform, low: 1.0e-5, high: 1.0e-3}
+      weight_decay: {type: loguniform, low: 1.0e-6, high: 1.0e-3}
+      dropout: {type: choice, values: [0.0, 0.2, 0.4]}
+
+# ---------------------------------------------------------------------------
+# Ejecución definitiva (src/final.py)
+# ---------------------------------------------------------------------------
+# Corridas = producto semilla x pliegue de validación (validación cruzada repetida), con
+# etiqueta `label`, evaluación de test y métricas de train sin aumento ni dropout.
+# El número de corridas se fijó por cómputo (desviación D3, capítulo 7).
+final:
+  label: final
+  # D3: 5 corridas por modelo (semilla 0 x 5 pliegues), fijadas por cómputo sin piloto
+  seeds: [0]
+  folds: [0, 1, 2, 3, 4]
+  evaluate_train: true            # métricas sobre el train de la corrida, sin aumento ni dropout
+
+# ---------------------------------------------------------------------------
+# Evaluación por modelo (src/evaluation.py, src/gradcam.py)
+# ---------------------------------------------------------------------------
+evaluation:
+  split: test                     # partición de las secciones de robustez, errores, casos difíciles y calibración
+  subgroups: [dataset, dx_type, localization]   # columnas de HAM10000_metadata.csv
+  subgroup_metrics: [balanced_accuracy, accuracy, f1_macro]
+  subgroup_min_n: 30              # se marcan los subgrupos con menos imágenes (estimación inestable)
+  overfitting_metrics: [balanced_accuracy, accuracy, f1_macro, cross_entropy]
+  top_confused_pairs: 10
+  # data/atipicos_imagenes.csv solo cubre train (8584 imágenes): la tasa de error de las
+  # imágenes atípicas se calcula con las predicciones de validación (fuera de pliegue).
+  outliers:
+    split: val
+    mahalanobis_column: atipico_mahal
+    univariate_column: n_marcas_univariadas
+    univariate_min_marks: 1       # marcada si tiene al menos este número de marcas univariadas
+  hard_cases:
+    min_error_frac: 0.5           # falla en más de esta fracción de corridas
+    grid_n: 16                    # imágenes por cuadrícula
+    grid_ncols: 8
+  calibration_bins: 15            # igual que train.ece_bins
+  gradcam:
+    run: [0, 0]                   # (semilla, pliegue) de la corrida definitiva cuyos pesos se usan
+    per_class_correct: 2          # aciertos por clase en la muestra fija de test
+    per_class_wrong: 2            # errores por clase (menos si la clase tiene pocos)
+    sample_seed: 2026
+    alpha: 0.45                   # opacidad del mapa sobre la imagen
+    ncols: 7
+
+# ---------------------------------------------------------------------------
+# Benchmark y estadística (src/benchmark.py, src/stats.py, book/11-benchmark.ipynb)
+# ---------------------------------------------------------------------------
+# Las observaciones pareadas son las corridas con la misma semilla y el mismo pliegue.
+benchmark:
+  models: [mobilenetv2, resnet50, vgg16]
+  primary_metric: balanced_accuracy
+  split: test                     # partición de la tabla comparativa y de las pruebas
+  metrics: [balanced_accuracy, accuracy, f1_macro, f1_weighted, auc_roc_macro_ovr, auc_pr_macro, mcc, ece]
+  delta: 0.02                     # margen de relevancia práctica (exactitud balanceada, absoluto)
+  alpha: 0.05
+  power: 0.80
+  p_adjust: holm
+  bootstrap:
+    method: percentile            # scipy.stats.bootstrap: percentile, basic o BCa
+    n_resamples: 10000
+    n_resamples_auc: 1000         # bootstrap estratificado de la diferencia de AUC macro (por corrida)
+    seed: 2026
+  # IC sobre el conjunto de prueba remuestreando lesion_id (sección 3 del benchmark): en cada
+  # remuestreo se recalcula la exactitud balanceada de cada corrida y se promedia entre corridas.
+  lesion_bootstrap:
+    n_resamples: 10000
+    seed: 2026
+  mcnemar_exact_below: 25        # binomial exacta si b + c < 25; si no, chi-cuadrado con corrección de continuidad
+  wilcoxon_zero_method: wilcox    # diferencias nulas: wilcox (se descartan) o pratt
+  nadeau_bengio_splits: [val, test]
+  # Cotas de referencia de la literatura (sección 5.4 del benchmark); source = clave de references.bib.
+  # La diferencia con el mejor modelo solo se calcula para las cotas cuya métrica es primary_metric_label.
+  primary_metric_label: exactitud balanceada
+  reference_bounds:
+    - name: "Lectores con más de diez años de experiencia"
+      value: 0.627                # 18,8 de 30
+      metric: exactitud en lotes de 30 imágenes
+      note: "otra muestra de prueba y otra métrica; solo referencia contextual"
+      source: tschandl2019
+    - name: "Tres mejores algoritmos del reto ISIC 2018 (mismo estudio)"
+      value: 0.847                # 25,4 de 30
+      metric: exactitud en lotes de 30 imágenes
+      note: "otra muestra de prueba y otra métrica; solo referencia contextual"
+      source: tschandl2019
+    - name: "Partición agrupada por lesión"
+      value: 0.70                 # aproximado
+      metric: exactitud balanceada
+      note: "otra muestra de prueba; valor aproximado"
+      source: pinar2026
+
+# ===========================================================================
+# Entregable 2 (preregistro_e2.md). book/15 a 22; src/baselines.py, benchmark.py (sección E2),
+# calibration.py, robustness.py, interpret.py, errors.py, ceiling.py, cost.py, audit.py,
+# tracking.py y reproduce.py. Los parámetros comunes (alpha, delta, bootstrap, ajuste de p) se
+# leen de la sección `benchmark`.
+# ===========================================================================
+e2:
+  base_models: [mobilenetv2, resnet50, vgg16]
+  sota_models: [densenet201, inceptionv3, convnext_tiny, vit_b16, efficientnetb0]
+  baselines: [trivial, logreg]
+  cnn_models: [mobilenetv2, resnet50, vgg16, densenet201, inceptionv3, convnext_tiny, efficientnetb0]
+  transformer_models: [vit_b16]
+  best_base: null                 # null: modelo base con mayor media de la métrica primaria en benchmark.split
+  overfitting_margin: 0.15        # δg: brecha train sin aumento - validación (exactitud balanceada)
+  divergence:                     # regla de exclusión del preregistro (se informa; la corrida se repite a mano)
+    min_val_balanced_accuracy: 0.30
+
+# Baselines (src/baselines.py). Se evalúan en las mismas corridas (semilla, pliegue) de `final`.
+baselines:
+  trivial:
+    majority_class: nv            # predicción constante
+    probabilities: prior          # prior: frecuencias de clase del train de la corrida (argmax = nv)
+  logreg:
+    embeddings: mobilenetv2       # embeddings congelados de paths.embeddings_cache y embeddings_test_cache
+    standardize: true             # StandardScaler ajustado solo con el train de cada corrida
+    class_weight: balanced        # igual que train.class_weight = inverse_frequency
+    solver: lbfgs
+    max_iter: 5000
+    C_grid: [0.001, 0.01, 0.1, 1.0, 10.0]   # se elige en train.tuning.val_fold (exactitud balanceada de val)
+
+# Estadística confirmatoria y exploratoria del Entregable 2 (src/stats.py, src/benchmark.py)
+e2_stats:
+  alternative: greater            # H1: mu_k - mu_ref > 0 (RQ1 y RQ2)
+  table_metrics: [balanced_accuracy, f1_macro, f1_weighted, accuracy, auc_roc_macro_ovr, auc_pr_macro, mcc,
+                  log_loss, brier, ece, ece_adaptativo]   # tabla principal (A.2), en test
+  rq1: {models: sota_models, reference: best_base}
+  rq2: {models: deep_models, reference: logreg}
+  decision_test_normal: nadeau_bengio        # si Shapiro-Wilk no rechaza la normalidad de las diferencias
+  decision_tests_non_normal: [wilcoxon, bootstrap]   # si la rechaza: ambas deben ser significativas
+  tost_se: nadeau_bengio          # error estándar del TOST: nadeau_bengio o naive
+  a12_bootstrap: 2000             # remuestreos de corridas para el IC de A12
+  exploratory_p_adjust: fdr_bh    # RQ3 y subgrupos (Benjamini-Hochberg)
+  exploratory_resamples: 2000     # bootstrap por lesión de las familias exploratorias
+  auc_resamples: 1000             # bootstrap por lesión del AUC macro y del MCC (tabla A)
+  hosmer_lemeshow_groups: 10
+  source_column: dataset
+  source_target: vidir_molemax    # RQ3 y limitación del paper guía: esta fuente frente al resto
+  age_bins: [0, 30, 45, 60, 75, 120]  # edad en años, intervalos [a, b)
+  subgroups: [dataset, sex, age_group, localization, dx_type]
+  mixed_effects:
+    image_level: true             # GLMM binomial (Bayes variacional) de aciertos por imagen
+    run_level: true               # LMM de la exactitud balanceada por corrida
+    vb_seed: 2026
+  global_models: all              # all: todos los modelos con corridas (Friedman, Nemenyi, Cochran)
+
+# Réplica de pinar2026 (capítulo 14)
+replication:
+  model: resnet50
+  value: 0.686
+  ci: [0.653, 0.721]
+  source: pinar2026
+
+# Calibración e incertidumbre (src/calibration.py)
+calibration:
+  n_bins: 15                      # ECE de igual ancho (= train.ece_bins)
+  adaptive_bins: 15               # ECE adaptativo (intervalos de igual frecuencia)
+  temperature_bounds: [0.05, 20.0]
+  eps: 1.0e-12                    # recorte de probabilidades antes del logaritmo
+conformal:
+  alphas: [0.10, 0.05]
+  score: lac                      # 1 - p(y | x) (least ambiguous set-valued classifier)
+  use_temperature: true           # probabilidades con temperature scaling de la misma corrida
+
+# Robustez (src/robustness.py): solo inferencia con model.weights.h5 de las corridas definitivas
+robustness:
+  runs: [[0, 0], [1, 1], [2, 2]]  # (semilla, pliegue)
+  seed: 2026
+  perturbations:                  # 3 niveles de severidad cada una, sobre la imagen redimensionada
+    gaussian_noise: [8.0, 16.0, 32.0]   # desviación estándar en [0, 255]
+    gaussian_blur: [1.0, 2.0, 3.0]      # sigma en píxeles
+    jpeg: [50, 25, 10]                  # calidad JPEG
+    brightness: [0.10, 0.20, 0.30]      # delta aditivo sobre [0, 1]
+
+# Interpretabilidad (src/interpret.py)
+interpretability:
+  top_k: 3                        # mejores modelos profundos por la media de la métrica primaria
+  run: [0, 0]                     # corrida de los mapas y de la prueba de borrado e inserción
+  stability_runs: [[0, 0], [1, 0], [2, 0]]  # mismo pliegue, distinta semilla
+  steps: 20                       # pasos de borrado e inserción
+  baseline: blur                  # imagen de referencia: blur o mean
+  blur_sigma: 12.0
+  rollout_head_fusion: mean       # mean, max o min sobre las cabezas de atención
+  rollout_discard_ratio: 0.0
+  batch_size: 16
+  stability_size: 56              # lado al que se reducen los mapas para la correlación entre semillas
+
+# Errores, subgrupos y atajos (src/errors.py)
+errors:
+  ensemble_top_k: 3               # ensemble simple: media de probabilidades de los k mejores modelos
+  error_frac: 0.5                 # una imagen es un error del modelo si falla en más de esta fracción de corridas
+  shortcut_splits: [test, val]    # val: predicciones fuera de pliegue de las imágenes anotadas de train
+  taxonomy_n: 100
+  taxonomy_seed: 2026
+  taxonomy_categories:
+    - artefacto_de_adquisicion    # regla, tinta, vello, burbujas, viñeteado o parche de color
+    - calidad_de_imagen           # desenfoque, iluminación o color atípicos
+    - lesion_fuera_de_encuadre
+    - morfologia_atipica          # lesión sin rasgos típicos de su clase
+    - clase_vecina_similar        # confusión entre clases visualmente próximas (p. ej. mel-nv, bkl-mel)
+    - lesion_pequena_o_poco_contraste
+    - etiqueta_dudosa             # diagnóstico por seguimiento o consenso discutible
+    - otra
+
+# Techo de desempeño (src/ceiling.py)
+ceiling:
+  knn_k: [1, 5, 15]
+  metric: cosine
+  exclude_same_lesion: true       # los vecinos de la misma lesión no cuentan (evita fuga)
+  readers_bound_name: "Lectores con más de diez años de experiencia"  # cota de benchmark.reference_bounds
+  gamma_reference: best_base      # s_base de γ: best_base, trivial o logreg
+
+# Costo (src/cost.py) y frontera de Pareto
+cost:
+  seed: 0
+  warmup: 3                       # llamadas de calentamiento (compilación) antes de medir
+  train_steps: 5                  # pasos de entrenamiento medidos (mediana)
+  latency_repeats: 50
+  throughput_repeats: 10
+  pareto_costs: [gflops, params_total, latency_ms_per_image, entrenamiento_h_por_corrida]
+  eta_cost: gflops                # η_k = (s_k / C_k) / (s_base / C_base): eficiencia relativa al mejor modelo base
+
+# Auditoría de fuga y contrato de datos (src/audit.py, book/21)
+audit:
+  cosine_threshold: 0.95          # similitud coseno de embeddings para considerar vecino cercano
+  max_neighbor_frac: 0.01         # proporción máxima de imágenes de test con vecino en train (pHash o coseno)
+  metadata_auc_max: 0.80          # AUC univariado macro por encima del cual un metadato se marca
+  adversarial_auc_max: 0.60       # validación adversarial train frente a test
+  permutation:
+    n_permutations: 5
+    seed: 2026
+    tolerance: 0.05               # |BA permutada - 1 / K| máximo
+  synthetic_seed: 2026
+
+# Seguimiento de experimentos (src/tracking.py)
+mlflow:
+  enabled: true                   # registra cada corrida al terminar src.train (los fallos solo avisan)
+  experiment: skin-lesion-dl
+  backend: sqlite                 # sqlite:///<paths.mlflow_dir>/mlflow.db; artefactos en <mlflow_dir>/artifacts
+
+# ===========================================================================
+# Entregable 3: modelo original (src/original_model.py, configs/cci*.yaml, book/23 a 25)
+# ===========================================================================
+e3:
+  original_model: cci
+  ablation_models: [cci_fixed_p, cci_uniform_weights, cci_no_invariance, cci_shades_of_gray]

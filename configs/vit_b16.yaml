@@ -1,0 +1,14 @@
+# Configuración propia de ViT-B/16 (src/models/vit_b16.py).
+name: vit_b16
+keras_hub_preset: vit_base_patch16_224_imagenet   # keras_hub.models.ViTBackbone (ImageNet-21k + ajuste en ImageNet-1k)
+weights: imagenet                 # null: misma arquitectura sin descargar pesos
+input_size: 224                   # debe coincidir con train.image_size de base.yaml y con el preset
+gradcam_layer: null               # no aplica: se usa attention rollout (src/interpret.py)
+saliency: rollout                 # gradcam (CNN) o rollout (ViT); src/interpret.py
+expected_params: 85804039         # total con la cabeza de 7 clases; lo verifica src.verify_models
+
+# Se llenan con outputs/tuning/vit_b16/best.json tras `python -m src.tune --model vit_b16`.
+hyperparameters:
+  learning_rate: null             # tasa inicial de la fase B (decaimiento coseno)
+  weight_decay: null              # AdamW, fases A y B
+  dropout: null                   # sobre el token de clase, antes de la capa densa final

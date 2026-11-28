@@ -1,0 +1,6 @@
+{
+  "splits_csv_sha256": "982e907e9c32b02570f21a0fe404bffa7466f70af605aac3391822a715920ba5",
+  "test_image_ids_sha256": "408c8566deeba2c2d45837108ee5ba38103d83903a6d43b9486270c5e39715c2",
+  "n_train": 8584,
+  "n_test": 1431
+}

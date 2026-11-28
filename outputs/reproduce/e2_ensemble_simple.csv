@@ -1,0 +1,7 @@
+,valor
+modelos,"densenet201, convnext_tiny, vit_b16"
+corridas,5
+ganancia_media,0.02223425692195602
+ic_t_bajo,-0.0039974437136325175
+ic_t_alto,0.048465957557544556
+p_wilcoxon,0.125

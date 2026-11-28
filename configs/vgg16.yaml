@@ -1,4 +1,18 @@
-# Configuración propia de vgg16.
-# Irá aquí:
-#   - hiperparámetros (learning rate, batch size, dropout, capas a descongelar, ...)
-#   - espacio de búsqueda de hiperparámetros
+# Configuración propia de VGG-16 (src/models/vgg16.py).
+name: vgg16
+keras_application: VGG16          # keras.applications.VGG16 (include_top=True: conserva fc1 y fc2)
+weights: imagenet
+input_size: 224                   # debe coincidir con train.image_size de base.yaml (fc1 exige 224)
+gradcam_layer: block5_conv3       # capa del backbone anidado para Grad-CAM (src/gradcam.py)
+saliency: gradcam                 # gradcam (CNN) o rollout (ViT); src/interpret.py
+expected_params: 134289223        # total con la cabeza de 7 clases; lo verifica src.verify_models
+# Sin acumulación de gradientes: lote de 32 (train.batch_size). Medido con src.speed
+# (outputs/speed/vgg16*.csv), fase B con XLA: cabe con train.gpu_min_system_memory_mb = 512 y
+# gpu_allocator = cuda_malloc_async (pico de 4,4 de 6 GiB según nvidia-smi).
+gradient_accumulation_steps: 1
+
+# Se llenan con outputs/tuning/vgg16/best.json tras `python -m src.tune --model vgg16`.
+hyperparameters:
+  learning_rate: null             # tasa inicial de la fase B (decaimiento coseno)
+  weight_decay: null              # AdamW, fases A y B
+  dropout: null                   # después de fc1 y después de fc2

@@ -1,0 +1,37 @@
+cff-version: 1.2.0
+message: "Si usas este software, cítalo con estos metadatos."
+title: "skin-lesion-dl: clasificación de lesiones pigmentadas de la piel con aprendizaje profundo y constancia de color invariante"
+type: software
+authors:
+  - family-names: Cabarcas
+    given-names: Luis
+    affiliation: Universidad del Norte
+version: 0.3.0
+license: MIT
+repository-code: "https://github.com/luencaro/skin-lesion-dl"
+abstract: >-
+  Benchmark reproducible de clasificadores profundos sobre HAM10000 con partición agrupada por
+  lesión y pruebas estadísticas, y un modelo original: una capa de constancia de color aprendible
+  e invariante a las ganancias de canal (CCI) antepuesta al backbone. Incluye exportación a ONNX y
+  un dashboard de Dash. No es una herramienta diagnóstica.
+keywords:
+  - deep learning
+  - dermoscopy
+  - HAM10000
+  - color constancy
+  - skin lesion classification
+references:
+  - type: article
+    title: "The HAM10000 dataset, a large collection of multi-source dermatoscopic images of common pigmented skin lesions"
+    authors:
+      - family-names: Tschandl
+        given-names: Philipp
+      - family-names: Rosendahl
+        given-names: Cliff
+      - family-names: Kittler
+        given-names: Harald
+    journal: Scientific Data
+    volume: 5
+    start: 180161
+    year: 2018
+    doi: 10.1038/sdata.2018.161

@@ -1,0 +1,124 @@
+2026-11-26 18:29:07 INFO mobilenetv2 | final s0_f0 | Fase A: 5 épocas, backbone congelado
+2026-11-26 18:29:28 INFO mobilenetv2 | final s0_f0 | warmup | época 1/5 | loss 1.4953 | val_bal_acc 0.5161 | mejor 0.5161 | 21.0s
+2026-11-26 18:29:35 INFO mobilenetv2 | final s0_f0 | warmup | época 2/5 | loss 1.1362 | val_bal_acc 0.5409 | mejor 0.5409 | 7.1s
+2026-11-26 18:29:42 INFO mobilenetv2 | final s0_f0 | warmup | época 3/5 | loss 1.0070 | val_bal_acc 0.5884 | mejor 0.5884 | 7.0s
+2026-11-26 18:29:49 INFO mobilenetv2 | final s0_f0 | warmup | época 4/5 | loss 0.9264 | val_bal_acc 0.5837 | mejor 0.5884 | 7.3s
+2026-11-26 18:30:09 INFO mobilenetv2 | final s0_f0 | warmup | época 5/5 | loss 0.8726 | val_bal_acc 0.6174 | mejor 0.6174 | 19.5s
+2026-11-26 18:30:09 INFO mobilenetv2 | final s0_f0 | Fase B: hasta 30 épocas, todo descongelado
+2026-11-26 18:31:24 INFO mobilenetv2 | final s0_f0 | finetune | época 1/30 | loss 1.2915 | val_bal_acc 0.3853 | mejor 0.3853 | 1m 15s
+2026-11-26 18:31:42 INFO mobilenetv2 | final s0_f0 | finetune | época 2/30 | loss 0.7993 | val_bal_acc 0.3945 | mejor 0.3945 | 18.7s
+2026-11-26 18:32:01 INFO mobilenetv2 | final s0_f0 | finetune | época 3/30 | loss 0.7661 | val_bal_acc 0.3654 | mejor 0.3945 | 18.9s
+2026-11-26 18:32:24 INFO mobilenetv2 | final s0_f0 | finetune | época 4/30 | loss 0.6249 | val_bal_acc 0.2947 | mejor 0.3945 | 22.8s
+2026-11-26 18:32:46 INFO mobilenetv2 | final s0_f0 | finetune | época 5/30 | loss 0.5600 | val_bal_acc 0.4216 | mejor 0.4216 | 22.2s
+2026-11-26 18:33:06 INFO mobilenetv2 | final s0_f0 | finetune | época 6/30 | loss 0.4890 | val_bal_acc 0.6510 | mejor 0.6510 | 19.6s
+2026-11-26 18:33:25 INFO mobilenetv2 | final s0_f0 | finetune | época 7/30 | loss 0.4567 | val_bal_acc 0.6804 | mejor 0.6804 | 19.5s
+2026-11-26 18:33:45 INFO mobilenetv2 | final s0_f0 | finetune | época 8/30 | loss 0.4296 | val_bal_acc 0.6774 | mejor 0.6804 | 19.3s
+2026-11-26 18:34:05 INFO mobilenetv2 | final s0_f0 | finetune | época 9/30 | loss 0.3647 | val_bal_acc 0.7032 | mejor 0.7032 | 19.9s
+2026-11-26 18:34:25 INFO mobilenetv2 | final s0_f0 | finetune | época 10/30 | loss 0.3395 | val_bal_acc 0.6726 | mejor 0.7032 | 20.0s
+2026-11-26 18:34:44 INFO mobilenetv2 | final s0_f0 | finetune | época 11/30 | loss 0.2907 | val_bal_acc 0.6704 | mejor 0.7032 | 19.8s
+2026-11-26 18:35:04 INFO mobilenetv2 | final s0_f0 | finetune | época 12/30 | loss 0.2743 | val_bal_acc 0.6799 | mejor 0.7032 | 19.7s
+2026-11-26 18:35:23 INFO mobilenetv2 | final s0_f0 | finetune | época 13/30 | loss 0.2549 | val_bal_acc 0.6541 | mejor 0.7032 | 19.1s
+2026-11-26 18:35:42 INFO mobilenetv2 | final s0_f0 | finetune | época 14/30 | loss 0.2256 | val_bal_acc 0.7038 | mejor 0.7038 | 19.3s
+2026-11-26 18:36:02 INFO mobilenetv2 | final s0_f0 | finetune | época 15/30 | loss 0.2308 | val_bal_acc 0.7124 | mejor 0.7124 | 19.4s
+2026-11-26 18:36:21 INFO mobilenetv2 | final s0_f0 | finetune | época 16/30 | loss 0.1922 | val_bal_acc 0.6942 | mejor 0.7124 | 19.3s
+2026-11-26 18:36:40 INFO mobilenetv2 | final s0_f0 | finetune | época 17/30 | loss 0.1919 | val_bal_acc 0.6531 | mejor 0.7124 | 19.2s
+2026-11-26 18:37:02 INFO mobilenetv2 | final s0_f0 | finetune | época 18/30 | loss 0.1776 | val_bal_acc 0.6785 | mejor 0.7124 | 21.1s
+2026-11-26 18:37:21 INFO mobilenetv2 | final s0_f0 | finetune | época 19/30 | loss 0.1706 | val_bal_acc 0.6829 | mejor 0.7124 | 19.2s
+2026-11-26 18:37:40 INFO mobilenetv2 | final s0_f0 | finetune | época 20/30 | loss 0.1455 | val_bal_acc 0.6323 | mejor 0.7124 | 19.3s
+2026-11-26 18:37:40 INFO mobilenetv2 | final s0_f0 | parada temprana en la época 20
+2026-11-26 18:37:40 INFO mobilenetv2 | final s0_f0 | se restauran los pesos de la época 15 de la fase B
+2026-11-26 18:38:02 INFO mobilenetv2 | final s0_f0 | val balanced_accuracy = 0.7124 (época 15 de la fase B) | entrenamiento 8m 33s -> outputs/runs/mobilenetv2/final/s0_f0
+2026-11-26 18:38:16 INFO mobilenetv2 | final s0_f1 | Fase A: 5 épocas, backbone congelado
+2026-11-26 18:38:38 INFO mobilenetv2 | final s0_f1 | warmup | época 1/5 | loss 1.4861 | val_bal_acc 0.5268 | mejor 0.5268 | 21.5s
+2026-11-26 18:38:45 INFO mobilenetv2 | final s0_f1 | warmup | época 2/5 | loss 1.1250 | val_bal_acc 0.5259 | mejor 0.5268 | 7.1s
+2026-11-26 18:38:52 INFO mobilenetv2 | final s0_f1 | warmup | época 3/5 | loss 1.0305 | val_bal_acc 0.5182 | mejor 0.5268 | 6.9s
+2026-11-26 18:38:59 INFO mobilenetv2 | final s0_f1 | warmup | época 4/5 | loss 0.9267 | val_bal_acc 0.5614 | mejor 0.5614 | 7.0s
+2026-11-26 18:39:14 INFO mobilenetv2 | final s0_f1 | warmup | época 5/5 | loss 0.8811 | val_bal_acc 0.5564 | mejor 0.5614 | 15.0s
+2026-11-26 18:39:14 INFO mobilenetv2 | final s0_f1 | Fase B: hasta 30 épocas, todo descongelado
+2026-11-26 18:40:31 INFO mobilenetv2 | final s0_f1 | finetune | época 1/30 | loss 1.2945 | val_bal_acc 0.4190 | mejor 0.4190 | 1m 17s
+2026-11-26 18:40:50 INFO mobilenetv2 | final s0_f1 | finetune | época 2/30 | loss 0.8800 | val_bal_acc 0.4078 | mejor 0.4190 | 19.3s
+2026-11-26 18:41:09 INFO mobilenetv2 | final s0_f1 | finetune | época 3/30 | loss 0.6773 | val_bal_acc 0.5284 | mejor 0.5284 | 19.4s
+2026-11-26 18:41:29 INFO mobilenetv2 | final s0_f1 | finetune | época 4/30 | loss 0.5923 | val_bal_acc 0.5257 | mejor 0.5284 | 19.2s
+2026-11-26 18:41:48 INFO mobilenetv2 | final s0_f1 | finetune | época 5/30 | loss 0.5575 | val_bal_acc 0.5240 | mejor 0.5284 | 19.2s
+2026-11-26 18:42:07 INFO mobilenetv2 | final s0_f1 | finetune | época 6/30 | loss 0.4582 | val_bal_acc 0.5858 | mejor 0.5858 | 19.3s
+2026-11-26 18:42:28 INFO mobilenetv2 | final s0_f1 | finetune | época 7/30 | loss 0.4333 | val_bal_acc 0.6832 | mejor 0.6832 | 21.2s
+2026-11-26 18:42:55 INFO mobilenetv2 | final s0_f1 | finetune | época 8/30 | loss 0.4290 | val_bal_acc 0.6287 | mejor 0.6832 | 26.9s
+2026-11-26 18:43:14 INFO mobilenetv2 | final s0_f1 | finetune | época 9/30 | loss 0.4484 | val_bal_acc 0.6431 | mejor 0.6832 | 19.3s
+2026-11-26 18:43:34 INFO mobilenetv2 | final s0_f1 | finetune | época 10/30 | loss 0.3402 | val_bal_acc 0.6552 | mejor 0.6832 | 19.1s
+2026-11-26 18:43:53 INFO mobilenetv2 | final s0_f1 | finetune | época 11/30 | loss 0.3231 | val_bal_acc 0.6681 | mejor 0.6832 | 19.4s
+2026-11-26 18:44:12 INFO mobilenetv2 | final s0_f1 | finetune | época 12/30 | loss 0.2693 | val_bal_acc 0.6625 | mejor 0.6832 | 19.3s
+2026-11-26 18:44:12 INFO mobilenetv2 | final s0_f1 | parada temprana en la época 12
+2026-11-26 18:44:12 INFO mobilenetv2 | final s0_f1 | se restauran los pesos de la época 7 de la fase B
+2026-11-26 18:44:26 INFO mobilenetv2 | final s0_f1 | val balanced_accuracy = 0.6832 (época 7 de la fase B) | entrenamiento 5m 56s -> outputs/runs/mobilenetv2/final/s0_f1
+2026-11-26 18:44:38 INFO mobilenetv2 | final s0_f2 | Fase A: 5 épocas, backbone congelado
+2026-11-26 18:44:58 INFO mobilenetv2 | final s0_f2 | warmup | época 1/5 | loss 1.5305 | val_bal_acc 0.5595 | mejor 0.5595 | 20.1s
+2026-11-26 18:45:09 INFO mobilenetv2 | final s0_f2 | warmup | época 2/5 | loss 1.1506 | val_bal_acc 0.6028 | mejor 0.6028 | 10.4s
+2026-11-26 18:45:16 INFO mobilenetv2 | final s0_f2 | warmup | época 3/5 | loss 1.0556 | val_bal_acc 0.6420 | mejor 0.6420 | 7.1s
+2026-11-26 18:45:23 INFO mobilenetv2 | final s0_f2 | warmup | época 4/5 | loss 0.9877 | val_bal_acc 0.6110 | mejor 0.6420 | 7.1s
+2026-11-26 18:45:30 INFO mobilenetv2 | final s0_f2 | warmup | época 5/5 | loss 0.9085 | val_bal_acc 0.6260 | mejor 0.6420 | 7.0s
+2026-11-26 18:45:30 INFO mobilenetv2 | final s0_f2 | Fase B: hasta 30 épocas, todo descongelado
+2026-11-26 18:46:49 INFO mobilenetv2 | final s0_f2 | finetune | época 1/30 | loss 1.2981 | val_bal_acc 0.4461 | mejor 0.4461 | 1m 19s
+2026-11-26 18:47:08 INFO mobilenetv2 | final s0_f2 | finetune | época 2/30 | loss 0.8875 | val_bal_acc 0.4679 | mejor 0.4679 | 19.4s
+2026-11-26 18:47:27 INFO mobilenetv2 | final s0_f2 | finetune | época 3/30 | loss 0.7158 | val_bal_acc 0.3258 | mejor 0.4679 | 19.1s
+2026-11-26 18:47:46 INFO mobilenetv2 | final s0_f2 | finetune | época 4/30 | loss 0.6129 | val_bal_acc 0.4457 | mejor 0.4679 | 18.5s
+2026-11-26 18:48:05 INFO mobilenetv2 | final s0_f2 | finetune | época 5/30 | loss 0.6196 | val_bal_acc 0.4820 | mejor 0.4820 | 19.2s
+2026-11-26 18:48:24 INFO mobilenetv2 | final s0_f2 | finetune | época 6/30 | loss 0.5477 | val_bal_acc 0.7034 | mejor 0.7034 | 19.2s
+2026-11-26 18:48:43 INFO mobilenetv2 | final s0_f2 | finetune | época 7/30 | loss 0.4707 | val_bal_acc 0.7603 | mejor 0.7603 | 18.8s
+2026-11-26 18:49:04 INFO mobilenetv2 | final s0_f2 | finetune | época 8/30 | loss 0.3931 | val_bal_acc 0.7719 | mejor 0.7719 | 21.3s
+2026-11-26 18:49:24 INFO mobilenetv2 | final s0_f2 | finetune | época 9/30 | loss 0.3677 | val_bal_acc 0.6646 | mejor 0.7719 | 19.2s
+2026-11-26 18:49:43 INFO mobilenetv2 | final s0_f2 | finetune | época 10/30 | loss 0.3458 | val_bal_acc 0.6229 | mejor 0.7719 | 19.2s
+2026-11-26 18:50:03 INFO mobilenetv2 | final s0_f2 | finetune | época 11/30 | loss 0.3215 | val_bal_acc 0.7273 | mejor 0.7719 | 19.8s
+2026-11-26 18:50:22 INFO mobilenetv2 | final s0_f2 | finetune | época 12/30 | loss 0.3141 | val_bal_acc 0.7291 | mejor 0.7719 | 19.1s
+2026-11-26 18:50:41 INFO mobilenetv2 | final s0_f2 | finetune | época 13/30 | loss 0.2656 | val_bal_acc 0.7430 | mejor 0.7719 | 19.3s
+2026-11-26 18:50:41 INFO mobilenetv2 | final s0_f2 | parada temprana en la época 13
+2026-11-26 18:50:41 INFO mobilenetv2 | final s0_f2 | se restauran los pesos de la época 8 de la fase B
+2026-11-26 18:50:55 INFO mobilenetv2 | final s0_f2 | val balanced_accuracy = 0.7719 (época 8 de la fase B) | entrenamiento 6m 03s -> outputs/runs/mobilenetv2/final/s0_f2
+2026-11-26 18:51:07 INFO mobilenetv2 | final s0_f3 | Fase A: 5 épocas, backbone congelado
+2026-11-26 18:51:28 INFO mobilenetv2 | final s0_f3 | warmup | época 1/5 | loss 1.4325 | val_bal_acc 0.4445 | mejor 0.4445 | 20.6s
+2026-11-26 18:51:35 INFO mobilenetv2 | final s0_f3 | warmup | época 2/5 | loss 1.0934 | val_bal_acc 0.4833 | mejor 0.4833 | 7.0s
+2026-11-26 18:51:42 INFO mobilenetv2 | final s0_f3 | warmup | época 3/5 | loss 0.9561 | val_bal_acc 0.4721 | mejor 0.4833 | 6.9s
+2026-11-26 18:51:49 INFO mobilenetv2 | final s0_f3 | warmup | época 4/5 | loss 0.9091 | val_bal_acc 0.5082 | mejor 0.5082 | 7.1s
+2026-11-26 18:51:56 INFO mobilenetv2 | final s0_f3 | warmup | época 5/5 | loss 0.8590 | val_bal_acc 0.4941 | mejor 0.5082 | 7.1s
+2026-11-26 18:51:56 INFO mobilenetv2 | final s0_f3 | Fase B: hasta 30 épocas, todo descongelado
+2026-11-26 18:53:16 INFO mobilenetv2 | final s0_f3 | finetune | época 1/30 | loss 1.2146 | val_bal_acc 0.2366 | mejor 0.2366 | 1m 20s
+2026-11-26 18:53:36 INFO mobilenetv2 | final s0_f3 | finetune | época 2/30 | loss 0.8752 | val_bal_acc 0.3918 | mejor 0.3918 | 19.6s
+2026-11-26 18:53:55 INFO mobilenetv2 | final s0_f3 | finetune | época 3/30 | loss 0.7331 | val_bal_acc 0.2934 | mejor 0.3918 | 19.5s
+2026-11-26 18:54:15 INFO mobilenetv2 | final s0_f3 | finetune | época 4/30 | loss 0.6001 | val_bal_acc 0.5268 | mejor 0.5268 | 19.5s
+2026-11-26 18:54:34 INFO mobilenetv2 | final s0_f3 | finetune | época 5/30 | loss 0.5025 | val_bal_acc 0.5750 | mejor 0.5750 | 19.7s
+2026-11-26 18:54:54 INFO mobilenetv2 | final s0_f3 | finetune | época 6/30 | loss 0.4734 | val_bal_acc 0.5515 | mejor 0.5750 | 19.5s
+2026-11-26 18:55:13 INFO mobilenetv2 | final s0_f3 | finetune | época 7/30 | loss 0.4212 | val_bal_acc 0.5346 | mejor 0.5750 | 19.4s
+2026-11-26 18:55:33 INFO mobilenetv2 | final s0_f3 | finetune | época 8/30 | loss 0.4249 | val_bal_acc 0.6000 | mejor 0.6000 | 19.5s
+2026-11-26 18:55:52 INFO mobilenetv2 | final s0_f3 | finetune | época 9/30 | loss 0.3511 | val_bal_acc 0.6564 | mejor 0.6564 | 19.3s
+2026-11-26 18:56:11 INFO mobilenetv2 | final s0_f3 | finetune | época 10/30 | loss 0.4142 | val_bal_acc 0.5393 | mejor 0.6564 | 19.5s
+2026-11-26 18:56:30 INFO mobilenetv2 | final s0_f3 | finetune | época 11/30 | loss 0.3403 | val_bal_acc 0.6063 | mejor 0.6564 | 19.0s
+2026-11-26 18:56:50 INFO mobilenetv2 | final s0_f3 | finetune | época 12/30 | loss 0.3102 | val_bal_acc 0.6276 | mejor 0.6564 | 19.4s
+2026-11-26 18:57:09 INFO mobilenetv2 | final s0_f3 | finetune | época 13/30 | loss 0.2822 | val_bal_acc 0.6019 | mejor 0.6564 | 19.5s
+2026-11-26 18:57:29 INFO mobilenetv2 | final s0_f3 | finetune | época 14/30 | loss 0.2723 | val_bal_acc 0.6512 | mejor 0.6564 | 19.8s
+2026-11-26 18:57:29 INFO mobilenetv2 | final s0_f3 | parada temprana en la época 14
+2026-11-26 18:57:29 INFO mobilenetv2 | final s0_f3 | se restauran los pesos de la época 9 de la fase B
+2026-11-26 18:57:45 INFO mobilenetv2 | final s0_f3 | val balanced_accuracy = 0.6564 (época 9 de la fase B) | entrenamiento 6m 22s -> outputs/runs/mobilenetv2/final/s0_f3
+2026-11-26 18:57:59 INFO mobilenetv2 | final s0_f4 | Fase A: 5 épocas, backbone congelado
+2026-11-26 18:58:25 INFO mobilenetv2 | final s0_f4 | warmup | época 1/5 | loss 1.4716 | val_bal_acc 0.5434 | mejor 0.5434 | 26.5s
+2026-11-26 18:58:33 INFO mobilenetv2 | final s0_f4 | warmup | época 2/5 | loss 1.1268 | val_bal_acc 0.5296 | mejor 0.5434 | 7.4s
+2026-11-26 18:58:45 INFO mobilenetv2 | final s0_f4 | warmup | época 3/5 | loss 1.0331 | val_bal_acc 0.5399 | mejor 0.5434 | 12.6s
+2026-11-26 18:58:57 INFO mobilenetv2 | final s0_f4 | warmup | época 4/5 | loss 0.9688 | val_bal_acc 0.5606 | mejor 0.5606 | 12.1s
+2026-11-26 18:59:04 INFO mobilenetv2 | final s0_f4 | warmup | época 5/5 | loss 0.8903 | val_bal_acc 0.5821 | mejor 0.5821 | 7.1s
+2026-11-26 18:59:04 INFO mobilenetv2 | final s0_f4 | Fase B: hasta 30 épocas, todo descongelado
+2026-11-26 19:00:39 INFO mobilenetv2 | final s0_f4 | finetune | época 1/30 | loss 1.2486 | val_bal_acc 0.3066 | mejor 0.3066 | 1m 34s
+2026-11-26 19:00:57 INFO mobilenetv2 | final s0_f4 | finetune | época 2/30 | loss 0.8470 | val_bal_acc 0.2370 | mejor 0.3066 | 18.8s
+2026-11-26 19:01:16 INFO mobilenetv2 | final s0_f4 | finetune | época 3/30 | loss 0.7443 | val_bal_acc 0.3017 | mejor 0.3066 | 18.8s
+2026-11-26 19:01:38 INFO mobilenetv2 | final s0_f4 | finetune | época 4/30 | loss 0.5986 | val_bal_acc 0.3499 | mejor 0.3499 | 22.0s
+2026-11-26 19:01:57 INFO mobilenetv2 | final s0_f4 | finetune | época 5/30 | loss 0.5809 | val_bal_acc 0.3350 | mejor 0.3499 | 18.8s
+2026-11-26 19:02:18 INFO mobilenetv2 | final s0_f4 | finetune | época 6/30 | loss 0.5093 | val_bal_acc 0.5510 | mejor 0.5510 | 20.8s
+2026-11-26 19:02:37 INFO mobilenetv2 | final s0_f4 | finetune | época 7/30 | loss 0.5295 | val_bal_acc 0.6510 | mejor 0.6510 | 19.0s
+2026-11-26 19:02:56 INFO mobilenetv2 | final s0_f4 | finetune | época 8/30 | loss 0.4139 | val_bal_acc 0.6672 | mejor 0.6672 | 19.3s
+2026-11-26 19:03:15 INFO mobilenetv2 | final s0_f4 | finetune | época 9/30 | loss 0.3416 | val_bal_acc 0.6493 | mejor 0.6672 | 19.0s
+2026-11-26 19:03:34 INFO mobilenetv2 | final s0_f4 | finetune | época 10/30 | loss 0.3389 | val_bal_acc 0.7038 | mejor 0.7038 | 19.1s
+2026-11-26 19:03:54 INFO mobilenetv2 | final s0_f4 | finetune | época 11/30 | loss 0.2801 | val_bal_acc 0.6388 | mejor 0.7038 | 19.2s
+2026-11-26 19:04:23 INFO mobilenetv2 | final s0_f4 | finetune | época 12/30 | loss 0.3051 | val_bal_acc 0.6439 | mejor 0.7038 | 29.0s
+2026-11-26 19:04:42 INFO mobilenetv2 | final s0_f4 | finetune | época 13/30 | loss 0.2877 | val_bal_acc 0.6635 | mejor 0.7038 | 19.1s
+2026-11-26 19:05:02 INFO mobilenetv2 | final s0_f4 | finetune | época 14/30 | loss 0.2429 | val_bal_acc 0.6710 | mejor 0.7038 | 20.1s
+2026-11-26 19:05:21 INFO mobilenetv2 | final s0_f4 | finetune | época 15/30 | loss 0.2561 | val_bal_acc 0.5871 | mejor 0.7038 | 19.0s
+2026-11-26 19:05:21 INFO mobilenetv2 | final s0_f4 | parada temprana en la época 15
+2026-11-26 19:05:21 INFO mobilenetv2 | final s0_f4 | se restauran los pesos de la época 10 de la fase B
+2026-11-26 19:05:34 INFO mobilenetv2 | final s0_f4 | val balanced_accuracy = 0.7038 (época 10 de la fase B) | entrenamiento 7m 22s -> outputs/runs/mobilenetv2/final/s0_f4

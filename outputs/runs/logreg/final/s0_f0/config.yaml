@@ -1,0 +1,27 @@
+run:
+  model: logreg
+  label: final
+  seed: 0
+  val_fold: 0
+baseline:
+  embeddings: mobilenetv2
+  standardize: true
+  class_weight: balanced
+  solver: lbfgs
+  max_iter: 5000
+  C_grid:
+  - 0.001
+  - 0.01
+  - 0.1
+  - 1.0
+  - 10.0
+hyperparameters:
+  C: 0.001
+classes:
+- akiec
+- bcc
+- bkl
+- df
+- mel
+- nv
+- vasc

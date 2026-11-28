@@ -1,0 +1,62 @@
+# Exportación a ONNX (src/export.py) y datos del dashboard (src/export_dashboard.py).
+#
+#   python -m src.export --model cci                 # corrida `run` de la etiqueta `label`
+#   python -m src.export --all --fp16                # todos los modelos con pesos guardados
+#   python -m src.export_dashboard                   # genera dashboard/data/ desde outputs/ y artifacts/
+
+export:
+  artifacts_dir: artifacts          # artifacts/<modelo>/model.onnx, metadata.json, ood_reference.npz
+  label: final                      # etiqueta de las corridas (outputs/runs/<modelo>/<label>/)
+  run: [0, 0]                       # (semilla, pliegue) de la corrida que se exporta
+  opset: 17
+  roundtrip:
+    n_images: 32                    # imágenes de validación de la corrida (sintéticas si no hay datos)
+    atol: 1.0e-4                    # error absoluto máximo en probabilidades (Keras frente a ONNX)
+  fp16:
+    enabled: false                  # true o --fp16: model_fp16.onnx con entradas y salidas en float32
+    n_eval: null                    # imágenes de validación para el TOST (null: todas las del pliegue)
+    n_resamples: 2000               # bootstrap por lesión de la diferencia de exactitud balanceada
+    seed: 2026
+    # El margen δ y α son benchmark.delta y benchmark.alpha de base.yaml: equivalentes si el IC
+    # 1 − 2α de BA(fp16) − BA(fp32) queda dentro de (−δ, δ).
+  latency:
+    repeats: 100                    # inferencias de una imagen medidas (tras el calentamiento)
+    warmup: 10
+    intra_op_threads: 2             # igual que --threads 2 de gunicorn en el despliegue
+  max_size_mb: 95                   # por encima, el modelo se marca como "precalculado" (GitHub: 100 MB por archivo)
+  ood:
+    n_reference: 1000               # imágenes de train de la corrida cuyos embeddings sirven de referencia
+    n_calibration: 500              # imágenes de validación para fijar el umbral
+    k: 5                            # vecinos (distancia coseno media a los k más cercanos)
+    quantile: 0.99                  # umbral = cuantil de la distancia en validación
+    seed: 2026
+
+dashboard:
+  out_dir: dashboard/data
+  master_table: outputs/benchmark_e2/tabla_maestra.csv   # tabla maestra (src.benchmark.main_table, formato largo)
+  thumbnails:
+    per_class: 24                   # miniaturas aleatorias de train por clase para la galería del EDA
+    size: 112                       # lado mayor en píxeles
+    quality: 80
+    seed: 2026
+  examples:
+    per_class: 2                    # imágenes de test por clase para la galería de predicción
+    size: 224
+    quality: 90
+    seed: 2026
+  color_features_cache: data/processed/dashboard_color_features.parquet
+  prefer_fp16: true                 # usa model_fp16.onnx si existe y pasó el TOST
+  # Frases de interpretación de los notebooks 05 y 06: se extrae la oración de la celda de
+  # interpretación que contiene `anchor` (así el texto del dashboard es el de los notebooks).
+  interpretations:
+    class_distribution: {notebook: book/05-eda_metadatos_particion.ipynb, anchor: "razón de desbalance"}
+    source_by_class: {notebook: book/05-eda_metadatos_particion.ipynb, anchor: "La fuente se asocia fuertemente con la clase"}
+    gallery: {notebook: book/06-eda_imagenes.ipynb, anchor: "variabilidad de adquisición"}
+    color_source_vs_class: {notebook: book/06-eda_imagenes.ipynb, anchor: "se asocia mucho más con la fuente"}
+    color_by_class: {notebook: book/06-eda_imagenes.ipynb, anchor: "vidir_molemax tiene la mayor saturación"}
+    duplicates: {notebook: book/05-eda_metadatos_particion.ipynb, anchor: "La revisión visual de los 33 candidatos"}
+    partition: {notebook: book/05-eda_metadatos_particion.ipynb, anchor: "ninguna lesión aparece en más de una partición"}
+    adversarial: {notebook: book/06-eda_imagenes.ipynb, anchor: "indistinguible del azar"}
+    age: {notebook: book/05-eda_metadatos_particion.ipynb, anchor: "La edad es el metadato clínico más asociado"}
+    source_covariates: {notebook: book/05-eda_metadatos_particion.ipynb, anchor: "La fuente está asociada con todas las demás covariables"}
+    embeddings_source: {notebook: book/06-eda_imagenes.ipynb, anchor: "Los mismos embeddings predicen la fuente"}

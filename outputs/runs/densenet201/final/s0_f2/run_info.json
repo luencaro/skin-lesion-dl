@@ -1,0 +1,69 @@
+{
+  "model": "densenet201",
+  "label": "final",
+  "seed": 0,
+  "val_fold": 2,
+  "hyperparameters": {
+    "learning_rate": 0.0003810978438937071,
+    "weight_decay": 0.0005193157688849777,
+    "dropout": 0.4
+  },
+  "evaluated_test": true,
+  "evaluated_train": true,
+  "n_images": {
+    "train": 6867,
+    "val": 1717,
+    "test": 1431
+  },
+  "epochs": {
+    "warmup": 5,
+    "finetune_max": 30,
+    "finetune_run": 28,
+    "finetune_best": 23
+  },
+  "best_val_balanced_accuracy_during_training": 0.8168348981007904,
+  "train_time_s": {
+    "warmup": 167.60005715499938,
+    "finetune": 2111.1918180380017,
+    "total": 2278.791875193001
+  },
+  "inference_s_per_image": {
+    "val": 0.0009167838846838108,
+    "test": 0.015387990995108432,
+    "train": 0.003967173211009206
+  },
+  "inference_batch_size": 32,
+  "batch_size": 32,
+  "micro_batch_size": 32,
+  "gradient_accumulation_steps": 1,
+  "params": {
+    "warmup": {
+      "trainable": 13447,
+      "non_trainable": 18321984,
+      "total": 18335431
+    },
+    "finetune": {
+      "trainable": 18106375,
+      "non_trainable": 229056,
+      "total": 18335431
+    }
+  },
+  "mixed_precision": true,
+  "deterministic": false,
+  "environment": {
+    "python": "3.11.18",
+    "tensorflow": "2.20.0",
+    "keras": "3.15.1",
+    "cuda": "12.5.1",
+    "cudnn": "9",
+    "platform": "Linux-6.6.159+-x86_64-with-glibc2.39",
+    "gpus": [
+      {
+        "device": "/physical_device:GPU:0",
+        "name": "NVIDIA L4",
+        "compute_capability": "8.9"
+      }
+    ]
+  },
+  "finished_at": "2026-11-27T08:33:40+00:00"
+}

@@ -1,0 +1,140 @@
+2026-11-27 05:30:47 INFO convnext_tiny | final s0_f0 | Fase A: 5 épocas, backbone congelado
+2026-11-27 05:31:23 INFO convnext_tiny | final s0_f0 | warmup | época 1/5 | loss 1.6397 | val_bal_acc 0.4842 | mejor 0.4842 | 36.4s
+2026-11-27 05:31:38 INFO convnext_tiny | final s0_f0 | warmup | época 2/5 | loss 1.3278 | val_bal_acc 0.5130 | mejor 0.5130 | 14.8s
+2026-11-27 05:31:53 INFO convnext_tiny | final s0_f0 | warmup | época 3/5 | loss 1.2042 | val_bal_acc 0.5465 | mejor 0.5465 | 14.8s
+2026-11-27 05:32:08 INFO convnext_tiny | final s0_f0 | warmup | época 4/5 | loss 1.1296 | val_bal_acc 0.5320 | mejor 0.5465 | 14.8s
+2026-11-27 05:32:23 INFO convnext_tiny | final s0_f0 | warmup | época 5/5 | loss 1.0913 | val_bal_acc 0.5427 | mejor 0.5465 | 15.1s
+2026-11-27 05:32:23 INFO convnext_tiny | final s0_f0 | Fase B: hasta 30 épocas, todo descongelado
+2026-11-27 05:34:24 INFO convnext_tiny | final s0_f0 | finetune | época 1/30 | loss 1.2275 | val_bal_acc 0.5763 | mejor 0.5763 | 2m 01s
+2026-11-27 05:35:02 INFO convnext_tiny | final s0_f0 | finetune | época 2/30 | loss 0.8600 | val_bal_acc 0.6506 | mejor 0.6506 | 38.2s
+2026-11-27 05:35:41 INFO convnext_tiny | final s0_f0 | finetune | época 3/30 | loss 0.6967 | val_bal_acc 0.7105 | mejor 0.7105 | 38.3s
+2026-11-27 05:36:19 INFO convnext_tiny | final s0_f0 | finetune | época 4/30 | loss 0.6002 | val_bal_acc 0.7258 | mejor 0.7258 | 38.4s
+2026-11-27 05:37:03 INFO convnext_tiny | final s0_f0 | finetune | época 5/30 | loss 0.4607 | val_bal_acc 0.7277 | mejor 0.7277 | 44.3s
+2026-11-27 05:37:42 INFO convnext_tiny | final s0_f0 | finetune | época 6/30 | loss 0.3988 | val_bal_acc 0.7220 | mejor 0.7277 | 38.1s
+2026-11-27 05:38:20 INFO convnext_tiny | final s0_f0 | finetune | época 7/30 | loss 0.3525 | val_bal_acc 0.7361 | mejor 0.7361 | 38.4s
+2026-11-27 05:38:58 INFO convnext_tiny | final s0_f0 | finetune | época 8/30 | loss 0.2636 | val_bal_acc 0.7623 | mejor 0.7623 | 38.3s
+2026-11-27 05:39:37 INFO convnext_tiny | final s0_f0 | finetune | época 9/30 | loss 0.2243 | val_bal_acc 0.6929 | mejor 0.7623 | 38.2s
+2026-11-27 05:40:17 INFO convnext_tiny | final s0_f0 | finetune | época 10/30 | loss 0.1893 | val_bal_acc 0.7591 | mejor 0.7623 | 40.8s
+2026-11-27 05:40:56 INFO convnext_tiny | final s0_f0 | finetune | época 11/30 | loss 0.1366 | val_bal_acc 0.7658 | mejor 0.7658 | 38.3s
+2026-11-27 05:41:34 INFO convnext_tiny | final s0_f0 | finetune | época 12/30 | loss 0.2140 | val_bal_acc 0.6732 | mejor 0.7658 | 38.5s
+2026-11-27 05:42:15 INFO convnext_tiny | final s0_f0 | finetune | época 13/30 | loss 0.1341 | val_bal_acc 0.7835 | mejor 0.7835 | 41.0s
+2026-11-27 05:42:53 INFO convnext_tiny | final s0_f0 | finetune | época 14/30 | loss 0.1096 | val_bal_acc 0.7373 | mejor 0.7835 | 38.3s
+2026-11-27 05:43:32 INFO convnext_tiny | final s0_f0 | finetune | época 15/30 | loss 0.1232 | val_bal_acc 0.6926 | mejor 0.7835 | 38.2s
+2026-11-27 05:44:10 INFO convnext_tiny | final s0_f0 | finetune | época 16/30 | loss 0.0712 | val_bal_acc 0.7348 | mejor 0.7835 | 38.2s
+2026-11-27 05:44:48 INFO convnext_tiny | final s0_f0 | finetune | época 17/30 | loss 0.0766 | val_bal_acc 0.7488 | mejor 0.7835 | 38.2s
+2026-11-27 05:45:26 INFO convnext_tiny | final s0_f0 | finetune | época 18/30 | loss 0.0441 | val_bal_acc 0.7362 | mejor 0.7835 | 38.3s
+2026-11-27 05:45:26 INFO convnext_tiny | final s0_f0 | parada temprana en la época 18
+2026-11-27 05:45:26 INFO convnext_tiny | final s0_f0 | se restauran los pesos de la época 13 de la fase B
+2026-11-27 05:45:57 INFO convnext_tiny | final s0_f0 | val balanced_accuracy = 0.7835 (época 13 de la fase B) | entrenamiento 14m 40s -> outputs/runs/convnext_tiny/final/s0_f0
+2026-11-27 05:46:10 INFO convnext_tiny | final s0_f1 | Fase A: 5 épocas, backbone congelado
+2026-11-27 05:46:47 INFO convnext_tiny | final s0_f1 | warmup | época 1/5 | loss 1.6585 | val_bal_acc 0.4455 | mejor 0.4455 | 36.4s
+2026-11-27 05:47:02 INFO convnext_tiny | final s0_f1 | warmup | época 2/5 | loss 1.3391 | val_bal_acc 0.5239 | mejor 0.5239 | 14.9s
+2026-11-27 05:47:16 INFO convnext_tiny | final s0_f1 | warmup | época 3/5 | loss 1.2105 | val_bal_acc 0.5601 | mejor 0.5601 | 14.9s
+2026-11-27 05:47:31 INFO convnext_tiny | final s0_f1 | warmup | época 4/5 | loss 1.1484 | val_bal_acc 0.5639 | mejor 0.5639 | 14.8s
+2026-11-27 05:47:46 INFO convnext_tiny | final s0_f1 | warmup | época 5/5 | loss 1.0768 | val_bal_acc 0.5659 | mejor 0.5659 | 14.8s
+2026-11-27 05:47:46 INFO convnext_tiny | final s0_f1 | Fase B: hasta 30 épocas, todo descongelado
+2026-11-27 05:49:48 INFO convnext_tiny | final s0_f1 | finetune | época 1/30 | loss 1.2290 | val_bal_acc 0.6426 | mejor 0.6426 | 2m 02s
+2026-11-27 05:50:26 INFO convnext_tiny | final s0_f1 | finetune | época 2/30 | loss 0.8350 | val_bal_acc 0.7210 | mejor 0.7210 | 38.1s
+2026-11-27 05:51:04 INFO convnext_tiny | final s0_f1 | finetune | época 3/30 | loss 0.7071 | val_bal_acc 0.6696 | mejor 0.7210 | 37.4s
+2026-11-27 05:51:47 INFO convnext_tiny | final s0_f1 | finetune | época 4/30 | loss 0.6115 | val_bal_acc 0.6602 | mejor 0.7210 | 43.0s
+2026-11-27 05:52:30 INFO convnext_tiny | final s0_f1 | finetune | época 5/30 | loss 0.5302 | val_bal_acc 0.7522 | mejor 0.7522 | 43.0s
+2026-11-27 05:53:08 INFO convnext_tiny | final s0_f1 | finetune | época 6/30 | loss 0.3641 | val_bal_acc 0.7602 | mejor 0.7602 | 38.1s
+2026-11-27 05:53:46 INFO convnext_tiny | final s0_f1 | finetune | época 7/30 | loss 0.3901 | val_bal_acc 0.7530 | mejor 0.7602 | 37.8s
+2026-11-27 05:54:24 INFO convnext_tiny | final s0_f1 | finetune | época 8/30 | loss 0.2841 | val_bal_acc 0.7469 | mejor 0.7602 | 38.0s
+2026-11-27 05:55:04 INFO convnext_tiny | final s0_f1 | finetune | época 9/30 | loss 0.3775 | val_bal_acc 0.7843 | mejor 0.7843 | 40.0s
+2026-11-27 05:55:41 INFO convnext_tiny | final s0_f1 | finetune | época 10/30 | loss 0.2066 | val_bal_acc 0.7518 | mejor 0.7843 | 37.8s
+2026-11-27 05:56:20 INFO convnext_tiny | final s0_f1 | finetune | época 11/30 | loss 0.1649 | val_bal_acc 0.7441 | mejor 0.7843 | 38.4s
+2026-11-27 05:57:00 INFO convnext_tiny | final s0_f1 | finetune | época 12/30 | loss 0.1486 | val_bal_acc 0.7541 | mejor 0.7843 | 40.7s
+2026-11-27 05:57:39 INFO convnext_tiny | final s0_f1 | finetune | época 13/30 | loss 0.1286 | val_bal_acc 0.7870 | mejor 0.7870 | 38.1s
+2026-11-27 05:58:17 INFO convnext_tiny | final s0_f1 | finetune | época 14/30 | loss 0.0988 | val_bal_acc 0.6938 | mejor 0.7870 | 38.2s
+2026-11-27 05:58:57 INFO convnext_tiny | final s0_f1 | finetune | época 15/30 | loss 0.1297 | val_bal_acc 0.7479 | mejor 0.7870 | 40.1s
+2026-11-27 05:59:34 INFO convnext_tiny | final s0_f1 | finetune | época 16/30 | loss 0.0979 | val_bal_acc 0.7536 | mejor 0.7870 | 37.4s
+2026-11-27 06:00:14 INFO convnext_tiny | final s0_f1 | finetune | época 17/30 | loss 0.0851 | val_bal_acc 0.7636 | mejor 0.7870 | 40.1s
+2026-11-27 06:00:53 INFO convnext_tiny | final s0_f1 | finetune | época 18/30 | loss 0.0632 | val_bal_acc 0.7645 | mejor 0.7870 | 38.1s
+2026-11-27 06:00:53 INFO convnext_tiny | final s0_f1 | parada temprana en la época 18
+2026-11-27 06:00:53 INFO convnext_tiny | final s0_f1 | se restauran los pesos de la época 13 de la fase B
+2026-11-27 06:01:19 INFO convnext_tiny | final s0_f1 | val balanced_accuracy = 0.7870 (época 13 de la fase B) | entrenamiento 14m 42s -> outputs/runs/convnext_tiny/final/s0_f1
+2026-11-27 06:01:31 INFO convnext_tiny | final s0_f2 | Fase A: 5 épocas, backbone congelado
+2026-11-27 06:02:07 INFO convnext_tiny | final s0_f2 | warmup | época 1/5 | loss 1.6684 | val_bal_acc 0.4771 | mejor 0.4771 | 36.3s
+2026-11-27 06:02:22 INFO convnext_tiny | final s0_f2 | warmup | época 2/5 | loss 1.3582 | val_bal_acc 0.5636 | mejor 0.5636 | 15.0s
+2026-11-27 06:02:37 INFO convnext_tiny | final s0_f2 | warmup | época 3/5 | loss 1.2520 | val_bal_acc 0.6108 | mejor 0.6108 | 14.9s
+2026-11-27 06:02:52 INFO convnext_tiny | final s0_f2 | warmup | época 4/5 | loss 1.1584 | val_bal_acc 0.6288 | mejor 0.6288 | 14.9s
+2026-11-27 06:03:07 INFO convnext_tiny | final s0_f2 | warmup | época 5/5 | loss 1.1154 | val_bal_acc 0.6377 | mejor 0.6377 | 14.9s
+2026-11-27 06:03:07 INFO convnext_tiny | final s0_f2 | Fase B: hasta 30 épocas, todo descongelado
+2026-11-27 06:05:09 INFO convnext_tiny | final s0_f2 | finetune | época 1/30 | loss 1.2895 | val_bal_acc 0.6595 | mejor 0.6595 | 2m 01s
+2026-11-27 06:05:47 INFO convnext_tiny | final s0_f2 | finetune | época 2/30 | loss 0.8793 | val_bal_acc 0.7326 | mejor 0.7326 | 38.3s
+2026-11-27 06:06:25 INFO convnext_tiny | final s0_f2 | finetune | época 3/30 | loss 0.7472 | val_bal_acc 0.7357 | mejor 0.7357 | 38.3s
+2026-11-27 06:07:04 INFO convnext_tiny | final s0_f2 | finetune | época 4/30 | loss 0.5665 | val_bal_acc 0.7673 | mejor 0.7673 | 38.3s
+2026-11-27 06:07:42 INFO convnext_tiny | final s0_f2 | finetune | época 5/30 | loss 0.5484 | val_bal_acc 0.7008 | mejor 0.7673 | 38.1s
+2026-11-27 06:08:20 INFO convnext_tiny | final s0_f2 | finetune | época 6/30 | loss 0.4584 | val_bal_acc 0.7773 | mejor 0.7773 | 38.2s
+2026-11-27 06:09:00 INFO convnext_tiny | final s0_f2 | finetune | época 7/30 | loss 0.3427 | val_bal_acc 0.7975 | mejor 0.7975 | 40.3s
+2026-11-27 06:09:38 INFO convnext_tiny | final s0_f2 | finetune | época 8/30 | loss 0.3501 | val_bal_acc 0.7050 | mejor 0.7975 | 38.2s
+2026-11-27 06:10:18 INFO convnext_tiny | final s0_f2 | finetune | época 9/30 | loss 0.4287 | val_bal_acc 0.7670 | mejor 0.7975 | 39.8s
+2026-11-27 06:10:56 INFO convnext_tiny | final s0_f2 | finetune | época 10/30 | loss 0.2129 | val_bal_acc 0.7294 | mejor 0.7975 | 38.0s
+2026-11-27 06:11:39 INFO convnext_tiny | final s0_f2 | finetune | época 11/30 | loss 0.1682 | val_bal_acc 0.7976 | mejor 0.7976 | 43.1s
+2026-11-27 06:12:17 INFO convnext_tiny | final s0_f2 | finetune | época 12/30 | loss 0.1763 | val_bal_acc 0.7897 | mejor 0.7976 | 38.1s
+2026-11-27 06:12:55 INFO convnext_tiny | final s0_f2 | finetune | época 13/30 | loss 0.1315 | val_bal_acc 0.7649 | mejor 0.7976 | 37.7s
+2026-11-27 06:13:33 INFO convnext_tiny | final s0_f2 | finetune | época 14/30 | loss 0.1410 | val_bal_acc 0.8049 | mejor 0.8049 | 38.2s
+2026-11-27 06:14:11 INFO convnext_tiny | final s0_f2 | finetune | época 15/30 | loss 0.0972 | val_bal_acc 0.7634 | mejor 0.8049 | 37.4s
+2026-11-27 06:14:49 INFO convnext_tiny | final s0_f2 | finetune | época 16/30 | loss 0.0854 | val_bal_acc 0.7744 | mejor 0.8049 | 38.1s
+2026-11-27 06:15:27 INFO convnext_tiny | final s0_f2 | finetune | época 17/30 | loss 0.0868 | val_bal_acc 0.8043 | mejor 0.8049 | 38.1s
+2026-11-27 06:16:05 INFO convnext_tiny | final s0_f2 | finetune | época 18/30 | loss 0.0523 | val_bal_acc 0.7787 | mejor 0.8049 | 38.1s
+2026-11-27 06:16:45 INFO convnext_tiny | final s0_f2 | finetune | época 19/30 | loss 0.0471 | val_bal_acc 0.8070 | mejor 0.8070 | 40.3s
+2026-11-27 06:17:23 INFO convnext_tiny | final s0_f2 | finetune | época 20/30 | loss 0.0549 | val_bal_acc 0.7868 | mejor 0.8070 | 37.5s
+2026-11-27 06:18:02 INFO convnext_tiny | final s0_f2 | finetune | época 21/30 | loss 0.0234 | val_bal_acc 0.7833 | mejor 0.8070 | 38.8s
+2026-11-27 06:18:40 INFO convnext_tiny | final s0_f2 | finetune | época 22/30 | loss 0.0213 | val_bal_acc 0.7799 | mejor 0.8070 | 38.4s
+2026-11-27 06:19:18 INFO convnext_tiny | final s0_f2 | finetune | época 23/30 | loss 0.0186 | val_bal_acc 0.7710 | mejor 0.8070 | 38.1s
+2026-11-27 06:19:57 INFO convnext_tiny | final s0_f2 | finetune | época 24/30 | loss 0.0148 | val_bal_acc 0.7698 | mejor 0.8070 | 38.5s
+2026-11-27 06:19:57 INFO convnext_tiny | final s0_f2 | parada temprana en la época 24
+2026-11-27 06:19:57 INFO convnext_tiny | final s0_f2 | se restauran los pesos de la época 19 de la fase B
+2026-11-27 06:20:23 INFO convnext_tiny | final s0_f2 | val balanced_accuracy = 0.8070 (época 19 de la fase B) | entrenamiento 18m 26s -> outputs/runs/convnext_tiny/final/s0_f2
+2026-11-27 06:20:35 INFO convnext_tiny | final s0_f3 | Fase A: 5 épocas, backbone congelado
+2026-11-27 06:21:12 INFO convnext_tiny | final s0_f3 | warmup | época 1/5 | loss 1.6492 | val_bal_acc 0.4584 | mejor 0.4584 | 36.4s
+2026-11-27 06:21:27 INFO convnext_tiny | final s0_f3 | warmup | época 2/5 | loss 1.3351 | val_bal_acc 0.4755 | mejor 0.4755 | 14.9s
+2026-11-27 06:21:41 INFO convnext_tiny | final s0_f3 | warmup | época 3/5 | loss 1.2117 | val_bal_acc 0.5036 | mejor 0.5036 | 14.8s
+2026-11-27 06:21:56 INFO convnext_tiny | final s0_f3 | warmup | época 4/5 | loss 1.1514 | val_bal_acc 0.5099 | mejor 0.5099 | 14.8s
+2026-11-27 06:22:11 INFO convnext_tiny | final s0_f3 | warmup | época 5/5 | loss 1.0744 | val_bal_acc 0.5408 | mejor 0.5408 | 14.9s
+2026-11-27 06:22:11 INFO convnext_tiny | final s0_f3 | Fase B: hasta 30 épocas, todo descongelado
+2026-11-27 06:24:14 INFO convnext_tiny | final s0_f3 | finetune | época 1/30 | loss 1.1531 | val_bal_acc 0.6001 | mejor 0.6001 | 2m 03s
+2026-11-27 06:24:53 INFO convnext_tiny | final s0_f3 | finetune | época 2/30 | loss 0.7595 | val_bal_acc 0.6565 | mejor 0.6565 | 38.5s
+2026-11-27 06:25:31 INFO convnext_tiny | final s0_f3 | finetune | época 3/30 | loss 0.6522 | val_bal_acc 0.6552 | mejor 0.6565 | 38.1s
+2026-11-27 06:26:09 INFO convnext_tiny | final s0_f3 | finetune | época 4/30 | loss 0.6321 | val_bal_acc 0.6513 | mejor 0.6565 | 38.1s
+2026-11-27 06:26:47 INFO convnext_tiny | final s0_f3 | finetune | época 5/30 | loss 0.4789 | val_bal_acc 0.6458 | mejor 0.6565 | 38.0s
+2026-11-27 06:27:25 INFO convnext_tiny | final s0_f3 | finetune | época 6/30 | loss 0.3730 | val_bal_acc 0.7118 | mejor 0.7118 | 38.1s
+2026-11-27 06:28:05 INFO convnext_tiny | final s0_f3 | finetune | época 7/30 | loss 0.2730 | val_bal_acc 0.7320 | mejor 0.7320 | 39.8s
+2026-11-27 06:28:43 INFO convnext_tiny | final s0_f3 | finetune | época 8/30 | loss 0.3052 | val_bal_acc 0.6744 | mejor 0.7320 | 38.0s
+2026-11-27 06:29:21 INFO convnext_tiny | final s0_f3 | finetune | época 9/30 | loss 0.2564 | val_bal_acc 0.6557 | mejor 0.7320 | 38.1s
+2026-11-27 06:29:58 INFO convnext_tiny | final s0_f3 | finetune | época 10/30 | loss 0.2157 | val_bal_acc 0.6674 | mejor 0.7320 | 37.7s
+2026-11-27 06:30:37 INFO convnext_tiny | final s0_f3 | finetune | época 11/30 | loss 0.1746 | val_bal_acc 0.7141 | mejor 0.7320 | 38.1s
+2026-11-27 06:31:16 INFO convnext_tiny | final s0_f3 | finetune | época 12/30 | loss 0.1690 | val_bal_acc 0.7005 | mejor 0.7320 | 39.8s
+2026-11-27 06:31:16 INFO convnext_tiny | final s0_f3 | parada temprana en la época 12
+2026-11-27 06:31:16 INFO convnext_tiny | final s0_f3 | se restauran los pesos de la época 7 de la fase B
+2026-11-27 06:31:43 INFO convnext_tiny | final s0_f3 | val balanced_accuracy = 0.7320 (época 7 de la fase B) | entrenamiento 10m 41s -> outputs/runs/convnext_tiny/final/s0_f3
+2026-11-27 06:31:55 INFO convnext_tiny | final s0_f4 | Fase A: 5 épocas, backbone congelado
+2026-11-27 06:32:36 INFO convnext_tiny | final s0_f4 | warmup | época 1/5 | loss 1.6527 | val_bal_acc 0.4770 | mejor 0.4770 | 40.2s
+2026-11-27 06:32:58 INFO convnext_tiny | final s0_f4 | warmup | época 2/5 | loss 1.3402 | val_bal_acc 0.5495 | mejor 0.5495 | 22.5s
+2026-11-27 06:33:15 INFO convnext_tiny | final s0_f4 | warmup | época 3/5 | loss 1.2148 | val_bal_acc 0.6165 | mejor 0.6165 | 16.7s
+2026-11-27 06:33:30 INFO convnext_tiny | final s0_f4 | warmup | época 4/5 | loss 1.1502 | val_bal_acc 0.5984 | mejor 0.6165 | 14.9s
+2026-11-27 06:33:45 INFO convnext_tiny | final s0_f4 | warmup | época 5/5 | loss 1.0945 | val_bal_acc 0.6075 | mejor 0.6165 | 14.8s
+2026-11-27 06:33:45 INFO convnext_tiny | final s0_f4 | Fase B: hasta 30 épocas, todo descongelado
+2026-11-27 06:35:58 INFO convnext_tiny | final s0_f4 | finetune | época 1/30 | loss 1.2743 | val_bal_acc 0.6337 | mejor 0.6337 | 2m 13s
+2026-11-27 06:36:36 INFO convnext_tiny | final s0_f4 | finetune | época 2/30 | loss 0.8563 | val_bal_acc 0.6983 | mejor 0.6983 | 38.4s
+2026-11-27 06:37:16 INFO convnext_tiny | final s0_f4 | finetune | época 3/30 | loss 0.6448 | val_bal_acc 0.6663 | mejor 0.6983 | 40.2s
+2026-11-27 06:37:55 INFO convnext_tiny | final s0_f4 | finetune | época 4/30 | loss 0.5914 | val_bal_acc 0.7324 | mejor 0.7324 | 38.4s
+2026-11-27 06:38:33 INFO convnext_tiny | final s0_f4 | finetune | época 5/30 | loss 0.4880 | val_bal_acc 0.7498 | mejor 0.7498 | 38.3s
+2026-11-27 06:39:11 INFO convnext_tiny | final s0_f4 | finetune | época 6/30 | loss 0.4122 | val_bal_acc 0.7000 | mejor 0.7498 | 38.3s
+2026-11-27 06:39:51 INFO convnext_tiny | final s0_f4 | finetune | época 7/30 | loss 0.4158 | val_bal_acc 0.7470 | mejor 0.7498 | 40.0s
+2026-11-27 06:40:30 INFO convnext_tiny | final s0_f4 | finetune | época 8/30 | loss 0.3350 | val_bal_acc 0.7579 | mejor 0.7579 | 38.4s
+2026-11-27 06:41:08 INFO convnext_tiny | final s0_f4 | finetune | época 9/30 | loss 0.2731 | val_bal_acc 0.7634 | mejor 0.7634 | 38.3s
+2026-11-27 06:41:46 INFO convnext_tiny | final s0_f4 | finetune | época 10/30 | loss 0.2070 | val_bal_acc 0.7289 | mejor 0.7634 | 38.1s
+2026-11-27 06:42:24 INFO convnext_tiny | final s0_f4 | finetune | época 11/30 | loss 0.1491 | val_bal_acc 0.7535 | mejor 0.7634 | 38.2s
+2026-11-27 06:43:03 INFO convnext_tiny | final s0_f4 | finetune | época 12/30 | loss 0.1687 | val_bal_acc 0.7359 | mejor 0.7634 | 38.3s
+2026-11-27 06:43:44 INFO convnext_tiny | final s0_f4 | finetune | época 13/30 | loss 0.1284 | val_bal_acc 0.7886 | mejor 0.7886 | 41.3s
+2026-11-27 06:44:26 INFO convnext_tiny | final s0_f4 | finetune | época 14/30 | loss 0.1212 | val_bal_acc 0.7374 | mejor 0.7886 | 41.7s
+2026-11-27 06:45:06 INFO convnext_tiny | final s0_f4 | finetune | época 15/30 | loss 0.0839 | val_bal_acc 0.7793 | mejor 0.7886 | 40.9s
+2026-11-27 06:45:45 INFO convnext_tiny | final s0_f4 | finetune | época 16/30 | loss 0.0826 | val_bal_acc 0.7446 | mejor 0.7886 | 38.2s
+2026-11-27 06:46:25 INFO convnext_tiny | final s0_f4 | finetune | época 17/30 | loss 0.0477 | val_bal_acc 0.7526 | mejor 0.7886 | 40.2s
+2026-11-27 06:47:03 INFO convnext_tiny | final s0_f4 | finetune | época 18/30 | loss 0.0421 | val_bal_acc 0.7535 | mejor 0.7886 | 37.9s
+2026-11-27 06:47:03 INFO convnext_tiny | final s0_f4 | parada temprana en la época 18
+2026-11-27 06:47:03 INFO convnext_tiny | final s0_f4 | se restauran los pesos de la época 13 de la fase B
+2026-11-27 06:47:27 INFO convnext_tiny | final s0_f4 | val balanced_accuracy = 0.7886 (época 13 de la fase B) | entrenamiento 15m 07s -> outputs/runs/convnext_tiny/final/s0_f4

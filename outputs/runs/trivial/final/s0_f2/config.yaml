@@ -1,0 +1,17 @@
+run:
+  model: trivial
+  label: final
+  seed: 0
+  val_fold: 2
+baseline:
+  majority_class: nv
+  probabilities: prior
+hyperparameters: {}
+classes:
+- akiec
+- bcc
+- bkl
+- df
+- mel
+- nv
+- vasc

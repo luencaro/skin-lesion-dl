@@ -1,0 +1,130 @@
+run:
+  model: vit_b16
+  label: final
+  seed: 0
+  val_fold: 3
+  evaluate_test: true
+  evaluate_train: true
+  save_weights: true
+  micro_batch_size: 32
+  gradient_accumulation_steps: 1
+  hyperparameters_source:
+    source: best.json
+    path: outputs/tuning/vit_b16/best.json
+    trial: 1
+    label: tuning_t01
+    n_trials: 6
+    val_balanced_accuracy: 0.7855398997112014
+model:
+  name: vit_b16
+  keras_hub_preset: vit_base_patch16_224_imagenet
+  weights: imagenet
+  input_size: 224
+  gradcam_layer: null
+  saliency: rollout
+  expected_params: 85804039
+  hyperparameters:
+    learning_rate: 5.508090334498934e-05
+    weight_decay: 1.1607855761024274e-05
+    dropout: 0.2
+train:
+  image_size: 224
+  resize_method: bilinear
+  resize_antialias: true
+  batch_size: 32
+  gradient_accumulation_steps: 1
+  mixed_precision: true
+  deterministic: false
+  gpu_memory_growth: true
+  gpu_min_system_memory_mb: 512
+  gpu_allocator: cuda_malloc_async
+  cache: disk
+  cache_dtype: float32
+  resized_cache_verify: true
+  isolate_runs: true
+  xla_autotune_cache: true
+  save_weights: true
+  verbose: 1
+  augmentation:
+    flip_horizontal: true
+    flip_vertical: true
+    rotate_90: true
+    zoom_max: 0.1
+    brightness: 0.1
+    contrast: 0.1
+    saturation: 0.1
+    hue: 0.02
+  warmup:
+    epochs: 5
+    learning_rate: 0.001
+    optimizer: adamw
+  finetune:
+    max_epochs: 30
+    optimizer: adamw
+    schedule: cosine
+    cosine_alpha: 0.0
+    early_stopping:
+      monitor: val_balanced_accuracy
+      mode: max
+      patience: 5
+      min_delta: 0.0
+      restore_best_weights: true
+  weight_decay_exclude:
+  - bias
+  - gamma
+  - beta
+  class_weight: inverse_frequency
+  ece_bins: 15
+  pilot:
+    pairs:
+    - - 0
+      - 0
+    - - 1
+      - 1
+    - - 2
+      - 2
+    - - 3
+      - 3
+    - - 4
+      - 4
+  tuning:
+    method: random
+    n_trials: 6
+    sampler_seed: 2026
+    val_fold: 0
+    seed: 0
+    max_epochs: 15
+    space:
+      learning_rate:
+        type: loguniform
+        low: 1.0e-05
+        high: 0.001
+      weight_decay:
+        type: loguniform
+        low: 1.0e-06
+        high: 0.001
+      dropout:
+        type: choice
+        values:
+        - 0.0
+        - 0.2
+        - 0.4
+classes:
+- akiec
+- bcc
+- bkl
+- df
+- mel
+- nv
+- vasc
+class_weights:
+  akiec: 4.379464285714286
+  bcc: 2.7869318181818183
+  bkl: 1.302788844621514
+  df: 12.417721518987342
+  mel: 1.2857142857142858
+  nv: 0.2133536320139191
+  vasc: 10.010204081632653
+paths:
+  splits_csv: data/splits.csv
+  images_dir: data/raw/images

@@ -1,0 +1,14 @@
+# Configuración propia de EfficientNet-B0 (src/models/efficientnetb0.py).
+name: efficientnetb0
+keras_application: EfficientNetB0 # keras.applications.EfficientNetB0
+weights: imagenet
+input_size: 224                   # debe coincidir con train.image_size de base.yaml
+gradcam_layer: top_activation     # capa del backbone anidado para Grad-CAM (src/gradcam.py)
+saliency: gradcam                 # gradcam (CNN) o rollout (ViT); src/interpret.py
+expected_params: 4058538          # total con la cabeza de 7 clases; lo verifica src.verify_models
+
+# Se llenan con outputs/tuning/efficientnetb0/best.json tras `python -m src.tune --model efficientnetb0`.
+hyperparameters:
+  learning_rate: null             # tasa inicial de la fase B (decaimiento coseno)
+  weight_decay: null              # AdamW, fases A y B
+  dropout: null                   # antes de la capa densa final (sustituye al top_dropout de 0,2)
