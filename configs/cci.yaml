@@ -12,7 +12,7 @@ name: cci
 # benchmark con mayor exactitud balanceada media en validación en el Entregable 2, con los mismos
 # pesos de ImageNet. Queda en null hasta aplicar la regla (book/20-benchmark-e2.ipynb); mientras
 # sea null, construir el modelo da un error que lo explica.
-backbone: null
+backbone: vit_b16
 
 # Variante (src.original_model.VARIANTS): full | fixed_p | uniform_weights | no_invariance | shades_of_gray
 variant: full
