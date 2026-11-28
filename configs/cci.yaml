@@ -12,7 +12,7 @@ name: cci
 # benchmark con mayor exactitud balanceada media en validación en el Entregable 2, con los mismos
 # pesos de ImageNet. Queda en null hasta aplicar la regla (book/20-benchmark-e2.ipynb); mientras
 # sea null, construir el modelo da un error que lo explica.
-backbone: vit_b16
+backbone: mobilenetv2
 
 # Variante (src.original_model.VARIANTS): full | fixed_p | uniform_weights | no_invariance | shades_of_gray
 variant: full
@@ -41,6 +41,6 @@ weight_decay_exclude: [cci_theta]
 # Se llenan con outputs/tuning/cci/best.json tras `python -m src.tune --model cci`, con el mismo
 # espacio y el mismo número de pruebas que los demás modelos (train.tuning de base.yaml).
 hyperparameters:
-  learning_rate: null
-  weight_decay: null
-  dropout: null
+  learning_rate: 0.00020210153187856742
+  weight_decay: 7.850698556587388e-06
+  dropout: 0.0

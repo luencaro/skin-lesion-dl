@@ -6,6 +6,6 @@ name: cci_fixed_p
 variant: fixed_p
 
 hyperparameters:
-  learning_rate: null
-  weight_decay: null
-  dropout: null
+  learning_rate: 0.00020210153187856742
+  weight_decay: 7.850698556587388e-06
+  dropout: 0.0
