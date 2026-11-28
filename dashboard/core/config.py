@@ -1,4 +1,8 @@
-"""Configuración del dashboard: rutas, límites, clases, fuentes y paletas."""
+"""Configuración del dashboard (Cromia): rutas, límites, clases, fuentes, modelos y colores.
+
+Los colores de clase y de interfaz se definen aquí una vez para Python y otra en
+assets/cromia.css (variables --c-* y tokens); deben coincidir.
+"""
 
 from __future__ import annotations
 
@@ -7,48 +11,83 @@ from pathlib import Path
 
 APP_DIR = Path(__file__).resolve().parents[1]
 DATA_DIR = Path(os.environ.get("DASHBOARD_DATA_DIR", APP_DIR / "data"))
+ASSETS_DIR = APP_DIR / "assets"
 
-TITLE = "Lesiones pigmentadas de la piel"
-SUBTITLE = "Clasificación de HAM10000 con aprendizaje profundo y constancia de color invariante"
+BRAND = "Cromia"
+TITLE = "Cromia · Lesiones de la piel"
+SUBTITLE = "Clasificación de lesiones cutáneas de HAM10000 con aprendizaje profundo y constancia de color invariante"
+DISCLAIMER = ("Herramienta académica de demostración.",
+              "No es un dispositivo médico ni sustituye el diagnóstico de un dermatólogo.")
 
 # Carga de imágenes: se rechaza en el navegador (dcc.Upload.max_size) y en el servidor.
-MAX_UPLOAD_MB = 5
+MAX_UPLOAD_MB = 10
 MAX_UPLOAD_BYTES = MAX_UPLOAD_MB * 1024 * 1024
 MAX_PIXELS = 40_000_000          # protección frente a imágenes descomprimidas enormes
 MIN_SIDE = 64                    # lado mínimo en píxeles
 ALLOWED_FORMATS = {"JPEG": "JPEG", "PNG": "PNG"}
 SESSION_CACHE = 2                # modelos ONNX en memoria a la vez (lru_cache)
 ORT_THREADS = int(os.environ.get("ORT_THREADS", "2"))
+INPUT_SIZE = 224                 # todos los modelos (también Inception-V3) usan 224 x 224
 
-CLASSES = ["akiec", "bcc", "bkl", "df", "mel", "nv", "vasc"]
-CLASS_NAMES = {
-    "akiec": "Queratosis actínica / carcinoma intraepitelial",
-    "bcc": "Carcinoma basocelular",
-    "bkl": "Lesión queratósica benigna",
-    "df": "Dermatofibroma",
-    "mel": "Melanoma",
-    "nv": "Nevus melanocítico",
-    "vasc": "Lesión vascular",
+# La capa CCI va dentro del grafo ONNX del modelo original (src/export.py exporta el modelo
+# completo, capa incluida): el dashboard no la aplica por su cuenta.
+CCI_IN_GRAPH = True
+
+# ---------------------------------------------------------------------------
+# Clases (orden de presentación) y colores Okabe-Ito
+# ---------------------------------------------------------------------------
+
+CLASS_ORDER = ["mel", "nv", "bcc", "akiec", "bkl", "df", "vasc"]
+CLASS_COLORS = {"mel": "#D55E00", "nv": "#0072B2", "bcc": "#E69F00", "akiec": "#CC79A7",
+                "bkl": "#56B4E9", "df": "#009E73", "vasc": "#F0E442"}
+CLASS_NAMES = {"mel": "Melanoma", "nv": "Nevus melanocítico", "bcc": "Carcinoma basocelular",
+               "akiec": "Queratosis actínica / Bowen", "bkl": "Lesión queratósica benigna",
+               "df": "Dermatofibroma", "vasc": "Lesión vascular"}
+CLASS_SHORT = {c: c.upper() for c in CLASS_ORDER}
+
+# Fuentes de adquisición (columna dataset de HAM10000) y su color de serie (--s1..--s4)
+SOURCE_ORDER = ["vidir_molemax", "vidir_modern", "rosendahl", "vienna_dias"]
+SOURCE_NAMES = {"vidir_molemax": "ViDIR MoleMax", "vidir_modern": "ViDIR moderno", "rosendahl": "Rosendahl",
+                "vienna_dias": "Viena DIAS"}
+SOURCE_VARS = {"vidir_molemax": "var(--s1)", "vidir_modern": "var(--s2)", "rosendahl": "var(--s3)",
+               "vienna_dias": "var(--s4)"}
+
+SEX_NAMES = {"male": "Hombre", "female": "Mujer", "unknown": "Sin dato"}
+LOCALIZATION_NAMES = {
+    "back": "Espalda", "lower extremity": "Extremidad inferior", "trunk": "Tronco",
+    "upper extremity": "Extremidad superior", "abdomen": "Abdomen", "face": "Cara", "chest": "Pecho",
+    "foot": "Pie", "unknown": "Desconocida", "neck": "Cuello", "scalp": "Cuero cabelludo", "hand": "Mano",
+    "ear": "Oreja", "genital": "Genital", "acral": "Acral",
 }
-SOURCES = ["rosendahl", "vidir_modern", "vidir_molemax", "vienna_dias"]
 
-# Paleta Okabe–Ito (apta para daltonismo), asignada de forma fija en todo el dashboard.
-OKABE_ITO = {"orange": "#E69F00", "sky": "#56B4E9", "green": "#009E73", "yellow": "#F0E442",
-             "blue": "#0072B2", "vermillion": "#D55E00", "purple": "#CC79A7", "black": "#000000"}
-CLASS_COLORS = {"akiec": OKABE_ITO["orange"], "bcc": OKABE_ITO["purple"], "bkl": OKABE_ITO["green"],
-                "df": OKABE_ITO["yellow"], "mel": OKABE_ITO["vermillion"], "nv": OKABE_ITO["blue"],
-                "vasc": OKABE_ITO["sky"]}
-SOURCE_COLORS = {"rosendahl": OKABE_ITO["orange"], "vidir_modern": OKABE_ITO["sky"],
-                 "vidir_molemax": OKABE_ITO["green"], "vienna_dias": OKABE_ITO["purple"]}
-FAMILY_COLORS = {"CNN": OKABE_ITO["blue"], "Transformer": OKABE_ITO["orange"], "Original (CCI)": OKABE_ITO["vermillion"],
-                 "Ablación (CCI)": OKABE_ITO["purple"], "Baseline": OKABE_ITO["sky"]}
+# ---------------------------------------------------------------------------
+# Modelos (identificadores de src.models.REGISTRY y de configs/base.yaml)
+# ---------------------------------------------------------------------------
 
-# Interfaz: 5 colores (deben coincidir con las variables CSS de assets/style.css).
-UI = {"dark": "#1B2631", "light": "#F6F5F1", "primary": "#0F5E6E", "accent": "#9C4A00", "alert": "#B3261E"}
-FONT = "Inter, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif"
-
-KEY_FIGURE = {
-    "value": "−25 puntos",
-    "label": "de exactitud balanceada al evaluar en BCN20000 modelos entrenados en HAM10000",
-    "source": "Pınar et al. (2026), Journal of Clinical Medicine 15(19), 7422",
+ORIGINAL_MODEL = "cci"
+BENCHMARK_MODELS = ["mobilenetv2", "resnet50", "vgg16", "densenet201", "inceptionv3", "convnext_tiny",
+                    "vit_b16", "efficientnetb0"]
+BASELINES = ["trivial", "logreg"]
+MODEL_NAMES = {
+    "cci": "Nuestro modelo", "mobilenetv2": "MobileNetV2", "resnet50": "ResNet-50", "vgg16": "VGG-16",
+    "densenet201": "DenseNet-201", "inceptionv3": "Inception-V3", "convnext_tiny": "ConvNeXt-Tiny",
+    "vit_b16": "ViT-B/16", "efficientnetb0": "EfficientNet-B0",
+    "trivial": "Clase mayoritaria", "logreg": "Regresión logística",
 }
+CCI_FAMILIES = {"Original (CCI)", "Ablación (CCI)"}
+
+# Umbrales de la etiqueta de confianza de la demo (probabilidad top-1)
+CONFIDENCE_HIGH = 0.8
+CONFIDENCE_MEDIUM = 0.5
+DEFAULT_ALPHA = "0.1"            # cobertura objetivo del conjunto conforme: 1 − α = 90 %
+
+# Mapa de atención: azul cielo -> amarillo -> naranja -> bermellón (Okabe-Ito, sin jet)
+HEATMAP_STOPS = ["#56B4E9", "#F0E442", "#E69F00", "#D55E00"]
+
+FONT = "Inter, system-ui, sans-serif"
+
+
+def model_name(model_id: str | None) -> str:
+    if not model_id:
+        return ""
+    return MODEL_NAMES.get(model_id, model_id)

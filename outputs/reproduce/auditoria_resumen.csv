@@ -1,0 +1,24 @@
+verificacion,criterio,valor,resultado,detalle
+Lesiones sin intersección entre particiones,0 lesion_id y 0 group_id compartidos,0,aprobado,
+sha256,—,,no disponible,no existe image_sha256.csv; pon CALCULAR_SHA256 = True (lee las 10015 imágenes).
+Vecinos de test en train (phash),proporción con distancia de Hamming <= 2 <= 0.01,0.003494,aprobado,5 de 1431 imágenes
+Desempeño sin vecinos de train (phash),|BA todas - BA sin vecinos| < 0.02 en todos los modelos,0.002005,aprobado,5 imágenes con vecino
+Vecinos de test en train (embeddings),proporción con similitud coseno >= 0.95 <= 0.01,0.0,aprobado,0 de 1431 imágenes
+Desempeño sin vecinos de train (embeddings),|BA todas - BA sin vecinos| < 0.02 en todos los modelos,0.0,aprobado,0 imágenes con vecino
+Contrato de datos de los metadatos,todas las reglas aprobadas,0 reglas fallidas,aprobado,
+AUC univariado de age,AUC macro < 0.8,0.6906,aprobado,el modelo no usa metadatos; un fallo señala un posible atajo si la imagen codifica el metadato
+AUC univariado de sex,AUC macro < 0.8,0.5232,aprobado,el modelo no usa metadatos; un fallo señala un posible atajo si la imagen codifica el metadato
+AUC univariado de localization,AUC macro < 0.8,0.7319,aprobado,el modelo no usa metadatos; un fallo señala un posible atajo si la imagen codifica el metadato
+AUC univariado de dataset,AUC macro < 0.8,0.7281,aprobado,el modelo no usa metadatos; un fallo señala un posible atajo si la imagen codifica el metadato
+AUC univariado de dx_type,AUC macro < 0.8,0.7701,aprobado,el modelo no usa metadatos; un fallo señala un posible atajo si la imagen codifica el metadato
+Validación adversarial train frente a test,AUC media < 0.6,0.9104,fallido,std 0.0073
+Etiquetas permutadas (regresión logística),|BA permutada media - 1/7| <= 0.05,0.0005,aprobado,"BA sin permutar: ba_val 0.6065, ba_test 0.5747"
+"Sintético: select_split separa train, val y test por lesión",conjuntos disjuntos,True,aprobado,
+Sintético: pesos de clase solo con train,iguales al cambiar las etiquetas de val y test,True,aprobado,
+Sintético: logreg ajustado solo con train,predicciones de train iguales al cambiar X e y de val y test,True,aprobado,
+Sintético: trivial ajustado solo con train,predicciones de train iguales al cambiar X e y de val y test,True,aprobado,
+Sintético: StandardScaler con la media de train,media del escalado = media de train,True,aprobado,
+Sintético: temperatura ajustada solo con validación,T igual al cambiar test,True,aprobado,
+Sintético: umbral conforme calibrado solo con validación,umbral igual al cambiar test,True,aprobado,
+Estadísticas de color calculadas solo con train,n_imagenes = 8584,8584,aprobado,
+Conteo de observaciones por población,train + test = total y los pliegues de validación suman train,10015,aprobado,

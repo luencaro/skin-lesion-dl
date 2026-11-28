@@ -1,0 +1,15 @@
+,valor
+modelo,resnet50
+corridas,5
+media,0.6433940488080439
+ic_t_bajo,0.6241359042034799
+ic_t_alto,0.6626521934126078
+ic_lesion_bajo,0.5896183238109997
+ic_lesion_alto,0.7023386543617627
+valor_pinar2026,0.686
+ic_pinar2026,[0.653; 0.721]
+diferencia,-0.042605951191956204
+valor_dentro_del_ic_t,False
+diferencia_menor_que_delta,False
+ic_se_solapan,True
+replica_exitosa,False

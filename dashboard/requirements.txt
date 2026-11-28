@@ -1,7 +1,6 @@
 # Dependencias de inferencia del dashboard (versiones exactas, las de uv.lock). Sin TensorFlow.
 # Render: rootDir dashboard (render.yaml). Local: pip install -r dashboard/requirements.txt
 dash==4.5.1
-dash-bootstrap-components==2.0.4
 plotly==7.2.0
 onnxruntime==1.32.0
 numpy==2.4.6

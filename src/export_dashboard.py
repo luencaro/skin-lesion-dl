@@ -45,8 +45,8 @@ log = logging.getLogger(__name__)
 COLOR_VARS = {"media_r": "Media del canal R", "media_g": "Media del canal G", "media_b": "Media del canal B",
               "luminancia": "Luminancia", "contraste": "Contraste", "saturacion": "Saturación"}
 META_COLUMNS = ["image_id", "lesion_id", "dx", "dx_type", "age", "sex", "localization", "dataset"]
-LEADERBOARD_COLUMNS = ["modelo", "familia", "corridas", "ba_media", "ba_std", "ece_media", "params_total",
-                       "gflops", "latencia_ms"]
+LEADERBOARD_COLUMNS = ["modelo", "familia", "corridas", "ba_media", "ba_std", "f1_media", "f1_std", "ece_media",
+                       "params_total", "gflops", "latencia_ms"]
 
 
 # ---------------------------------------------------------------------------
@@ -349,6 +349,8 @@ def leaderboard_from_master(master: pd.DataFrame, cfg: dict, cost: pd.DataFrame 
             continue
         row = {"modelo": m, "familia": family_of(cfg, m), "corridas": int(g.loc[primary, "corridas"]),
                "ba_media": float(g.loc[primary, "media"]), "ba_std": float(g.loc[primary, "std"]),
+               "f1_media": float(g.loc["f1_macro", "media"]) if "f1_macro" in g.index else np.nan,
+               "f1_std": float(g.loc["f1_macro", "std"]) if "f1_macro" in g.index else np.nan,
                "ece_media": float(g.loc["ece", "media"]) if "ece" in g.index else np.nan,
                "params_total": np.nan, "gflops": np.nan, "latencia_ms": np.nan}
         if cost is not None and m in cost.index:

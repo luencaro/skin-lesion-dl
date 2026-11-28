@@ -48,7 +48,7 @@ Las cifras de desempeño están pendientes de las corridas definitivas y se comp
   train de 8584 en 5 pliegues. Ver `DATA_STATEMENT.md`.
 - **Preprocesamiento:** redimensionado a 224 × 224 (bilineal con antialias, sin conservar la
   relación de aspecto), RGB en [0, 255]; la normalización va dentro del modelo.
-- **Conjuntos adicionales:** [COMPLETAR: los tres conjuntos de `experiments/protocolo.md`].
+- **Conjuntos adicionales:** PAD-UFES-20, Derm7pt y BCN20000, solo para evaluación externa (ver `experiments/protocolo.md`, sección 5).
 
 ## Entrenamiento
 

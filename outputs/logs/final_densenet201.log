@@ -1,0 +1,164 @@
+2026-11-27 06:41:44 INFO densenet201 | final s0_f0 | Fase A: 5 épocas, backbone congelado
+2026-11-27 06:43:55 INFO densenet201 | final s0_f0 | warmup | época 1/5 | loss 1.7099 | val_bal_acc 0.4675 | mejor 0.4675 | 2m 11s
+2026-11-27 06:44:03 INFO densenet201 | final s0_f0 | warmup | época 2/5 | loss 1.2904 | val_bal_acc 0.5028 | mejor 0.5028 | 8.6s
+2026-11-27 06:44:12 INFO densenet201 | final s0_f0 | warmup | época 3/5 | loss 1.1672 | val_bal_acc 0.5771 | mejor 0.5771 | 8.6s
+2026-11-27 06:44:21 INFO densenet201 | final s0_f0 | warmup | época 4/5 | loss 1.0859 | val_bal_acc 0.5445 | mejor 0.5771 | 8.6s
+2026-11-27 06:44:29 INFO densenet201 | final s0_f0 | warmup | época 5/5 | loss 1.0505 | val_bal_acc 0.5744 | mejor 0.5771 | 8.6s
+2026-11-27 06:44:29 INFO densenet201 | final s0_f0 | Fase B: hasta 30 épocas, todo descongelado
+2026-11-27 07:07:16 INFO densenet201 | final s0_f0 | finetune | época 1/30 | loss 1.4881 | val_bal_acc 0.5211 | mejor 0.5211 | 22m 47s
+2026-11-27 07:07:44 INFO densenet201 | final s0_f0 | finetune | época 2/30 | loss 1.0646 | val_bal_acc 0.2564 | mejor 0.5211 | 27.8s
+2026-11-27 07:08:12 INFO densenet201 | final s0_f0 | finetune | época 3/30 | loss 1.0948 | val_bal_acc 0.4378 | mejor 0.5211 | 27.5s
+2026-11-27 07:08:40 INFO densenet201 | final s0_f0 | finetune | época 4/30 | loss 0.9979 | val_bal_acc 0.5645 | mejor 0.5645 | 27.9s
+2026-11-27 07:09:08 INFO densenet201 | final s0_f0 | finetune | época 5/30 | loss 0.8039 | val_bal_acc 0.6509 | mejor 0.6509 | 28.0s
+2026-11-27 07:09:35 INFO densenet201 | final s0_f0 | finetune | época 6/30 | loss 0.7606 | val_bal_acc 0.6192 | mejor 0.6509 | 27.6s
+2026-11-27 07:10:03 INFO densenet201 | final s0_f0 | finetune | época 7/30 | loss 0.6910 | val_bal_acc 0.6887 | mejor 0.6887 | 27.9s
+2026-11-27 07:10:31 INFO densenet201 | final s0_f0 | finetune | época 8/30 | loss 0.6115 | val_bal_acc 0.7058 | mejor 0.7058 | 28.0s
+2026-11-27 07:10:59 INFO densenet201 | final s0_f0 | finetune | época 9/30 | loss 0.5893 | val_bal_acc 0.6926 | mejor 0.7058 | 27.7s
+2026-11-27 07:11:27 INFO densenet201 | final s0_f0 | finetune | época 10/30 | loss 0.5467 | val_bal_acc 0.6672 | mejor 0.7058 | 27.7s
+2026-11-27 07:11:55 INFO densenet201 | final s0_f0 | finetune | época 11/30 | loss 0.6333 | val_bal_acc 0.6612 | mejor 0.7058 | 28.0s
+2026-11-27 07:12:23 INFO densenet201 | final s0_f0 | finetune | época 12/30 | loss 0.5582 | val_bal_acc 0.7353 | mejor 0.7353 | 28.1s
+2026-11-27 07:12:50 INFO densenet201 | final s0_f0 | finetune | época 13/30 | loss 0.4615 | val_bal_acc 0.7277 | mejor 0.7353 | 27.0s
+2026-11-27 07:13:17 INFO densenet201 | final s0_f0 | finetune | época 14/30 | loss 0.4127 | val_bal_acc 0.6953 | mejor 0.7353 | 27.6s
+2026-11-27 07:13:44 INFO densenet201 | final s0_f0 | finetune | época 15/30 | loss 0.3557 | val_bal_acc 0.6479 | mejor 0.7353 | 27.0s
+2026-11-27 07:14:11 INFO densenet201 | final s0_f0 | finetune | época 16/30 | loss 0.3780 | val_bal_acc 0.6857 | mejor 0.7353 | 27.0s
+2026-11-27 07:14:39 INFO densenet201 | final s0_f0 | finetune | época 17/30 | loss 0.2894 | val_bal_acc 0.7287 | mejor 0.7353 | 27.7s
+2026-11-27 07:14:40 INFO densenet201 | final s0_f0 | parada temprana en la época 17
+2026-11-27 07:14:40 INFO densenet201 | final s0_f0 | se restauran los pesos de la época 12 de la fase B
+2026-11-27 07:15:44 INFO densenet201 | final s0_f0 | val balanced_accuracy = 0.7353 (época 12 de la fase B) | entrenamiento 32m 56s -> outputs/runs/densenet201/final/s0_f0
+2026-11-27 07:16:12 INFO densenet201 | final s0_f1 | Fase A: 5 épocas, backbone congelado
+2026-11-27 07:18:23 INFO densenet201 | final s0_f1 | warmup | época 1/5 | loss 1.7494 | val_bal_acc 0.4882 | mejor 0.4882 | 2m 11s
+2026-11-27 07:18:31 INFO densenet201 | final s0_f1 | warmup | época 2/5 | loss 1.2854 | val_bal_acc 0.5335 | mejor 0.5335 | 8.5s
+2026-11-27 07:18:40 INFO densenet201 | final s0_f1 | warmup | época 3/5 | loss 1.1899 | val_bal_acc 0.5340 | mejor 0.5340 | 8.5s
+2026-11-27 07:18:48 INFO densenet201 | final s0_f1 | warmup | época 4/5 | loss 1.0838 | val_bal_acc 0.5878 | mejor 0.5878 | 8.6s
+2026-11-27 07:18:57 INFO densenet201 | final s0_f1 | warmup | época 5/5 | loss 1.0537 | val_bal_acc 0.5806 | mejor 0.5878 | 8.7s
+2026-11-27 07:18:57 INFO densenet201 | final s0_f1 | Fase B: hasta 30 épocas, todo descongelado
+2026-11-27 07:41:34 INFO densenet201 | final s0_f1 | finetune | época 1/30 | loss 1.4687 | val_bal_acc 0.5240 | mejor 0.5240 | 22m 36s
+2026-11-27 07:42:02 INFO densenet201 | final s0_f1 | finetune | época 2/30 | loss 1.1687 | val_bal_acc 0.5173 | mejor 0.5240 | 27.9s
+2026-11-27 07:42:30 INFO densenet201 | final s0_f1 | finetune | época 3/30 | loss 1.1134 | val_bal_acc 0.6001 | mejor 0.6001 | 28.2s
+2026-11-27 07:42:57 INFO densenet201 | final s0_f1 | finetune | época 4/30 | loss 1.0210 | val_bal_acc 0.5592 | mejor 0.6001 | 27.6s
+2026-11-27 07:43:25 INFO densenet201 | final s0_f1 | finetune | época 5/30 | loss 0.9199 | val_bal_acc 0.6012 | mejor 0.6012 | 28.1s
+2026-11-27 07:43:54 INFO densenet201 | final s0_f1 | finetune | época 6/30 | loss 0.8447 | val_bal_acc 0.6269 | mejor 0.6269 | 28.3s
+2026-11-27 07:44:22 INFO densenet201 | final s0_f1 | finetune | época 7/30 | loss 0.7800 | val_bal_acc 0.6092 | mejor 0.6269 | 27.9s
+2026-11-27 07:44:50 INFO densenet201 | final s0_f1 | finetune | época 8/30 | loss 0.7213 | val_bal_acc 0.6110 | mejor 0.6269 | 28.1s
+2026-11-27 07:45:18 INFO densenet201 | final s0_f1 | finetune | época 9/30 | loss 0.7155 | val_bal_acc 0.6495 | mejor 0.6495 | 28.3s
+2026-11-27 07:45:46 INFO densenet201 | final s0_f1 | finetune | época 10/30 | loss 0.6735 | val_bal_acc 0.7061 | mejor 0.7061 | 28.3s
+2026-11-27 07:46:14 INFO densenet201 | final s0_f1 | finetune | época 11/30 | loss 0.6030 | val_bal_acc 0.6912 | mejor 0.7061 | 28.0s
+2026-11-27 07:46:42 INFO densenet201 | final s0_f1 | finetune | época 12/30 | loss 0.5652 | val_bal_acc 0.6917 | mejor 0.7061 | 28.0s
+2026-11-27 07:47:10 INFO densenet201 | final s0_f1 | finetune | época 13/30 | loss 0.4901 | val_bal_acc 0.7021 | mejor 0.7061 | 27.9s
+2026-11-27 07:47:38 INFO densenet201 | final s0_f1 | finetune | época 14/30 | loss 0.4885 | val_bal_acc 0.7426 | mejor 0.7426 | 28.1s
+2026-11-27 07:48:07 INFO densenet201 | final s0_f1 | finetune | época 15/30 | loss 0.4641 | val_bal_acc 0.7521 | mejor 0.7521 | 28.2s
+2026-11-27 07:48:35 INFO densenet201 | final s0_f1 | finetune | época 16/30 | loss 0.3881 | val_bal_acc 0.7208 | mejor 0.7521 | 27.9s
+2026-11-27 07:49:03 INFO densenet201 | final s0_f1 | finetune | época 17/30 | loss 0.3924 | val_bal_acc 0.7724 | mejor 0.7724 | 28.0s
+2026-11-27 07:49:30 INFO densenet201 | final s0_f1 | finetune | época 18/30 | loss 0.3232 | val_bal_acc 0.7523 | mejor 0.7724 | 27.9s
+2026-11-27 07:49:58 INFO densenet201 | final s0_f1 | finetune | época 19/30 | loss 0.3341 | val_bal_acc 0.7229 | mejor 0.7724 | 28.0s
+2026-11-27 07:50:27 INFO densenet201 | final s0_f1 | finetune | época 20/30 | loss 0.2823 | val_bal_acc 0.7651 | mejor 0.7724 | 28.1s
+2026-11-27 07:50:55 INFO densenet201 | final s0_f1 | finetune | época 21/30 | loss 0.2247 | val_bal_acc 0.7811 | mejor 0.7811 | 28.1s
+2026-11-27 07:51:23 INFO densenet201 | final s0_f1 | finetune | época 22/30 | loss 0.1992 | val_bal_acc 0.7619 | mejor 0.7811 | 28.0s
+2026-11-27 07:51:51 INFO densenet201 | final s0_f1 | finetune | época 23/30 | loss 0.2206 | val_bal_acc 0.7653 | mejor 0.7811 | 28.0s
+2026-11-27 07:52:19 INFO densenet201 | final s0_f1 | finetune | época 24/30 | loss 0.1761 | val_bal_acc 0.7653 | mejor 0.7811 | 27.8s
+2026-11-27 07:52:46 INFO densenet201 | final s0_f1 | finetune | época 25/30 | loss 0.1658 | val_bal_acc 0.7723 | mejor 0.7811 | 28.0s
+2026-11-27 07:53:15 INFO densenet201 | final s0_f1 | finetune | época 26/30 | loss 0.1442 | val_bal_acc 0.7708 | mejor 0.7811 | 28.3s
+2026-11-27 07:53:15 INFO densenet201 | final s0_f1 | parada temprana en la época 26
+2026-11-27 07:53:15 INFO densenet201 | final s0_f1 | se restauran los pesos de la época 21 de la fase B
+2026-11-27 07:54:19 INFO densenet201 | final s0_f1 | val balanced_accuracy = 0.7811 (época 21 de la fase B) | entrenamiento 37m 04s -> outputs/runs/densenet201/final/s0_f1
+2026-11-27 07:54:47 INFO densenet201 | final s0_f2 | Fase A: 5 épocas, backbone congelado
+2026-11-27 07:57:00 INFO densenet201 | final s0_f2 | warmup | época 1/5 | loss 1.7794 | val_bal_acc 0.5455 | mejor 0.5455 | 2m 13s
+2026-11-27 07:57:08 INFO densenet201 | final s0_f2 | warmup | época 2/5 | loss 1.3692 | val_bal_acc 0.6258 | mejor 0.6258 | 8.6s
+2026-11-27 07:57:17 INFO densenet201 | final s0_f2 | warmup | época 3/5 | loss 1.1901 | val_bal_acc 0.6253 | mejor 0.6258 | 8.7s
+2026-11-27 07:57:26 INFO densenet201 | final s0_f2 | warmup | época 4/5 | loss 1.1260 | val_bal_acc 0.6561 | mejor 0.6561 | 8.6s
+2026-11-27 07:57:34 INFO densenet201 | final s0_f2 | warmup | época 5/5 | loss 1.0687 | val_bal_acc 0.6658 | mejor 0.6658 | 8.7s
+2026-11-27 07:57:34 INFO densenet201 | final s0_f2 | Fase B: hasta 30 épocas, todo descongelado
+2026-11-27 08:20:07 INFO densenet201 | final s0_f2 | finetune | época 1/30 | loss 1.5560 | val_bal_acc 0.2888 | mejor 0.2888 | 22m 32s
+2026-11-27 08:20:34 INFO densenet201 | final s0_f2 | finetune | época 2/30 | loss 1.2074 | val_bal_acc 0.6807 | mejor 0.6807 | 27.9s
+2026-11-27 08:21:02 INFO densenet201 | final s0_f2 | finetune | época 3/30 | loss 1.0852 | val_bal_acc 0.5677 | mejor 0.6807 | 27.6s
+2026-11-27 08:21:30 INFO densenet201 | final s0_f2 | finetune | época 4/30 | loss 0.9834 | val_bal_acc 0.4601 | mejor 0.6807 | 27.6s
+2026-11-27 08:21:57 INFO densenet201 | final s0_f2 | finetune | época 5/30 | loss 0.9077 | val_bal_acc 0.4529 | mejor 0.6807 | 27.7s
+2026-11-27 08:22:25 INFO densenet201 | final s0_f2 | finetune | época 6/30 | loss 0.9030 | val_bal_acc 0.6423 | mejor 0.6807 | 27.9s
+2026-11-27 08:22:54 INFO densenet201 | final s0_f2 | finetune | época 7/30 | loss 0.8508 | val_bal_acc 0.7204 | mejor 0.7204 | 28.3s
+2026-11-27 08:23:22 INFO densenet201 | final s0_f2 | finetune | época 8/30 | loss 0.8663 | val_bal_acc 0.6631 | mejor 0.7204 | 27.9s
+2026-11-27 08:23:49 INFO densenet201 | final s0_f2 | finetune | época 9/30 | loss 0.7658 | val_bal_acc 0.6750 | mejor 0.7204 | 27.8s
+2026-11-27 08:24:17 INFO densenet201 | final s0_f2 | finetune | época 10/30 | loss 0.6336 | val_bal_acc 0.6824 | mejor 0.7204 | 27.8s
+2026-11-27 08:24:45 INFO densenet201 | final s0_f2 | finetune | época 11/30 | loss 0.6787 | val_bal_acc 0.6145 | mejor 0.7204 | 27.9s
+2026-11-27 08:25:13 INFO densenet201 | final s0_f2 | finetune | época 12/30 | loss 0.6160 | val_bal_acc 0.7495 | mejor 0.7495 | 28.2s
+2026-11-27 08:25:41 INFO densenet201 | final s0_f2 | finetune | época 13/30 | loss 0.5380 | val_bal_acc 0.7297 | mejor 0.7495 | 27.8s
+2026-11-27 08:26:09 INFO densenet201 | final s0_f2 | finetune | época 14/30 | loss 0.4905 | val_bal_acc 0.6892 | mejor 0.7495 | 27.6s
+2026-11-27 08:26:37 INFO densenet201 | final s0_f2 | finetune | época 15/30 | loss 0.4414 | val_bal_acc 0.7386 | mejor 0.7495 | 28.0s
+2026-11-27 08:27:05 INFO densenet201 | final s0_f2 | finetune | época 16/30 | loss 0.4640 | val_bal_acc 0.7650 | mejor 0.7650 | 28.6s
+2026-11-27 08:27:33 INFO densenet201 | final s0_f2 | finetune | época 17/30 | loss 0.4358 | val_bal_acc 0.7370 | mejor 0.7650 | 28.1s
+2026-11-27 08:28:02 INFO densenet201 | final s0_f2 | finetune | época 18/30 | loss 0.3425 | val_bal_acc 0.7676 | mejor 0.7676 | 28.5s
+2026-11-27 08:28:30 INFO densenet201 | final s0_f2 | finetune | época 19/30 | loss 0.3131 | val_bal_acc 0.7587 | mejor 0.7676 | 28.3s
+2026-11-27 08:28:59 INFO densenet201 | final s0_f2 | finetune | época 20/30 | loss 0.2675 | val_bal_acc 0.7786 | mejor 0.7786 | 28.5s
+2026-11-27 08:29:27 INFO densenet201 | final s0_f2 | finetune | época 21/30 | loss 0.2479 | val_bal_acc 0.7675 | mejor 0.7786 | 28.3s
+2026-11-27 08:29:55 INFO densenet201 | final s0_f2 | finetune | época 22/30 | loss 0.2232 | val_bal_acc 0.7766 | mejor 0.7786 | 28.3s
+2026-11-27 08:30:24 INFO densenet201 | final s0_f2 | finetune | época 23/30 | loss 0.2159 | val_bal_acc 0.8168 | mejor 0.8168 | 28.6s
+2026-11-27 08:30:52 INFO densenet201 | final s0_f2 | finetune | época 24/30 | loss 0.1988 | val_bal_acc 0.7807 | mejor 0.8168 | 28.2s
+2026-11-27 08:31:20 INFO densenet201 | final s0_f2 | finetune | época 25/30 | loss 0.1802 | val_bal_acc 0.8055 | mejor 0.8168 | 28.2s
+2026-11-27 08:31:49 INFO densenet201 | final s0_f2 | finetune | época 26/30 | loss 0.1468 | val_bal_acc 0.7995 | mejor 0.8168 | 28.3s
+2026-11-27 08:32:17 INFO densenet201 | final s0_f2 | finetune | época 27/30 | loss 0.1386 | val_bal_acc 0.7972 | mejor 0.8168 | 28.2s
+2026-11-27 08:32:45 INFO densenet201 | final s0_f2 | finetune | época 28/30 | loss 0.1361 | val_bal_acc 0.8007 | mejor 0.8168 | 28.3s
+2026-11-27 08:32:46 INFO densenet201 | final s0_f2 | parada temprana en la época 28
+2026-11-27 08:32:46 INFO densenet201 | final s0_f2 | se restauran los pesos de la época 23 de la fase B
+2026-11-27 08:33:44 INFO densenet201 | final s0_f2 | val balanced_accuracy = 0.8168 (época 23 de la fase B) | entrenamiento 37m 59s -> outputs/runs/densenet201/final/s0_f2
+2026-11-27 08:34:12 INFO densenet201 | final s0_f3 | Fase A: 5 épocas, backbone congelado
+2026-11-27 08:36:27 INFO densenet201 | final s0_f3 | warmup | época 1/5 | loss 1.7165 | val_bal_acc 0.5017 | mejor 0.5017 | 2m 15s
+2026-11-27 08:36:36 INFO densenet201 | final s0_f3 | warmup | época 2/5 | loss 1.2754 | val_bal_acc 0.5165 | mejor 0.5165 | 8.9s
+2026-11-27 08:36:45 INFO densenet201 | final s0_f3 | warmup | época 3/5 | loss 1.1464 | val_bal_acc 0.5351 | mejor 0.5351 | 8.5s
+2026-11-27 08:36:53 INFO densenet201 | final s0_f3 | warmup | época 4/5 | loss 1.0908 | val_bal_acc 0.5589 | mejor 0.5589 | 8.5s
+2026-11-27 08:37:02 INFO densenet201 | final s0_f3 | warmup | época 5/5 | loss 1.0847 | val_bal_acc 0.5761 | mejor 0.5761 | 8.6s
+2026-11-27 08:37:02 INFO densenet201 | final s0_f3 | Fase B: hasta 30 épocas, todo descongelado
+2026-11-27 08:59:49 INFO densenet201 | final s0_f3 | finetune | época 1/30 | loss 1.4681 | val_bal_acc 0.4345 | mejor 0.4345 | 22m 47s
+2026-11-27 09:00:17 INFO densenet201 | final s0_f3 | finetune | época 2/30 | loss 1.2499 | val_bal_acc 0.1820 | mejor 0.4345 | 28.0s
+2026-11-27 09:00:45 INFO densenet201 | final s0_f3 | finetune | época 3/30 | loss 1.0759 | val_bal_acc 0.4625 | mejor 0.4625 | 28.1s
+2026-11-27 09:01:13 INFO densenet201 | final s0_f3 | finetune | época 4/30 | loss 0.8749 | val_bal_acc 0.5489 | mejor 0.5489 | 28.2s
+2026-11-27 09:01:42 INFO densenet201 | final s0_f3 | finetune | época 5/30 | loss 0.9086 | val_bal_acc 0.6430 | mejor 0.6430 | 28.4s
+2026-11-27 09:02:10 INFO densenet201 | final s0_f3 | finetune | época 6/30 | loss 0.7952 | val_bal_acc 0.6216 | mejor 0.6430 | 28.1s
+2026-11-27 09:02:38 INFO densenet201 | final s0_f3 | finetune | época 7/30 | loss 0.7258 | val_bal_acc 0.6283 | mejor 0.6430 | 28.0s
+2026-11-27 09:03:06 INFO densenet201 | final s0_f3 | finetune | época 8/30 | loss 0.6375 | val_bal_acc 0.6172 | mejor 0.6430 | 28.1s
+2026-11-27 09:03:34 INFO densenet201 | final s0_f3 | finetune | época 9/30 | loss 0.6833 | val_bal_acc 0.6165 | mejor 0.6430 | 28.1s
+2026-11-27 09:04:02 INFO densenet201 | final s0_f3 | finetune | época 10/30 | loss 0.5873 | val_bal_acc 0.6721 | mejor 0.6721 | 28.3s
+2026-11-27 09:04:30 INFO densenet201 | final s0_f3 | finetune | época 11/30 | loss 0.5239 | val_bal_acc 0.6219 | mejor 0.6721 | 27.8s
+2026-11-27 09:04:58 INFO densenet201 | final s0_f3 | finetune | época 12/30 | loss 0.5482 | val_bal_acc 0.6898 | mejor 0.6898 | 28.3s
+2026-11-27 09:05:27 INFO densenet201 | final s0_f3 | finetune | época 13/30 | loss 0.4626 | val_bal_acc 0.7294 | mejor 0.7294 | 28.2s
+2026-11-27 09:05:55 INFO densenet201 | final s0_f3 | finetune | época 14/30 | loss 0.4581 | val_bal_acc 0.6551 | mejor 0.7294 | 28.1s
+2026-11-27 09:06:23 INFO densenet201 | final s0_f3 | finetune | época 15/30 | loss 0.4539 | val_bal_acc 0.7129 | mejor 0.7294 | 28.1s
+2026-11-27 09:06:51 INFO densenet201 | final s0_f3 | finetune | época 16/30 | loss 0.3964 | val_bal_acc 0.7037 | mejor 0.7294 | 28.1s
+2026-11-27 09:07:19 INFO densenet201 | final s0_f3 | finetune | época 17/30 | loss 0.3260 | val_bal_acc 0.6668 | mejor 0.7294 | 28.2s
+2026-11-27 09:07:47 INFO densenet201 | final s0_f3 | finetune | época 18/30 | loss 0.3186 | val_bal_acc 0.7110 | mejor 0.7294 | 28.1s
+2026-11-27 09:07:48 INFO densenet201 | final s0_f3 | parada temprana en la época 18
+2026-11-27 09:07:48 INFO densenet201 | final s0_f3 | se restauran los pesos de la época 13 de la fase B
+2026-11-27 09:08:48 INFO densenet201 | final s0_f3 | val balanced_accuracy = 0.7294 (época 13 de la fase B) | entrenamiento 33m 35s -> outputs/runs/densenet201/final/s0_f3
+2026-11-27 09:09:15 INFO densenet201 | final s0_f4 | Fase A: 5 épocas, backbone congelado
+2026-11-27 09:11:37 INFO densenet201 | final s0_f4 | warmup | época 1/5 | loss 1.7489 | val_bal_acc 0.4795 | mejor 0.4795 | 2m 21s
+2026-11-27 09:11:45 INFO densenet201 | final s0_f4 | warmup | época 2/5 | loss 1.2550 | val_bal_acc 0.5519 | mejor 0.5519 | 8.8s
+2026-11-27 09:11:54 INFO densenet201 | final s0_f4 | warmup | época 3/5 | loss 1.1611 | val_bal_acc 0.5615 | mejor 0.5615 | 8.6s
+2026-11-27 09:12:03 INFO densenet201 | final s0_f4 | warmup | época 4/5 | loss 1.0964 | val_bal_acc 0.6182 | mejor 0.6182 | 8.6s
+2026-11-27 09:12:11 INFO densenet201 | final s0_f4 | warmup | época 5/5 | loss 1.0615 | val_bal_acc 0.5867 | mejor 0.6182 | 8.7s
+2026-11-27 09:12:11 INFO densenet201 | final s0_f4 | Fase B: hasta 30 épocas, todo descongelado
+2026-11-27 09:34:41 INFO densenet201 | final s0_f4 | finetune | época 1/30 | loss 1.4609 | val_bal_acc 0.5687 | mejor 0.5687 | 22m 30s
+2026-11-27 09:35:10 INFO densenet201 | final s0_f4 | finetune | época 2/30 | loss 1.0889 | val_bal_acc 0.5776 | mejor 0.5776 | 28.2s
+2026-11-27 09:35:37 INFO densenet201 | final s0_f4 | finetune | época 3/30 | loss 0.9928 | val_bal_acc 0.6862 | mejor 0.6862 | 27.8s
+2026-11-27 09:36:05 INFO densenet201 | final s0_f4 | finetune | época 4/30 | loss 0.8524 | val_bal_acc 0.6380 | mejor 0.6862 | 27.7s
+2026-11-27 09:36:33 INFO densenet201 | final s0_f4 | finetune | época 5/30 | loss 0.8992 | val_bal_acc 0.5608 | mejor 0.6862 | 27.6s
+2026-11-27 09:37:01 INFO densenet201 | final s0_f4 | finetune | época 6/30 | loss 0.8103 | val_bal_acc 0.6954 | mejor 0.6954 | 28.1s
+2026-11-27 09:37:29 INFO densenet201 | final s0_f4 | finetune | época 7/30 | loss 0.7481 | val_bal_acc 0.6535 | mejor 0.6954 | 27.7s
+2026-11-27 09:37:56 INFO densenet201 | final s0_f4 | finetune | época 8/30 | loss 0.7062 | val_bal_acc 0.6567 | mejor 0.6954 | 27.7s
+2026-11-27 09:38:24 INFO densenet201 | final s0_f4 | finetune | época 9/30 | loss 0.6269 | val_bal_acc 0.7073 | mejor 0.7073 | 27.9s
+2026-11-27 09:38:52 INFO densenet201 | final s0_f4 | finetune | época 10/30 | loss 0.5693 | val_bal_acc 0.6837 | mejor 0.7073 | 27.7s
+2026-11-27 09:39:19 INFO densenet201 | final s0_f4 | finetune | época 11/30 | loss 0.6799 | val_bal_acc 0.5659 | mejor 0.7073 | 27.4s
+2026-11-27 09:39:47 INFO densenet201 | final s0_f4 | finetune | época 12/30 | loss 0.7143 | val_bal_acc 0.6863 | mejor 0.7073 | 27.8s
+2026-11-27 09:40:16 INFO densenet201 | final s0_f4 | finetune | época 13/30 | loss 0.4635 | val_bal_acc 0.7418 | mejor 0.7418 | 28.4s
+2026-11-27 09:40:44 INFO densenet201 | final s0_f4 | finetune | época 14/30 | loss 0.4593 | val_bal_acc 0.7314 | mejor 0.7418 | 27.9s
+2026-11-27 09:41:12 INFO densenet201 | final s0_f4 | finetune | época 15/30 | loss 0.4271 | val_bal_acc 0.7355 | mejor 0.7418 | 28.0s
+2026-11-27 09:41:40 INFO densenet201 | final s0_f4 | finetune | época 16/30 | loss 0.4023 | val_bal_acc 0.7254 | mejor 0.7418 | 28.0s
+2026-11-27 09:42:08 INFO densenet201 | final s0_f4 | finetune | época 17/30 | loss 0.3526 | val_bal_acc 0.7455 | mejor 0.7455 | 28.2s
+2026-11-27 09:42:36 INFO densenet201 | final s0_f4 | finetune | época 18/30 | loss 0.3303 | val_bal_acc 0.7632 | mejor 0.7632 | 28.2s
+2026-11-27 09:43:04 INFO densenet201 | final s0_f4 | finetune | época 19/30 | loss 0.2664 | val_bal_acc 0.7506 | mejor 0.7632 | 28.1s
+2026-11-27 09:43:32 INFO densenet201 | final s0_f4 | finetune | época 20/30 | loss 0.2716 | val_bal_acc 0.7780 | mejor 0.7780 | 28.0s
+2026-11-27 09:44:00 INFO densenet201 | final s0_f4 | finetune | época 21/30 | loss 0.2320 | val_bal_acc 0.7695 | mejor 0.7780 | 28.0s
+2026-11-27 09:44:28 INFO densenet201 | final s0_f4 | finetune | época 22/30 | loss 0.2147 | val_bal_acc 0.7377 | mejor 0.7780 | 27.8s
+2026-11-27 09:44:56 INFO densenet201 | final s0_f4 | finetune | época 23/30 | loss 0.1878 | val_bal_acc 0.7491 | mejor 0.7780 | 27.6s
+2026-11-27 09:45:24 INFO densenet201 | final s0_f4 | finetune | época 24/30 | loss 0.1561 | val_bal_acc 0.7503 | mejor 0.7780 | 28.0s
+2026-11-27 09:45:52 INFO densenet201 | final s0_f4 | finetune | época 25/30 | loss 0.1505 | val_bal_acc 0.7489 | mejor 0.7780 | 27.9s
+2026-11-27 09:45:52 INFO densenet201 | final s0_f4 | parada temprana en la época 25
+2026-11-27 09:45:52 INFO densenet201 | final s0_f4 | se restauran los pesos de la época 20 de la fase B
+2026-11-27 09:46:28 INFO densenet201 | final s0_f4 | val balanced_accuracy = 0.7780 (época 20 de la fase B) | entrenamiento 36m 37s -> outputs/runs/densenet201/final/s0_f4

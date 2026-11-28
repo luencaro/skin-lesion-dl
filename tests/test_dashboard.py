@@ -27,6 +27,11 @@ def _check_board(board: pd.DataFrame, master: pd.DataFrame) -> None:
         assert row["corridas"] == int(g.loc["balanced_accuracy", "corridas"])
         if "ece" in g.index:
             assert row["ece_media"] == pytest.approx(float(g.loc["ece", "media"]), abs=1e-12)
+        if "f1_macro" in g.index:
+            assert row["f1_media"] == pytest.approx(float(g.loc["f1_macro", "media"]), abs=1e-12)
+            assert row["f1_std"] == pytest.approx(float(g.loc["f1_macro", "std"]), abs=1e-12)
+        else:
+            assert pd.isna(row.get("f1_media")) and pd.isna(row.get("f1_std"))
     assert set(board["modelo"]) == set(master["modelo"])
 
 
@@ -40,6 +45,35 @@ def test_leaderboard_matches_master_table():
     assert dict(zip(board["modelo"], board["familia"])) == {"mobilenetv2": "CNN", "vit_b16": "Transformer",
                                                             "cci": "Original (CCI)", "cci_fixed_p": "Ablación (CCI)"}
     assert list(board["ba_media"]) == sorted(board["ba_media"], reverse=True)
+
+
+def test_leaderboard_f1_missing_is_nan():
+    """Sin la métrica f1_macro en la tabla maestra, f1_media y f1_std quedan en NaN."""
+    from src.export_dashboard import LEADERBOARD_COLUMNS, leaderboard_from_master
+    from tests.fake_dashboard import master_table
+
+    master = master_table(("mobilenetv2", "resnet50"))
+    board = leaderboard_from_master(master[master["metrica"] != "f1_macro"], CFG)
+    assert {"f1_media", "f1_std"} <= set(LEADERBOARD_COLUMNS) and list(board.columns) == LEADERBOARD_COLUMNS
+    assert board["f1_media"].isna().all() and board["f1_std"].isna().all()
+    assert board["ba_media"].notna().all()
+
+
+def test_dashboard_reads_f1_from_leaderboard(tmp_path, monkeypatch):
+    """La tabla de líderes del dashboard toma el F1 macro de leaderboard.json (no de diagnostics.json)."""
+    models = tmp_path / "models"
+    (models / "resnet50").mkdir(parents=True)
+    rows = [{"modelo": "mobilenetv2", "familia": "CNN", "ba_media": 0.7, "f1_media": 0.61, "f1_std": 0.02},
+            {"modelo": "resnet50", "familia": "CNN", "ba_media": 0.72, "f1_media": None, "f1_std": None}]
+    (models / "leaderboard.json").write_text(json.dumps({"rows": rows}), encoding="utf-8")
+    cm = np.eye(7).tolist()   # F1 = 1 si se calculara de la matriz de confusión
+    (models / "resnet50" / "diagnostics.json").write_text(json.dumps({"classes": list("abcdefg"), "confusion": cm}),
+                                                          encoding="utf-8")
+    monkeypatch.setenv("DASHBOARD_DATA_DIR", str(tmp_path))
+    code = ("import json; from core import data; "
+            "print(json.dumps({m: data.model_row(m)['f1'] for m in ('mobilenetv2', 'resnet50', 'vgg16')}))")
+    res = subprocess.run([sys.executable, "-c", code], cwd=DASH, capture_output=True, text=True, timeout=120, check=True)
+    assert json.loads(res.stdout.strip().splitlines()[-1]) == {"mobilenetv2": 0.61, "resnet50": None, "vgg16": None}
 
 
 def test_published_dashboard_matches_master_table():

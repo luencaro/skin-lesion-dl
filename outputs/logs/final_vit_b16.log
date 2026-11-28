@@ -1,0 +1,111 @@
+2026-11-27 02:12:12 INFO vit_b16 | final s0_f0 | Fase A: 5 épocas, backbone congelado
+2026-11-27 02:13:11 INFO vit_b16 | final s0_f0 | warmup | época 1/5 | loss 1.5584 | val_bal_acc 0.5629 | mejor 0.5629 | 59.2s
+2026-11-27 02:13:25 INFO vit_b16 | final s0_f0 | warmup | época 2/5 | loss 1.1060 | val_bal_acc 0.6107 | mejor 0.6107 | 13.7s
+2026-11-27 02:13:39 INFO vit_b16 | final s0_f0 | warmup | época 3/5 | loss 0.9559 | val_bal_acc 0.6252 | mejor 0.6252 | 13.6s
+2026-11-27 02:13:52 INFO vit_b16 | final s0_f0 | warmup | época 4/5 | loss 0.8528 | val_bal_acc 0.6592 | mejor 0.6592 | 13.6s
+2026-11-27 02:14:06 INFO vit_b16 | final s0_f0 | warmup | época 5/5 | loss 0.8327 | val_bal_acc 0.6582 | mejor 0.6592 | 13.5s
+2026-11-27 02:14:06 INFO vit_b16 | final s0_f0 | Fase B: hasta 30 épocas, todo descongelado
+2026-11-27 02:16:43 INFO vit_b16 | final s0_f0 | finetune | época 1/30 | loss 0.9795 | val_bal_acc 0.7394 | mejor 0.7394 | 2m 37s
+2026-11-27 02:17:20 INFO vit_b16 | final s0_f0 | finetune | época 2/30 | loss 0.5768 | val_bal_acc 0.7169 | mejor 0.7394 | 36.8s
+2026-11-27 02:17:58 INFO vit_b16 | final s0_f0 | finetune | época 3/30 | loss 0.4490 | val_bal_acc 0.7691 | mejor 0.7691 | 37.4s
+2026-11-27 02:18:35 INFO vit_b16 | final s0_f0 | finetune | época 4/30 | loss 0.3356 | val_bal_acc 0.7071 | mejor 0.7691 | 37.1s
+2026-11-27 02:19:12 INFO vit_b16 | final s0_f0 | finetune | época 5/30 | loss 0.3153 | val_bal_acc 0.7490 | mejor 0.7691 | 37.1s
+2026-11-27 02:19:49 INFO vit_b16 | final s0_f0 | finetune | época 6/30 | loss 0.2145 | val_bal_acc 0.7889 | mejor 0.7889 | 37.3s
+2026-11-27 02:20:26 INFO vit_b16 | final s0_f0 | finetune | época 7/30 | loss 0.1636 | val_bal_acc 0.7566 | mejor 0.7889 | 36.9s
+2026-11-27 02:21:03 INFO vit_b16 | final s0_f0 | finetune | época 8/30 | loss 0.1391 | val_bal_acc 0.7373 | mejor 0.7889 | 36.9s
+2026-11-27 02:21:40 INFO vit_b16 | final s0_f0 | finetune | época 9/30 | loss 0.1087 | val_bal_acc 0.7520 | mejor 0.7889 | 36.8s
+2026-11-27 02:22:17 INFO vit_b16 | final s0_f0 | finetune | época 10/30 | loss 0.0969 | val_bal_acc 0.7270 | mejor 0.7889 | 36.9s
+2026-11-27 02:22:54 INFO vit_b16 | final s0_f0 | finetune | época 11/30 | loss 0.1497 | val_bal_acc 0.7889 | mejor 0.7889 | 37.1s
+2026-11-27 02:23:31 INFO vit_b16 | final s0_f0 | finetune | época 12/30 | loss 0.0677 | val_bal_acc 0.7668 | mejor 0.7889 | 36.7s
+2026-11-27 02:24:07 INFO vit_b16 | final s0_f0 | finetune | época 13/30 | loss 0.0435 | val_bal_acc 0.7531 | mejor 0.7889 | 36.7s
+2026-11-27 02:24:44 INFO vit_b16 | final s0_f0 | finetune | época 14/30 | loss 0.0366 | val_bal_acc 0.7726 | mejor 0.7889 | 36.6s
+2026-11-27 02:25:20 INFO vit_b16 | final s0_f0 | finetune | época 15/30 | loss 0.0341 | val_bal_acc 0.7398 | mejor 0.7889 | 36.6s
+2026-11-27 02:25:57 INFO vit_b16 | final s0_f0 | finetune | época 16/30 | loss 0.0200 | val_bal_acc 0.7615 | mejor 0.7889 | 36.5s
+2026-11-27 02:25:57 INFO vit_b16 | final s0_f0 | parada temprana en la época 16
+2026-11-27 02:25:57 INFO vit_b16 | final s0_f0 | se restauran los pesos de la época 11 de la fase B
+2026-11-27 02:26:35 INFO vit_b16 | final s0_f0 | val balanced_accuracy = 0.7889 (época 11 de la fase B) | entrenamiento 13m 45s -> outputs/runs/vit_b16/final/s0_f0
+2026-11-27 02:27:01 INFO vit_b16 | final s0_f1 | Fase A: 5 épocas, backbone congelado
+2026-11-27 02:28:00 INFO vit_b16 | final s0_f1 | warmup | época 1/5 | loss 1.5758 | val_bal_acc 0.5747 | mejor 0.5747 | 59.2s
+2026-11-27 02:28:13 INFO vit_b16 | final s0_f1 | warmup | época 2/5 | loss 1.1050 | val_bal_acc 0.6330 | mejor 0.6330 | 13.5s
+2026-11-27 02:28:27 INFO vit_b16 | final s0_f1 | warmup | época 3/5 | loss 0.9908 | val_bal_acc 0.6478 | mejor 0.6478 | 13.6s
+2026-11-27 02:28:41 INFO vit_b16 | final s0_f1 | warmup | época 4/5 | loss 0.8877 | val_bal_acc 0.6646 | mejor 0.6646 | 13.6s
+2026-11-27 02:28:54 INFO vit_b16 | final s0_f1 | warmup | época 5/5 | loss 0.8275 | val_bal_acc 0.6794 | mejor 0.6794 | 13.7s
+2026-11-27 02:28:54 INFO vit_b16 | final s0_f1 | Fase B: hasta 30 épocas, todo descongelado
+2026-11-27 02:31:32 INFO vit_b16 | final s0_f1 | finetune | época 1/30 | loss 0.8770 | val_bal_acc 0.7335 | mejor 0.7335 | 2m 38s
+2026-11-27 02:32:09 INFO vit_b16 | final s0_f1 | finetune | época 2/30 | loss 0.6018 | val_bal_acc 0.7281 | mejor 0.7335 | 36.7s
+2026-11-27 02:32:47 INFO vit_b16 | final s0_f1 | finetune | época 3/30 | loss 0.4866 | val_bal_acc 0.7395 | mejor 0.7395 | 37.4s
+2026-11-27 02:33:24 INFO vit_b16 | final s0_f1 | finetune | época 4/30 | loss 0.3550 | val_bal_acc 0.7622 | mejor 0.7622 | 37.2s
+2026-11-27 02:34:01 INFO vit_b16 | final s0_f1 | finetune | época 5/30 | loss 0.2509 | val_bal_acc 0.7809 | mejor 0.7809 | 37.1s
+2026-11-27 02:34:38 INFO vit_b16 | final s0_f1 | finetune | época 6/30 | loss 0.2090 | val_bal_acc 0.7402 | mejor 0.7809 | 36.9s
+2026-11-27 02:35:15 INFO vit_b16 | final s0_f1 | finetune | época 7/30 | loss 0.1825 | val_bal_acc 0.7728 | mejor 0.7809 | 36.8s
+2026-11-27 02:35:51 INFO vit_b16 | final s0_f1 | finetune | época 8/30 | loss 0.1632 | val_bal_acc 0.7268 | mejor 0.7809 | 36.8s
+2026-11-27 02:36:28 INFO vit_b16 | final s0_f1 | finetune | época 9/30 | loss 0.1027 | val_bal_acc 0.7438 | mejor 0.7809 | 36.8s
+2026-11-27 02:37:05 INFO vit_b16 | final s0_f1 | finetune | época 10/30 | loss 0.0793 | val_bal_acc 0.7630 | mejor 0.7809 | 36.7s
+2026-11-27 02:37:05 INFO vit_b16 | final s0_f1 | parada temprana en la época 10
+2026-11-27 02:37:05 INFO vit_b16 | final s0_f1 | se restauran los pesos de la época 5 de la fase B
+2026-11-27 02:37:40 INFO vit_b16 | final s0_f1 | val balanced_accuracy = 0.7809 (época 5 de la fase B) | entrenamiento 10m 05s -> outputs/runs/vit_b16/final/s0_f1
+2026-11-27 02:38:05 INFO vit_b16 | final s0_f2 | Fase A: 5 épocas, backbone congelado
+2026-11-27 02:39:06 INFO vit_b16 | final s0_f2 | warmup | época 1/5 | loss 1.6061 | val_bal_acc 0.5881 | mejor 0.5881 | 1m 01s
+2026-11-27 02:39:20 INFO vit_b16 | final s0_f2 | warmup | época 2/5 | loss 1.1265 | val_bal_acc 0.6790 | mejor 0.6790 | 13.6s
+2026-11-27 02:39:33 INFO vit_b16 | final s0_f2 | warmup | época 3/5 | loss 1.0041 | val_bal_acc 0.7179 | mejor 0.7179 | 13.6s
+2026-11-27 02:39:47 INFO vit_b16 | final s0_f2 | warmup | época 4/5 | loss 0.9137 | val_bal_acc 0.6925 | mejor 0.7179 | 13.6s
+2026-11-27 02:40:00 INFO vit_b16 | final s0_f2 | warmup | época 5/5 | loss 0.8633 | val_bal_acc 0.6981 | mejor 0.7179 | 13.6s
+2026-11-27 02:40:00 INFO vit_b16 | final s0_f2 | Fase B: hasta 30 épocas, todo descongelado
+2026-11-27 02:42:39 INFO vit_b16 | final s0_f2 | finetune | época 1/30 | loss 0.9467 | val_bal_acc 0.7216 | mejor 0.7216 | 2m 38s
+2026-11-27 02:43:15 INFO vit_b16 | final s0_f2 | finetune | época 2/30 | loss 0.6023 | val_bal_acc 0.7358 | mejor 0.7358 | 36.8s
+2026-11-27 02:43:53 INFO vit_b16 | final s0_f2 | finetune | época 3/30 | loss 0.5146 | val_bal_acc 0.7579 | mejor 0.7579 | 37.3s
+2026-11-27 02:44:30 INFO vit_b16 | final s0_f2 | finetune | época 4/30 | loss 0.3683 | val_bal_acc 0.8038 | mejor 0.8038 | 37.1s
+2026-11-27 02:45:07 INFO vit_b16 | final s0_f2 | finetune | época 5/30 | loss 0.3183 | val_bal_acc 0.8143 | mejor 0.8143 | 37.1s
+2026-11-27 02:45:44 INFO vit_b16 | final s0_f2 | finetune | época 6/30 | loss 0.2276 | val_bal_acc 0.8243 | mejor 0.8243 | 37.0s
+2026-11-27 02:46:21 INFO vit_b16 | final s0_f2 | finetune | época 7/30 | loss 0.1746 | val_bal_acc 0.7905 | mejor 0.8243 | 36.7s
+2026-11-27 02:46:57 INFO vit_b16 | final s0_f2 | finetune | época 8/30 | loss 0.1903 | val_bal_acc 0.7834 | mejor 0.8243 | 36.8s
+2026-11-27 02:47:34 INFO vit_b16 | final s0_f2 | finetune | época 9/30 | loss 0.1391 | val_bal_acc 0.8170 | mejor 0.8243 | 36.8s
+2026-11-27 02:48:11 INFO vit_b16 | final s0_f2 | finetune | época 10/30 | loss 0.1057 | val_bal_acc 0.7710 | mejor 0.8243 | 36.8s
+2026-11-27 02:48:48 INFO vit_b16 | final s0_f2 | finetune | época 11/30 | loss 0.0730 | val_bal_acc 0.8065 | mejor 0.8243 | 36.7s
+2026-11-27 02:48:48 INFO vit_b16 | final s0_f2 | parada temprana en la época 11
+2026-11-27 02:48:48 INFO vit_b16 | final s0_f2 | se restauran los pesos de la época 6 de la fase B
+2026-11-27 02:49:22 INFO vit_b16 | final s0_f2 | val balanced_accuracy = 0.8243 (época 6 de la fase B) | entrenamiento 10m 43s -> outputs/runs/vit_b16/final/s0_f2
+2026-11-27 02:49:47 INFO vit_b16 | final s0_f3 | Fase A: 5 épocas, backbone congelado
+2026-11-27 02:50:46 INFO vit_b16 | final s0_f3 | warmup | época 1/5 | loss 1.5558 | val_bal_acc 0.5482 | mejor 0.5482 | 59.5s
+2026-11-27 02:51:00 INFO vit_b16 | final s0_f3 | warmup | época 2/5 | loss 1.0796 | val_bal_acc 0.6123 | mejor 0.6123 | 13.5s
+2026-11-27 02:51:14 INFO vit_b16 | final s0_f3 | warmup | época 3/5 | loss 0.9453 | val_bal_acc 0.6215 | mejor 0.6215 | 13.6s
+2026-11-27 02:51:27 INFO vit_b16 | final s0_f3 | warmup | época 4/5 | loss 0.8738 | val_bal_acc 0.6162 | mejor 0.6215 | 13.6s
+2026-11-27 02:51:41 INFO vit_b16 | final s0_f3 | warmup | época 5/5 | loss 0.8251 | val_bal_acc 0.6524 | mejor 0.6524 | 13.6s
+2026-11-27 02:51:41 INFO vit_b16 | final s0_f3 | Fase B: hasta 30 épocas, todo descongelado
+2026-11-27 02:54:20 INFO vit_b16 | final s0_f3 | finetune | época 1/30 | loss 0.9026 | val_bal_acc 0.6688 | mejor 0.6688 | 2m 39s
+2026-11-27 02:54:56 INFO vit_b16 | final s0_f3 | finetune | época 2/30 | loss 0.4962 | val_bal_acc 0.6444 | mejor 0.6688 | 36.5s
+2026-11-27 02:55:34 INFO vit_b16 | final s0_f3 | finetune | época 3/30 | loss 0.4476 | val_bal_acc 0.6812 | mejor 0.6812 | 37.4s
+2026-11-27 02:56:11 INFO vit_b16 | final s0_f3 | finetune | época 4/30 | loss 0.3599 | val_bal_acc 0.6494 | mejor 0.6812 | 36.9s
+2026-11-27 02:56:48 INFO vit_b16 | final s0_f3 | finetune | época 5/30 | loss 0.2996 | val_bal_acc 0.7364 | mejor 0.7364 | 37.3s
+2026-11-27 02:57:25 INFO vit_b16 | final s0_f3 | finetune | época 6/30 | loss 0.2114 | val_bal_acc 0.7176 | mejor 0.7364 | 36.9s
+2026-11-27 02:58:02 INFO vit_b16 | final s0_f3 | finetune | época 7/30 | loss 0.1653 | val_bal_acc 0.6852 | mejor 0.7364 | 36.9s
+2026-11-27 02:58:39 INFO vit_b16 | final s0_f3 | finetune | época 8/30 | loss 0.1461 | val_bal_acc 0.7589 | mejor 0.7589 | 37.1s
+2026-11-27 02:59:16 INFO vit_b16 | final s0_f3 | finetune | época 9/30 | loss 0.1518 | val_bal_acc 0.7560 | mejor 0.7589 | 36.8s
+2026-11-27 02:59:52 INFO vit_b16 | final s0_f3 | finetune | época 10/30 | loss 0.0906 | val_bal_acc 0.7193 | mejor 0.7589 | 36.7s
+2026-11-27 03:00:29 INFO vit_b16 | final s0_f3 | finetune | época 11/30 | loss 0.0578 | val_bal_acc 0.7095 | mejor 0.7589 | 36.5s
+2026-11-27 03:01:05 INFO vit_b16 | final s0_f3 | finetune | época 12/30 | loss 0.0508 | val_bal_acc 0.7392 | mejor 0.7589 | 36.4s
+2026-11-27 03:01:42 INFO vit_b16 | final s0_f3 | finetune | época 13/30 | loss 0.0444 | val_bal_acc 0.7446 | mejor 0.7589 | 36.5s
+2026-11-27 03:01:42 INFO vit_b16 | final s0_f3 | parada temprana en la época 13
+2026-11-27 03:01:42 INFO vit_b16 | final s0_f3 | se restauran los pesos de la época 8 de la fase B
+2026-11-27 03:02:16 INFO vit_b16 | final s0_f3 | val balanced_accuracy = 0.7589 (época 8 de la fase B) | entrenamiento 11m 55s -> outputs/runs/vit_b16/final/s0_f3
+2026-11-27 03:02:40 INFO vit_b16 | final s0_f4 | Fase A: 5 épocas, backbone congelado
+2026-11-27 03:03:43 INFO vit_b16 | final s0_f4 | warmup | época 1/5 | loss 1.5484 | val_bal_acc 0.5524 | mejor 0.5524 | 1m 03s
+2026-11-27 03:03:57 INFO vit_b16 | final s0_f4 | warmup | época 2/5 | loss 1.0603 | val_bal_acc 0.6065 | mejor 0.6065 | 13.6s
+2026-11-27 03:04:10 INFO vit_b16 | final s0_f4 | warmup | época 3/5 | loss 0.9465 | val_bal_acc 0.6286 | mejor 0.6286 | 13.7s
+2026-11-27 03:04:24 INFO vit_b16 | final s0_f4 | warmup | época 4/5 | loss 0.8782 | val_bal_acc 0.6408 | mejor 0.6408 | 13.7s
+2026-11-27 03:04:38 INFO vit_b16 | final s0_f4 | warmup | época 5/5 | loss 0.8345 | val_bal_acc 0.6417 | mejor 0.6417 | 13.7s
+2026-11-27 03:04:38 INFO vit_b16 | final s0_f4 | Fase B: hasta 30 épocas, todo descongelado
+2026-11-27 03:07:24 INFO vit_b16 | final s0_f4 | finetune | época 1/30 | loss 0.9014 | val_bal_acc 0.7209 | mejor 0.7209 | 2m 45s
+2026-11-27 03:08:01 INFO vit_b16 | final s0_f4 | finetune | época 2/30 | loss 0.5545 | val_bal_acc 0.7272 | mejor 0.7272 | 36.9s
+2026-11-27 03:08:38 INFO vit_b16 | final s0_f4 | finetune | época 3/30 | loss 0.4506 | val_bal_acc 0.7454 | mejor 0.7454 | 37.4s
+2026-11-27 03:09:15 INFO vit_b16 | final s0_f4 | finetune | época 4/30 | loss 0.3343 | val_bal_acc 0.6665 | mejor 0.7454 | 37.1s
+2026-11-27 03:09:52 INFO vit_b16 | final s0_f4 | finetune | época 5/30 | loss 0.3322 | val_bal_acc 0.7593 | mejor 0.7593 | 37.3s
+2026-11-27 03:10:30 INFO vit_b16 | final s0_f4 | finetune | época 6/30 | loss 0.2248 | val_bal_acc 0.7631 | mejor 0.7631 | 37.2s
+2026-11-27 03:11:07 INFO vit_b16 | final s0_f4 | finetune | época 7/30 | loss 0.1637 | val_bal_acc 0.7466 | mejor 0.7631 | 36.9s
+2026-11-27 03:11:43 INFO vit_b16 | final s0_f4 | finetune | época 8/30 | loss 0.1747 | val_bal_acc 0.7058 | mejor 0.7631 | 36.8s
+2026-11-27 03:12:20 INFO vit_b16 | final s0_f4 | finetune | época 9/30 | loss 0.1335 | val_bal_acc 0.7344 | mejor 0.7631 | 36.8s
+2026-11-27 03:12:57 INFO vit_b16 | final s0_f4 | finetune | época 10/30 | loss 0.1023 | val_bal_acc 0.7329 | mejor 0.7631 | 36.7s
+2026-11-27 03:13:33 INFO vit_b16 | final s0_f4 | finetune | época 11/30 | loss 0.0778 | val_bal_acc 0.7190 | mejor 0.7631 | 36.6s
+2026-11-27 03:13:34 INFO vit_b16 | final s0_f4 | parada temprana en la época 11
+2026-11-27 03:13:34 INFO vit_b16 | final s0_f4 | se restauran los pesos de la época 6 de la fase B
+2026-11-27 03:14:01 INFO vit_b16 | final s0_f4 | val balanced_accuracy = 0.7631 (época 6 de la fase B) | entrenamiento 10m 54s -> outputs/runs/vit_b16/final/s0_f4

@@ -1,0 +1,13 @@
+comparacion,columna,compartidas
+entrenamiento (todos los pliegues) - test,lesion_id,0
+train - validación (pliegue 0),lesion_id,0
+train - validación (pliegue 1),lesion_id,0
+train - validación (pliegue 2),lesion_id,0
+train - validación (pliegue 3),lesion_id,0
+train - validación (pliegue 4),lesion_id,0
+entrenamiento (todos los pliegues) - test,group_id,0
+train - validación (pliegue 0),group_id,0
+train - validación (pliegue 1),group_id,0
+train - validación (pliegue 2),group_id,0
+train - validación (pliegue 3),group_id,0
+train - validación (pliegue 4),group_id,0

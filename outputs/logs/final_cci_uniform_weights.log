@@ -1,0 +1,142 @@
+2026-11-28 10:57:45 INFO cci_uniform_weights | final s0_f0 | Fase A: 5 épocas, backbone congelado
+2026-11-28 10:58:19 INFO cci_uniform_weights | final s0_f0 | warmup | época 1/5 | loss 1.5292 | val_bal_acc 0.5107 | mejor 0.5107 | 33.5s
+2026-11-28 10:58:24 INFO cci_uniform_weights | final s0_f0 | warmup | época 2/5 | loss 1.1299 | val_bal_acc 0.5487 | mejor 0.5487 | 5.4s
+2026-11-28 10:58:30 INFO cci_uniform_weights | final s0_f0 | warmup | época 3/5 | loss 1.0337 | val_bal_acc 0.6020 | mejor 0.6020 | 5.6s
+2026-11-28 10:58:35 INFO cci_uniform_weights | final s0_f0 | warmup | época 4/5 | loss 0.9550 | val_bal_acc 0.6126 | mejor 0.6126 | 5.4s
+2026-11-28 10:58:41 INFO cci_uniform_weights | final s0_f0 | warmup | época 5/5 | loss 0.9101 | val_bal_acc 0.6127 | mejor 0.6127 | 5.5s
+2026-11-28 10:58:41 INFO cci_uniform_weights | final s0_f0 | Fase B: hasta 30 épocas, todo descongelado
+2026-11-28 11:00:40 INFO cci_uniform_weights | final s0_f0 | finetune | época 1/30 | loss 1.2416 | val_bal_acc 0.2432 | mejor 0.2432 | 1m 59s
+2026-11-28 11:00:49 INFO cci_uniform_weights | final s0_f0 | finetune | época 2/30 | loss 0.7997 | val_bal_acc 0.4139 | mejor 0.4139 | 8.7s
+2026-11-28 11:00:57 INFO cci_uniform_weights | final s0_f0 | finetune | época 3/30 | loss 0.7249 | val_bal_acc 0.2921 | mejor 0.4139 | 8.6s
+2026-11-28 11:01:06 INFO cci_uniform_weights | final s0_f0 | finetune | época 4/30 | loss 0.6466 | val_bal_acc 0.3581 | mejor 0.4139 | 8.6s
+2026-11-28 11:01:15 INFO cci_uniform_weights | final s0_f0 | finetune | época 5/30 | loss 0.6333 | val_bal_acc 0.4512 | mejor 0.4512 | 8.7s
+2026-11-28 11:01:23 INFO cci_uniform_weights | final s0_f0 | finetune | época 6/30 | loss 0.5179 | val_bal_acc 0.5668 | mejor 0.5668 | 8.8s
+2026-11-28 11:01:32 INFO cci_uniform_weights | final s0_f0 | finetune | época 7/30 | loss 0.4500 | val_bal_acc 0.6227 | mejor 0.6227 | 8.6s
+2026-11-28 11:01:41 INFO cci_uniform_weights | final s0_f0 | finetune | época 8/30 | loss 0.4359 | val_bal_acc 0.6227 | mejor 0.6227 | 8.5s
+2026-11-28 11:01:49 INFO cci_uniform_weights | final s0_f0 | finetune | época 9/30 | loss 0.3675 | val_bal_acc 0.6785 | mejor 0.6785 | 8.6s
+2026-11-28 11:01:58 INFO cci_uniform_weights | final s0_f0 | finetune | época 10/30 | loss 0.3678 | val_bal_acc 0.6672 | mejor 0.6785 | 8.6s
+2026-11-28 11:02:07 INFO cci_uniform_weights | final s0_f0 | finetune | época 11/30 | loss 0.2926 | val_bal_acc 0.6917 | mejor 0.6917 | 8.7s
+2026-11-28 11:02:15 INFO cci_uniform_weights | final s0_f0 | finetune | época 12/30 | loss 0.3096 | val_bal_acc 0.6647 | mejor 0.6917 | 8.5s
+2026-11-28 11:02:24 INFO cci_uniform_weights | final s0_f0 | finetune | época 13/30 | loss 0.2755 | val_bal_acc 0.6618 | mejor 0.6917 | 8.5s
+2026-11-28 11:02:32 INFO cci_uniform_weights | final s0_f0 | finetune | época 14/30 | loss 0.2508 | val_bal_acc 0.7145 | mejor 0.7145 | 8.6s
+2026-11-28 11:02:41 INFO cci_uniform_weights | final s0_f0 | finetune | época 15/30 | loss 0.2253 | val_bal_acc 0.6961 | mejor 0.7145 | 8.6s
+2026-11-28 11:02:49 INFO cci_uniform_weights | final s0_f0 | finetune | época 16/30 | loss 0.1983 | val_bal_acc 0.7093 | mejor 0.7145 | 8.6s
+2026-11-28 11:02:58 INFO cci_uniform_weights | final s0_f0 | finetune | época 17/30 | loss 0.1854 | val_bal_acc 0.6996 | mejor 0.7145 | 8.7s
+2026-11-28 11:03:07 INFO cci_uniform_weights | final s0_f0 | finetune | época 18/30 | loss 0.1732 | val_bal_acc 0.6758 | mejor 0.7145 | 8.5s
+2026-11-28 11:03:15 INFO cci_uniform_weights | final s0_f0 | finetune | época 19/30 | loss 0.1550 | val_bal_acc 0.6612 | mejor 0.7145 | 8.6s
+2026-11-28 11:03:15 INFO cci_uniform_weights | final s0_f0 | parada temprana en la época 19
+2026-11-28 11:03:15 INFO cci_uniform_weights | final s0_f0 | se restauran los pesos de la época 14 de la fase B
+2026-11-28 11:03:29 INFO cci_uniform_weights | final s0_f0 | val balanced_accuracy = 0.7145 (época 14 de la fase B) | entrenamiento 5m 30s -> outputs/runs/cci_uniform_weights/final/s0_f0
+2026-11-28 11:03:46 INFO cci_uniform_weights | final s0_f1 | Fase A: 5 épocas, backbone congelado
+2026-11-28 11:04:19 INFO cci_uniform_weights | final s0_f1 | warmup | época 1/5 | loss 1.4976 | val_bal_acc 0.4809 | mejor 0.4809 | 33.6s
+2026-11-28 11:04:25 INFO cci_uniform_weights | final s0_f1 | warmup | época 2/5 | loss 1.1250 | val_bal_acc 0.5118 | mejor 0.5118 | 5.5s
+2026-11-28 11:04:30 INFO cci_uniform_weights | final s0_f1 | warmup | época 3/5 | loss 1.0306 | val_bal_acc 0.5368 | mejor 0.5368 | 5.7s
+2026-11-28 11:04:36 INFO cci_uniform_weights | final s0_f1 | warmup | época 4/5 | loss 0.9415 | val_bal_acc 0.5596 | mejor 0.5596 | 5.6s
+2026-11-28 11:04:42 INFO cci_uniform_weights | final s0_f1 | warmup | época 5/5 | loss 0.9011 | val_bal_acc 0.5439 | mejor 0.5596 | 5.5s
+2026-11-28 11:04:42 INFO cci_uniform_weights | final s0_f1 | Fase B: hasta 30 épocas, todo descongelado
+2026-11-28 11:06:42 INFO cci_uniform_weights | final s0_f1 | finetune | época 1/30 | loss 1.3004 | val_bal_acc 0.3128 | mejor 0.3128 | 2m 01s
+2026-11-28 11:06:51 INFO cci_uniform_weights | final s0_f1 | finetune | época 2/30 | loss 0.9092 | val_bal_acc 0.3357 | mejor 0.3357 | 8.8s
+2026-11-28 11:07:00 INFO cci_uniform_weights | final s0_f1 | finetune | época 3/30 | loss 0.6767 | val_bal_acc 0.4125 | mejor 0.4125 | 8.9s
+2026-11-28 11:07:09 INFO cci_uniform_weights | final s0_f1 | finetune | época 4/30 | loss 0.6629 | val_bal_acc 0.5778 | mejor 0.5778 | 9.0s
+2026-11-28 11:07:18 INFO cci_uniform_weights | final s0_f1 | finetune | época 5/30 | loss 0.6069 | val_bal_acc 0.5913 | mejor 0.5913 | 8.9s
+2026-11-28 11:07:27 INFO cci_uniform_weights | final s0_f1 | finetune | época 6/30 | loss 0.4566 | val_bal_acc 0.6040 | mejor 0.6040 | 8.9s
+2026-11-28 11:07:36 INFO cci_uniform_weights | final s0_f1 | finetune | época 7/30 | loss 0.4566 | val_bal_acc 0.6372 | mejor 0.6372 | 8.9s
+2026-11-28 11:07:45 INFO cci_uniform_weights | final s0_f1 | finetune | época 8/30 | loss 0.4200 | val_bal_acc 0.6215 | mejor 0.6372 | 8.8s
+2026-11-28 11:07:54 INFO cci_uniform_weights | final s0_f1 | finetune | época 9/30 | loss 0.4129 | val_bal_acc 0.6597 | mejor 0.6597 | 8.8s
+2026-11-28 11:08:02 INFO cci_uniform_weights | final s0_f1 | finetune | época 10/30 | loss 0.3720 | val_bal_acc 0.5961 | mejor 0.6597 | 8.7s
+2026-11-28 11:08:11 INFO cci_uniform_weights | final s0_f1 | finetune | época 11/30 | loss 0.3578 | val_bal_acc 0.5897 | mejor 0.6597 | 8.8s
+2026-11-28 11:08:20 INFO cci_uniform_weights | final s0_f1 | finetune | época 12/30 | loss 0.3286 | val_bal_acc 0.5478 | mejor 0.6597 | 8.8s
+2026-11-28 11:08:29 INFO cci_uniform_weights | final s0_f1 | finetune | época 13/30 | loss 0.2772 | val_bal_acc 0.6090 | mejor 0.6597 | 8.8s
+2026-11-28 11:08:38 INFO cci_uniform_weights | final s0_f1 | finetune | época 14/30 | loss 0.2516 | val_bal_acc 0.6232 | mejor 0.6597 | 8.9s
+2026-11-28 11:08:38 INFO cci_uniform_weights | final s0_f1 | parada temprana en la época 14
+2026-11-28 11:08:38 INFO cci_uniform_weights | final s0_f1 | se restauran los pesos de la época 9 de la fase B
+2026-11-28 11:08:52 INFO cci_uniform_weights | final s0_f1 | val balanced_accuracy = 0.6597 (época 9 de la fase B) | entrenamiento 4m 52s -> outputs/runs/cci_uniform_weights/final/s0_f1
+2026-11-28 11:09:08 INFO cci_uniform_weights | final s0_f2 | Fase A: 5 épocas, backbone congelado
+2026-11-28 11:09:42 INFO cci_uniform_weights | final s0_f2 | warmup | época 1/5 | loss 1.5357 | val_bal_acc 0.5249 | mejor 0.5249 | 33.7s
+2026-11-28 11:09:47 INFO cci_uniform_weights | final s0_f2 | warmup | época 2/5 | loss 1.1740 | val_bal_acc 0.5931 | mejor 0.5931 | 5.4s
+2026-11-28 11:09:53 INFO cci_uniform_weights | final s0_f2 | warmup | época 3/5 | loss 1.0651 | val_bal_acc 0.6216 | mejor 0.6216 | 5.6s
+2026-11-28 11:09:58 INFO cci_uniform_weights | final s0_f2 | warmup | época 4/5 | loss 0.9852 | val_bal_acc 0.5774 | mejor 0.6216 | 5.4s
+2026-11-28 11:10:04 INFO cci_uniform_weights | final s0_f2 | warmup | época 5/5 | loss 0.9516 | val_bal_acc 0.6014 | mejor 0.6216 | 5.4s
+2026-11-28 11:10:04 INFO cci_uniform_weights | final s0_f2 | Fase B: hasta 30 épocas, todo descongelado
+2026-11-28 11:12:03 INFO cci_uniform_weights | final s0_f2 | finetune | época 1/30 | loss 1.3707 | val_bal_acc 0.2853 | mejor 0.2853 | 1m 59s
+2026-11-28 11:12:12 INFO cci_uniform_weights | final s0_f2 | finetune | época 2/30 | loss 0.9060 | val_bal_acc 0.3052 | mejor 0.3052 | 8.9s
+2026-11-28 11:12:21 INFO cci_uniform_weights | final s0_f2 | finetune | época 3/30 | loss 0.7647 | val_bal_acc 0.3856 | mejor 0.3856 | 9.0s
+2026-11-28 11:12:29 INFO cci_uniform_weights | final s0_f2 | finetune | época 4/30 | loss 0.6400 | val_bal_acc 0.3606 | mejor 0.3856 | 8.9s
+2026-11-28 11:12:38 INFO cci_uniform_weights | final s0_f2 | finetune | época 5/30 | loss 0.5627 | val_bal_acc 0.4153 | mejor 0.4153 | 9.0s
+2026-11-28 11:12:47 INFO cci_uniform_weights | final s0_f2 | finetune | época 6/30 | loss 0.5314 | val_bal_acc 0.4616 | mejor 0.4616 | 9.0s
+2026-11-28 11:12:56 INFO cci_uniform_weights | final s0_f2 | finetune | época 7/30 | loss 0.4954 | val_bal_acc 0.5732 | mejor 0.5732 | 8.9s
+2026-11-28 11:13:05 INFO cci_uniform_weights | final s0_f2 | finetune | época 8/30 | loss 0.4158 | val_bal_acc 0.6442 | mejor 0.6442 | 9.0s
+2026-11-28 11:13:14 INFO cci_uniform_weights | final s0_f2 | finetune | época 9/30 | loss 0.3957 | val_bal_acc 0.5671 | mejor 0.6442 | 8.9s
+2026-11-28 11:13:23 INFO cci_uniform_weights | final s0_f2 | finetune | época 10/30 | loss 0.3813 | val_bal_acc 0.6498 | mejor 0.6498 | 8.9s
+2026-11-28 11:13:32 INFO cci_uniform_weights | final s0_f2 | finetune | época 11/30 | loss 0.3324 | val_bal_acc 0.6786 | mejor 0.6786 | 9.0s
+2026-11-28 11:13:41 INFO cci_uniform_weights | final s0_f2 | finetune | época 12/30 | loss 0.3389 | val_bal_acc 0.6360 | mejor 0.6786 | 9.0s
+2026-11-28 11:13:50 INFO cci_uniform_weights | final s0_f2 | finetune | época 13/30 | loss 0.2567 | val_bal_acc 0.6929 | mejor 0.6929 | 8.9s
+2026-11-28 11:13:59 INFO cci_uniform_weights | final s0_f2 | finetune | época 14/30 | loss 0.2658 | val_bal_acc 0.7324 | mejor 0.7324 | 9.0s
+2026-11-28 11:14:08 INFO cci_uniform_weights | final s0_f2 | finetune | época 15/30 | loss 0.2462 | val_bal_acc 0.7235 | mejor 0.7324 | 8.9s
+2026-11-28 11:14:17 INFO cci_uniform_weights | final s0_f2 | finetune | época 16/30 | loss 0.2252 | val_bal_acc 0.7165 | mejor 0.7324 | 8.8s
+2026-11-28 11:14:26 INFO cci_uniform_weights | final s0_f2 | finetune | época 17/30 | loss 0.1869 | val_bal_acc 0.7284 | mejor 0.7324 | 8.9s
+2026-11-28 11:14:35 INFO cci_uniform_weights | final s0_f2 | finetune | época 18/30 | loss 0.1761 | val_bal_acc 0.7348 | mejor 0.7348 | 9.0s
+2026-11-28 11:14:44 INFO cci_uniform_weights | final s0_f2 | finetune | época 19/30 | loss 0.1648 | val_bal_acc 0.7054 | mejor 0.7348 | 9.0s
+2026-11-28 11:14:53 INFO cci_uniform_weights | final s0_f2 | finetune | época 20/30 | loss 0.1368 | val_bal_acc 0.7262 | mejor 0.7348 | 9.0s
+2026-11-28 11:15:01 INFO cci_uniform_weights | final s0_f2 | finetune | época 21/30 | loss 0.1436 | val_bal_acc 0.6858 | mejor 0.7348 | 8.8s
+2026-11-28 11:15:10 INFO cci_uniform_weights | final s0_f2 | finetune | época 22/30 | loss 0.1147 | val_bal_acc 0.7031 | mejor 0.7348 | 8.9s
+2026-11-28 11:15:19 INFO cci_uniform_weights | final s0_f2 | finetune | época 23/30 | loss 0.1233 | val_bal_acc 0.7044 | mejor 0.7348 | 9.0s
+2026-11-28 11:15:19 INFO cci_uniform_weights | final s0_f2 | parada temprana en la época 23
+2026-11-28 11:15:19 INFO cci_uniform_weights | final s0_f2 | se restauran los pesos de la época 18 de la fase B
+2026-11-28 11:15:34 INFO cci_uniform_weights | final s0_f2 | val balanced_accuracy = 0.7348 (época 18 de la fase B) | entrenamiento 6m 11s -> outputs/runs/cci_uniform_weights/final/s0_f2
+2026-11-28 11:15:50 INFO cci_uniform_weights | final s0_f3 | Fase A: 5 épocas, backbone congelado
+2026-11-28 11:16:25 INFO cci_uniform_weights | final s0_f3 | warmup | época 1/5 | loss 1.4502 | val_bal_acc 0.4103 | mejor 0.4103 | 34.5s
+2026-11-28 11:16:30 INFO cci_uniform_weights | final s0_f3 | warmup | época 2/5 | loss 1.1156 | val_bal_acc 0.5013 | mejor 0.5013 | 5.4s
+2026-11-28 11:16:36 INFO cci_uniform_weights | final s0_f3 | warmup | época 3/5 | loss 0.9896 | val_bal_acc 0.4902 | mejor 0.5013 | 5.6s
+2026-11-28 11:16:41 INFO cci_uniform_weights | final s0_f3 | warmup | época 4/5 | loss 0.9274 | val_bal_acc 0.5055 | mejor 0.5055 | 5.4s
+2026-11-28 11:16:47 INFO cci_uniform_weights | final s0_f3 | warmup | época 5/5 | loss 0.8654 | val_bal_acc 0.4997 | mejor 0.5055 | 5.4s
+2026-11-28 11:16:47 INFO cci_uniform_weights | final s0_f3 | Fase B: hasta 30 épocas, todo descongelado
+2026-11-28 11:18:48 INFO cci_uniform_weights | final s0_f3 | finetune | época 1/30 | loss 1.3044 | val_bal_acc 0.3223 | mejor 0.3223 | 2m 01s
+2026-11-28 11:18:57 INFO cci_uniform_weights | final s0_f3 | finetune | época 2/30 | loss 0.8694 | val_bal_acc 0.3238 | mejor 0.3238 | 8.7s
+2026-11-28 11:19:06 INFO cci_uniform_weights | final s0_f3 | finetune | época 3/30 | loss 0.7172 | val_bal_acc 0.3529 | mejor 0.3529 | 8.7s
+2026-11-28 11:19:15 INFO cci_uniform_weights | final s0_f3 | finetune | época 4/30 | loss 0.6471 | val_bal_acc 0.4769 | mejor 0.4769 | 8.8s
+2026-11-28 11:19:23 INFO cci_uniform_weights | final s0_f3 | finetune | época 5/30 | loss 0.5516 | val_bal_acc 0.4747 | mejor 0.4769 | 8.6s
+2026-11-28 11:19:32 INFO cci_uniform_weights | final s0_f3 | finetune | época 6/30 | loss 0.4852 | val_bal_acc 0.5225 | mejor 0.5225 | 8.8s
+2026-11-28 11:19:41 INFO cci_uniform_weights | final s0_f3 | finetune | época 7/30 | loss 0.4291 | val_bal_acc 0.5653 | mejor 0.5653 | 8.8s
+2026-11-28 11:19:50 INFO cci_uniform_weights | final s0_f3 | finetune | época 8/30 | loss 0.4116 | val_bal_acc 0.6279 | mejor 0.6279 | 8.7s
+2026-11-28 11:19:58 INFO cci_uniform_weights | final s0_f3 | finetune | época 9/30 | loss 0.3912 | val_bal_acc 0.5128 | mejor 0.6279 | 8.6s
+2026-11-28 11:20:07 INFO cci_uniform_weights | final s0_f3 | finetune | época 10/30 | loss 0.3466 | val_bal_acc 0.5482 | mejor 0.6279 | 8.6s
+2026-11-28 11:20:15 INFO cci_uniform_weights | final s0_f3 | finetune | época 11/30 | loss 0.3119 | val_bal_acc 0.5661 | mejor 0.6279 | 8.7s
+2026-11-28 11:20:24 INFO cci_uniform_weights | final s0_f3 | finetune | época 12/30 | loss 0.2831 | val_bal_acc 0.5930 | mejor 0.6279 | 8.7s
+2026-11-28 11:20:33 INFO cci_uniform_weights | final s0_f3 | finetune | época 13/30 | loss 0.2359 | val_bal_acc 0.5630 | mejor 0.6279 | 8.6s
+2026-11-28 11:20:33 INFO cci_uniform_weights | final s0_f3 | parada temprana en la época 13
+2026-11-28 11:20:33 INFO cci_uniform_weights | final s0_f3 | se restauran los pesos de la época 8 de la fase B
+2026-11-28 11:20:47 INFO cci_uniform_weights | final s0_f3 | val balanced_accuracy = 0.6279 (época 8 de la fase B) | entrenamiento 4m 43s -> outputs/runs/cci_uniform_weights/final/s0_f3
+2026-11-28 11:21:03 INFO cci_uniform_weights | final s0_f4 | Fase A: 5 épocas, backbone congelado
+2026-11-28 11:21:36 INFO cci_uniform_weights | final s0_f4 | warmup | época 1/5 | loss 1.4911 | val_bal_acc 0.4895 | mejor 0.4895 | 33.5s
+2026-11-28 11:21:42 INFO cci_uniform_weights | final s0_f4 | warmup | época 2/5 | loss 1.1301 | val_bal_acc 0.5235 | mejor 0.5235 | 5.6s
+2026-11-28 11:21:48 INFO cci_uniform_weights | final s0_f4 | warmup | época 3/5 | loss 1.0622 | val_bal_acc 0.5408 | mejor 0.5408 | 5.6s
+2026-11-28 11:21:53 INFO cci_uniform_weights | final s0_f4 | warmup | época 4/5 | loss 0.9648 | val_bal_acc 0.5526 | mejor 0.5526 | 5.4s
+2026-11-28 11:21:59 INFO cci_uniform_weights | final s0_f4 | warmup | época 5/5 | loss 0.9265 | val_bal_acc 0.5788 | mejor 0.5788 | 5.7s
+2026-11-28 11:21:59 INFO cci_uniform_weights | final s0_f4 | Fase B: hasta 30 épocas, todo descongelado
+2026-11-28 11:23:58 INFO cci_uniform_weights | final s0_f4 | finetune | época 1/30 | loss 1.3260 | val_bal_acc 0.3213 | mejor 0.3213 | 1m 59s
+2026-11-28 11:24:07 INFO cci_uniform_weights | final s0_f4 | finetune | época 2/30 | loss 0.8640 | val_bal_acc 0.3112 | mejor 0.3213 | 9.0s
+2026-11-28 11:24:16 INFO cci_uniform_weights | final s0_f4 | finetune | época 3/30 | loss 0.7322 | val_bal_acc 0.3757 | mejor 0.3757 | 9.0s
+2026-11-28 11:24:25 INFO cci_uniform_weights | final s0_f4 | finetune | época 4/30 | loss 0.6589 | val_bal_acc 0.5714 | mejor 0.5714 | 8.9s
+2026-11-28 11:24:34 INFO cci_uniform_weights | final s0_f4 | finetune | época 5/30 | loss 0.5884 | val_bal_acc 0.4554 | mejor 0.5714 | 9.0s
+2026-11-28 11:24:43 INFO cci_uniform_weights | final s0_f4 | finetune | época 6/30 | loss 0.5447 | val_bal_acc 0.6508 | mejor 0.6508 | 8.9s
+2026-11-28 11:24:52 INFO cci_uniform_weights | final s0_f4 | finetune | época 7/30 | loss 0.4820 | val_bal_acc 0.6166 | mejor 0.6508 | 8.9s
+2026-11-28 11:25:01 INFO cci_uniform_weights | final s0_f4 | finetune | época 8/30 | loss 0.4133 | val_bal_acc 0.6692 | mejor 0.6692 | 8.9s
+2026-11-28 11:25:10 INFO cci_uniform_weights | final s0_f4 | finetune | época 9/30 | loss 0.3449 | val_bal_acc 0.6554 | mejor 0.6692 | 8.8s
+2026-11-28 11:25:19 INFO cci_uniform_weights | final s0_f4 | finetune | época 10/30 | loss 0.3250 | val_bal_acc 0.6100 | mejor 0.6692 | 8.9s
+2026-11-28 11:25:27 INFO cci_uniform_weights | final s0_f4 | finetune | época 11/30 | loss 0.2806 | val_bal_acc 0.6754 | mejor 0.6754 | 8.8s
+2026-11-28 11:25:36 INFO cci_uniform_weights | final s0_f4 | finetune | época 12/30 | loss 0.3125 | val_bal_acc 0.6980 | mejor 0.6980 | 9.0s
+2026-11-28 11:25:45 INFO cci_uniform_weights | final s0_f4 | finetune | época 13/30 | loss 0.2613 | val_bal_acc 0.7041 | mejor 0.7041 | 9.0s
+2026-11-28 11:25:54 INFO cci_uniform_weights | final s0_f4 | finetune | época 14/30 | loss 0.2528 | val_bal_acc 0.6877 | mejor 0.7041 | 8.8s
+2026-11-28 11:26:03 INFO cci_uniform_weights | final s0_f4 | finetune | época 15/30 | loss 0.2329 | val_bal_acc 0.7127 | mejor 0.7127 | 9.0s
+2026-11-28 11:26:12 INFO cci_uniform_weights | final s0_f4 | finetune | época 16/30 | loss 0.2208 | val_bal_acc 0.7136 | mejor 0.7136 | 8.9s
+2026-11-28 11:26:21 INFO cci_uniform_weights | final s0_f4 | finetune | época 17/30 | loss 0.1912 | val_bal_acc 0.7205 | mejor 0.7205 | 8.8s
+2026-11-28 11:26:30 INFO cci_uniform_weights | final s0_f4 | finetune | época 18/30 | loss 0.1693 | val_bal_acc 0.7398 | mejor 0.7398 | 9.1s
+2026-11-28 11:26:39 INFO cci_uniform_weights | final s0_f4 | finetune | época 19/30 | loss 0.1723 | val_bal_acc 0.7268 | mejor 0.7398 | 8.9s
+2026-11-28 11:26:48 INFO cci_uniform_weights | final s0_f4 | finetune | época 20/30 | loss 0.1410 | val_bal_acc 0.7309 | mejor 0.7398 | 8.9s
+2026-11-28 11:26:57 INFO cci_uniform_weights | final s0_f4 | finetune | época 21/30 | loss 0.1275 | val_bal_acc 0.7042 | mejor 0.7398 | 9.0s
+2026-11-28 11:27:06 INFO cci_uniform_weights | final s0_f4 | finetune | época 22/30 | loss 0.1303 | val_bal_acc 0.6993 | mejor 0.7398 | 8.9s
+2026-11-28 11:27:15 INFO cci_uniform_weights | final s0_f4 | finetune | época 23/30 | loss 0.1177 | val_bal_acc 0.7062 | mejor 0.7398 | 8.9s
+2026-11-28 11:27:15 INFO cci_uniform_weights | final s0_f4 | parada temprana en la época 23
+2026-11-28 11:27:15 INFO cci_uniform_weights | final s0_f4 | se restauran los pesos de la época 18 de la fase B
+2026-11-28 11:27:25 INFO cci_uniform_weights | final s0_f4 | val balanced_accuracy = 0.7398 (época 18 de la fase B) | entrenamiento 6m 12s -> outputs/runs/cci_uniform_weights/final/s0_f4

@@ -1,378 +1,434 @@
-"""Modelos: tabla de líderes, predicción en vivo, diagnósticos, comparación global, modelo original y ficha.
+"""Modelos (design/Modelos.dc.html): podio, tabla de líderes, nuestro modelo frente a su backbone,
+coste frente a desempeño con la frontera de Pareto, matriz de confusión y calibración.
 
-Mientras no haya resultados de entrenamiento (models/index.json con status "pendiente"), cada
-sección que depende de ellos muestra un aviso de estado pendiente; el resto funciona.
+Todas las cifras salen de dashboard/data/models/ (python -m src.export_dashboard). Donde falta un
+dato se ve el marcador .ph; nada se escribe a mano.
 """
 
 from __future__ import annotations
 
-import base64
-import io
-
 import dash
-import dash_bootstrap_components as dbc
 import numpy as np
 import plotly.graph_objects as go
-from core import data, inference
-from core.components import error_alert, fmt, kpi, pending, section, static_graph
-from core.config import (
-    CLASS_COLORS,
-    CLASS_NAMES,
-    FAMILY_COLORS,
-    FONT,
-    MAX_UPLOAD_BYTES,
-    MAX_UPLOAD_MB,
-    TITLE,
-    UI,
+from core import data, theme
+from core.components import (
+    class_dot,
+    eyebrow,
+    fmt_num,
+    fmt_pct,
+    fmt_signed,
+    graph,
+    insight_header,
+    is_num,
+    placeholder,
 )
-from dash import (
-    ALL,
-    Input,
-    Output,
-    State,
-    callback,
-    ctx,
-    dash_table,
-    dcc,
-    html,
-    no_update,
-)
-from dash.dash_table.Format import Format, Scheme
-from PIL import Image
+from core.config import CLASS_NAMES, CLASS_ORDER, CLASS_SHORT, ORIGINAL_MODEL, TITLE
+from dash import ALL, Input, Output, State, callback, ctx, dcc, html, no_update
 
 dash.register_page(__name__, path="/modelos", name="Modelos", order=2, title=f"Modelos · {TITLE}")
 
-PENDING_MSG = [
-    html.P("Aún no hay corridas definitivas ni modelos exportados. Cuando existan, esta página se llena sola al ejecutar:"),
-    html.Pre("python -m src.final --model <modelo>\npython -m src.export --all --fp16\npython -m src.export_dashboard",
-             className="code-block"),
-]
-SHORT_PENDING = html.P("Se llena al ejecutar los comandos del aviso superior.", className="mb-0")
-DISCLAIMER = dbc.Alert([html.Strong("No es una herramienta diagnóstica. "),
-                        ("Resultado de un modelo de investigación entrenado en HAM10000; no sustituye la valoración de un "
-                         "dermatólogo ni debe orientar decisiones clínicas.")], color="danger", className="disclaimer")
+SORTS = [("ba", "Exactitud bal."), ("params_m", "Parámetros"), ("gflops", "GFLOPs")]
+X_AXES = [("gflops", "GFLOPs"), ("latency_ms", "Latencia")]
 
 
 # ---------------------------------------------------------------------------
-# Tabla de líderes
+# Podio y tabla de líderes
 # ---------------------------------------------------------------------------
 
 
-def leaderboard_section():
-    board = data.leaderboard()
-    if not board or not board.get("rows"):
-        body = pending("Tabla de líderes pendiente", SHORT_PENDING)
-    else:
-        num = Format(precision=3, scheme=Scheme.fixed)
-        cols = [{"name": "Modelo", "id": "modelo"}, {"name": "Familia", "id": "familia"},
-                {"name": "Corridas", "id": "corridas", "type": "numeric"},
-                {"name": "BA media", "id": "ba_media", "type": "numeric", "format": num},
-                {"name": "± DE", "id": "ba_std", "type": "numeric", "format": num},
-                {"name": "ECE", "id": "ece_media", "type": "numeric", "format": num},
-                {"name": "Parámetros (M)", "id": "params_m", "type": "numeric", "format": Format(precision=1, scheme=Scheme.fixed)},
-                {"name": "GFLOPs", "id": "gflops", "type": "numeric", "format": Format(precision=2, scheme=Scheme.fixed)},
-                {"name": "Latencia CPU (ms)", "id": "latencia_ms", "type": "numeric", "format": Format(precision=1, scheme=Scheme.fixed)}]
-        rows = [{**r, "params_m": r["params_total"] / 1e6 if r.get("params_total") else None} for r in board["rows"]]
-        body = [dash_table.DataTable(
-            id="leaderboard", columns=cols, data=rows, sort_action="native", filter_action="native",
-            sort_by=[{"column_id": "ba_media", "direction": "desc"}], page_action="none", style_as_list_view=True,
-            style_table={"overflowX": "auto", "minWidth": "100%"},
-            style_cell={"fontFamily": FONT, "padding": "10px 8px", "minWidth": "84px", "backgroundColor": "transparent",
-                        "color": UI["dark"], "textAlign": "right"},
-            style_cell_conditional=[{"if": {"column_id": c}, "textAlign": "left"} for c in ("modelo", "familia")],
-            style_header={"fontWeight": 600, "backgroundColor": "rgba(15, 94, 110, 0.10)", "whiteSpace": "normal"},
-            style_data_conditional=[{"if": {"filter_query": '{familia} = "Original (CCI)"'}, "fontWeight": 700}],
-            filter_options={"case": "insensitive", "placeholder_text": "filtrar…"},
-        ), html.P(f"Exactitud balanceada (BA) en {board.get('split', 'test')}: media ± desviación estándar entre corridas "
-                  f"(tabla maestra: {board.get('source')}). Ordena tocando el encabezado; filtra en la fila superior "
-                  "(p. ej. CNN en Familia o >0.7 en BA).", className="muted small")]
-    return section("lideres", "Tabla de líderes", body)
+def podium():
+    top = data.ranked(data.leaderboard_rows())[:3]
+
+    def card(rank: int):
+        r = top[rank - 1] if len(top) >= rank else None
+        name = html.Span(r["name"]) if r else placeholder("[ Modelo ]")
+        if rank == 1:
+            return html.Div([
+                html.Div([html.Div("1", className="medal medal-1"), html.Span("Mejor modelo", className="kicker")],
+                         className="podium-top"),
+                html.Span(name, className="disp name"),
+                html.Span(fmt_pct(r["ba"]) if r else placeholder("[ BA ] %"), className="disp num val"),
+                html.Span("exactitud balanceada en test" + (f" · media de {r['runs']} corridas" if r and r.get("runs") else ""),
+                          className="sub"),
+            ], className="card podium-card first")
+        return html.Div([
+            html.Div(str(rank), className=f"medal medal-{rank}"),
+            html.Span(name, className="disp name"),
+            html.Span(["Exactitud balanceada ", html.Strong(fmt_pct(r["ba"]), className="num") if r else placeholder("[ — ] %")],
+                      className="sub"),
+        ], className="card podium-card")
+
+    return html.Div([card(2), card(1), card(3)], className="podium", role="list", **{"aria-label": "Podio"})
 
 
-# ---------------------------------------------------------------------------
-# Predicción en vivo
-# ---------------------------------------------------------------------------
+def _cell(value, render, ph: str, cls: str = "num c2"):
+    return html.Td(render(value) if is_num(value) else placeholder(ph), className=cls)
 
 
-def _model_options():
-    opts = []
-    for a in data.available_models():
-        tag = "" if a["live"] else " (precalculado)"
-        opts.append({"label": f"{a['model']} · {a['family']}{tag}", "value": a["model"]})
-    return opts
-
-
-def prediction_section():
-    options = _model_options()
-    if not options:
-        body = [pending("Predicción en vivo pendiente", SHORT_PENDING), DISCLAIMER]
-        return section("prediccion", "Predicción en vivo", body)
-    gallery = html.Div([html.Button(html.Img(src=f"/media/examples/{ex['file']}", alt=f"Ejemplo de {ex['label']}",
-                                             className="example-img"),
-                                    id={"type": "example", "id": ex["image_id"]}, n_clicks=0, className="example-btn",
-                                    title=f"{ex['label']} ({ex['image_id']})", **{"aria-label": f"Usar ejemplo de {ex['label']}"})
-                        for ex in data.examples()], className="example-grid")
-    controls = dbc.Row([
-        dbc.Col([dbc.Label("Modelo", html_for="pred-model"),
-                 dcc.Dropdown(id="pred-model", options=options, value=options[0]["value"], clearable=False,
-                              searchable=False, className="touch-dropdown")], xs=12, md=5),
-        dbc.Col([dbc.Label("Cobertura del conjunto conforme"),
-                 dbc.RadioItems(id="pred-alpha", options=[{"label": "90 %", "value": "0.1"}, {"label": "95 %", "value": "0.05"}],
-                                value="0.1", inline=True, inputClassName="btn-check",
-                                labelClassName="btn btn-outline-primary btn-touch", labelCheckedClassName="active")], xs=7, md=4),
-        dbc.Col([dbc.Label("Mapa CAM"), dbc.Switch(id="pred-cam", value=True, label="superponer", className="touch-switch")],
-                xs=5, md=3),
-    ], className="g-2")
-    upload = dcc.Upload(id="pred-upload", accept="image/jpeg,image/png", max_size=MAX_UPLOAD_BYTES, multiple=False,
-                        children=html.Div([html.Strong("Toca para elegir una imagen"), html.Span(f" JPEG o PNG, hasta {MAX_UPLOAD_MB} MB")]),
-                        className="upload-box", className_active="upload-active", className_reject="upload-reject")
-    body = [DISCLAIMER, controls, dbc.Row([
-        dbc.Col([upload, html.Div("O usa un ejemplo de test de HAM10000:", className="muted small mt-2"), gallery], md=5),
-        dbc.Col(dcc.Loading(html.Div(id="pred-output", className="pred-output",
-                                     children=html.P("Elige una imagen o un ejemplo para ver la predicción.", className="muted")),
-                            type="dot", color="var(--color-primary)"), md=7),
-    ], className="g-3 mt-1"), dcc.Store(id="pred-source", storage_type="memory")]
-    return section("prediccion", "Predicción en vivo", body,
-                   lead="Probabilidades calibradas por temperatura, conjunto de predicción conforme, mapa CAM y aviso si la "
-                        "imagen se aleja de las de entrenamiento. La imagen se procesa en memoria y no se guarda.")
-
-
-@callback(Output("pred-source", "data"), Input("pred-upload", "contents"), Input({"type": "example", "id": ALL}, "n_clicks"),
-          prevent_initial_call=True)
-def choose_source(contents, _clicks):
-    trig = ctx.triggered_id
-    if isinstance(trig, dict) and trig.get("type") == "example":
-        if not any(_clicks or []):
-            return no_update
-        return {"kind": "example", "id": trig["id"]}
-    if trig == "pred-upload" and contents:
-        return {"kind": "upload"}
-    return no_update
-
-
-@callback(Output("pred-output", "children"), Input("pred-source", "data"), Input("pred-model", "value"),
-          Input("pred-alpha", "value"), Input("pred-cam", "value"), State("pred-upload", "contents"),
-          prevent_initial_call=True)
-def run_prediction(source, model, alpha, show_cam, contents):
-    if not source or not model:
-        return no_update
-    try:
-        meta = data.model_metadata(model) or {}
-        live = bool(meta.get("live"))
-        if source["kind"] == "example":
-            if live:
-                path = data.example_path(source["id"])
-                if path is None:
-                    raise inference.InvalidImage("El ejemplo no está disponible.")
-                res = inference.predict(model, Image.open(path))
-            else:
-                res = inference.predict_precomputed(model, source["id"])
+def table_rows(sort: str) -> list:
+    rows = data.leaderboard_rows()
+    medals = {r["id"]: i + 1 for i, r in enumerate(data.ranked(rows)[:3])}
+    ranks = {r["id"]: i + 1 for i, r in enumerate(data.ranked(rows))}
+    key = {"ba": lambda r: -(r["ba"] if r["ba"] is not None else -1), "params_m": lambda r: r["params_m"] or np.inf,
+           "gflops": lambda r: r["gflops"] or np.inf}[sort]
+    out = []
+    for r in sorted(rows, key=lambda r: (r["is_baseline"] and sort != "ba", key(r))):
+        rank = (html.Div(str(medals[r["id"]]), className=f"medal medal-sm medal-{medals[r['id']]}") if r["id"] in medals
+                else str(ranks.get(r["id"], "—")))
+        name = [r["name"]]
+        if r["is_baseline"]:
+            name.append(html.Span("baseline", className="base-tag"))
+        if is_num(r["ba"]):
+            ba = html.Div([html.Div(html.Div(html.Span(style={"width": f"{100 * r['ba']:.1f}%"}), className="ba-fill")),
+                           html.Span(fmt_pct(r["ba"]), className="num",
+                                     title=f"± {fmt_num(100 * r['ba_std'], 1)} puntos (DE entre corridas)" if is_num(r["ba_std"]) else None)],
+                          className="ba-cell")
         else:
-            if not live:
-                raise inference.InvalidImage(f"{model} supera el límite de tamaño del despliegue y solo se muestra con los "
-                                             "resultados precalculados de la galería de ejemplos.")
-            res = inference.predict(model, inference.open_image(inference.decode_upload(contents)))
-        return render_result(res, alpha, bool(show_cam), source)
-    except inference.InvalidImage as e:
-        return error_alert(str(e))
-    except Exception as e:  # noqa: BLE001 - el usuario ve un aviso, no un error de servidor
-        return error_alert(f"No se pudo calcular la predicción ({type(e).__name__}). Prueba con otra imagen o modelo.")
+            ba = html.Div([html.Div(className="stripe"), placeholder("[ — ]")], className="ba-cell")
+        out.append(html.Tr([
+            html.Td(rank, className="num rank"),
+            html.Td(html.Span(name, className="mname")),
+            html.Td(ba),
+            html.Td(html.Span(fmt_pct(r["f1"]), title=f"± {fmt_num(100 * r['f1_std'], 1)} puntos (DE entre corridas)"
+                              if is_num(r["f1_std"]) else None) if is_num(r["f1"]) else placeholder("[ — ]"), className="num c2"),
+            _cell(r["latency_ms"], lambda v: f"{fmt_num(v, 1)} ms", "[ — ] ms"),
+            _cell(r["size_mb"], lambda v: f"{fmt_num(v, 1)} MB", "[ — ] MB"),
+            _cell(r["params_m"], lambda v: f"{fmt_num(v, 1)} M", "[ — ] M"),
+            _cell(r["gflops"], lambda v: fmt_num(v, 2), "[ — ]"),
+        ]))
+    return out
 
 
-def _png_data_uri(arr: np.ndarray) -> str:
-    buf = io.BytesIO()
-    Image.fromarray(arr.astype(np.uint8)).save(buf, "PNG", optimize=True)
-    return "data:image/png;base64," + base64.b64encode(buf.getvalue()).decode()
-
-
-def cam_figure(image: np.ndarray, cam, show: bool):
-    h, w = image.shape[:2]
-    fig = go.Figure()
-    fig.add_layout_image(source=_png_data_uri(image), x=0, y=0, sizex=w, sizey=h, xref="x", yref="y",
-                         sizing="stretch", layer="below")
-    if cam is not None and show:
-        cam = np.asarray(cam)
-        ch, cw = cam.shape
-        fig.add_heatmap(z=cam, x=(np.arange(cw) + 0.5) * w / cw, y=(np.arange(ch) + 0.5) * h / ch, zsmooth="best",
-                        colorscale="Cividis", opacity=0.45, showscale=False, zmin=0, zmax=1, hoverinfo="skip")
-    fig.update_xaxes(visible=False, range=[0, w])
-    fig.update_yaxes(visible=False, range=[h, 0], scaleanchor="x")
-    fig.update_layout(margin={"l": 0, "r": 0, "t": 0, "b": 0})
-    return fig
-
-
-def render_result(res: dict, alpha: str, show_cam: bool, source: dict):
-    classes, probs = res["classes"], np.asarray(res["probs"])
-    in_set = set(res["sets"].get(alpha, res["sets"].get(str(float(alpha)), [])))
-    order = np.argsort(probs)
-    bars = go.Figure(go.Bar(
-        y=[f"{'● ' if classes[i] in in_set else ''}{classes[i]}" for i in order], x=100 * probs[order], orientation="h",
-        marker_color=[CLASS_COLORS[classes[i]] for i in order], text=[fmt(probs[i], 1, pct=True) for i in order],
-        customdata=[CLASS_NAMES[classes[i]] for i in order], hovertemplate="%{customdata}: %{x:.1f} %<extra></extra>"))
-    bars.update_layout(title="Probabilidad calibrada (%) · ● = en el conjunto conforme", xaxis={"range": [0, 112]},
-                       showlegend=False, margin={"l": 70, "r": 10, "t": 40, "b": 30})
-    bars.update_traces(textposition="outside", cliponaxis=False, textfont={"color": UI["dark"]})
-    cov = 100 * (1 - float(alpha))
-    chips = [dbc.Badge(c, className="set-chip", style={"backgroundColor": CLASS_COLORS[c],
-                                                         "color": UI["dark"] if c in ("df", "akiec", "vasc") else UI["light"]})
-             for c in classes if c in in_set]
-    ood = res.get("ood")
-    ood_note = None
-    if ood and ood["out_of_domain"]:
-        ood_note = dbc.Alert(["Imagen fuera de dominio: se parece poco a las de entrenamiento (distancia ",
-                              fmt(ood["distance"]), " > umbral ", fmt(ood["threshold"]), "). La predicción no es fiable."],
-                             color="warning", className="mt-2")
-    elif ood:
-        ood_note = html.P(f"Dentro del dominio de train (distancia {fmt(ood['distance'])} ≤ umbral {fmt(ood['threshold'])}).",
-                          className="muted small")
-    meta = [kpi(res["pred"], CLASS_NAMES.get(res["pred"], ""), "clase más probable"),
-            kpi(f"{len(in_set)}", f"clases en el conjunto al {cov:.0f} %", "predicción conforme (LAC)", tone="accent"),
-            kpi(fmt(res["latency_ms"], 0) + " ms" if res.get("latency_ms") is not None else "—",
-                "latencia en CPU" if res["source"] == "en vivo" else "resultado precalculado", f"T = {fmt(res['temperature'], 2)}")]
-    cam_part = (static_graph(cam_figure(res["image"], res.get("cam"), show_cam), 300) if res.get("image") is not None else None)
-    cam_note = None if res.get("cam") is not None else html.P("Este modelo no tiene pooling global: sin CAM.", className="muted small")
+def leaderboard_card():
+    rows = data.leaderboard_rows()
+    has_ba = any(is_num(r["ba"]) for r in rows)
+    current = "ba" if has_ba else "params_m"
+    pills = [html.Button(label if (k != "ba" or has_ba) else "Exactitud bal. · pendiente", id={"type": "lb-sort", "id": k},
+                         n_clicks=0, className="pill on" if k == current else "pill",
+                         disabled=(k == "ba" and not has_ba), title=None if (k != "ba" or has_ba) else "Disponible cuando haya resultados")
+             for k, label in SORTS]
+    board = data.leaderboard() or {}
     return html.Div([
-        dbc.Row([dbc.Col(m, xs=4) for m in meta], className="g-2"),
-        html.Div(chips, className="set-chips", **{"aria-label": "Conjunto de predicción"}),
-        dbc.Row([dbc.Col([cam_part, cam_note], md=5), dbc.Col(static_graph(bars, 300), md=7)], className="g-2"),
-        ood_note,
-        html.P(f"Modelo {res['model']} · {res['source']}" + (f" · ejemplo {source.get('id')}" if source.get("kind") == "example" else ""),
-               className="muted small"),
-    ], className="fade-in")
+        html.Div([html.H2("Tabla de líderes", className="disp"),
+                  html.Div([html.Span("Ordenar por"), *pills], className="lb-sort")], className="lb-head"),
+        html.Div(html.Table([
+            html.Thead(html.Tr([html.Th("#", scope="col"), html.Th("Modelo", scope="col"),
+                                html.Th("Exactitud balanceada", scope="col", style={"minWidth": 220}),
+                                html.Th("F1 macro", scope="col"), html.Th("Latencia", scope="col"), html.Th("Tamaño", scope="col"),
+                                html.Th("Parámetros", scope="col"), html.Th("GFLOPs", scope="col")])),
+            html.Tbody(table_rows(current), id="lb-body"),
+        ], className="lb"), className="lb-wrap", tabIndex="0", role="region", **{"aria-label": "Tabla de líderes"}),
+        html.P(["Exactitud balanceada: media en ", board.get("split", "test"), " de las corridas definitivas (tabla maestra",
+                f", {board['source']}" if board.get("source") else "",
+                ("). F1 macro: media en test de las mismas corridas. Latencia: mediana en CPU con ONNX Runtime. "
+                 "Tamaño: archivo ONNX servido. Parámetros y GFLOPs: outputs/cost a 224 × 224. Los marcadores se llenan al "
+                 "ejecutar python -m src.export_dashboard.")],
+               className="lb-foot"),
+    ], className="card lb-card")
+
+
+@callback(Output("lb-body", "children"), Output({"type": "lb-sort", "id": ALL}, "className"),
+          Input({"type": "lb-sort", "id": ALL}, "n_clicks"), State({"type": "lb-sort", "id": ALL}, "id"),
+          prevent_initial_call=True)
+def sort_table(_clicks, ids):
+    trig = ctx.triggered_id
+    if not isinstance(trig, dict):
+        return no_update, no_update
+    return table_rows(trig["id"]), ["pill on" if i["id"] == trig["id"] else "pill" for i in ids]
 
 
 # ---------------------------------------------------------------------------
-# Diagnósticos del modelo elegido
+# Nuestro modelo frente al backbone
 # ---------------------------------------------------------------------------
 
 
-def diagnostics_section():
-    models = [m for m in data.models_index().get("models_with_runs", []) if data.diagnostics(m)]
-    if not models:
-        return section("diagnosticos", "Diagnósticos del modelo", pending("Diagnósticos pendientes", SHORT_PENDING))
-    controls = dbc.Row([
-        dbc.Col(dcc.Dropdown(id="diag-model", options=models, value=models[0], clearable=False, searchable=False,
-                             className="touch-dropdown"), xs=12, md=5),
-        dbc.Col(dbc.RadioItems(id="diag-kind", options=[{"label": x, "value": x} for x in ("Confusión", "ROC", "PR", "Fiabilidad")],
-                               value="Confusión", inline=True, inputClassName="btn-check",
-                               labelClassName="btn btn-outline-primary btn-touch", labelCheckedClassName="active"), xs=12, md=7),
-    ], className="g-2")
-    return section("diagnosticos", "Diagnósticos del modelo", dcc.Loading(html.Div(id="diag-output")), controls=controls,
-                   lead="Predicciones de test de todas las corridas definitivas del modelo, agrupadas.")
-
-
-@callback(Output("diag-output", "children"), Input("diag-model", "value"), Input("diag-kind", "value"))
-def show_diagnostics(model, kind):
-    d = data.diagnostics(model) if model else None
-    if not d:
-        return pending("Sin diagnósticos", "Este modelo no tiene predicciones de test.")
-    classes = d["classes"]
-    if kind == "Confusión":
-        z = np.asarray(d["confusion_norm"])
-        fig = go.Figure(go.Heatmap(z=z, x=classes, y=classes, colorscale="Cividis", zmin=0, zmax=1, text=np.round(z, 2),
-                                   texttemplate="%{text}", colorbar={"title": "recall"}))
-        fig.update_layout(title="Matriz de confusión normalizada por fila", xaxis_title="Predicha", yaxis_title="Real",
-                          yaxis={"autorange": "reversed"})
-    elif kind == "ROC":
-        fig = go.Figure([go.Scatter(x=d["roc"][c]["fpr"], y=d["roc"][c]["tpr"], mode="lines", name=f"{c} ({fmt(d['roc'][c]['auc'])})",
-                                    line={"color": CLASS_COLORS[c], "width": 2}) for c in classes])
-        fig.add_scatter(x=[0, 1], y=[0, 1], mode="lines", line={"dash": "dot", "color": UI["dark"], "width": 1}, showlegend=False)
-        fig.update_layout(title="ROC uno contra el resto (AUC)", xaxis_title="1 − especificidad", yaxis_title="Sensibilidad")
-    elif kind == "PR":
-        fig = go.Figure([go.Scatter(x=d["pr"][c]["recall"], y=d["pr"][c]["precision"], mode="lines",
-                                    name=f"{c} ({fmt(d['pr'][c]['ap'])})", line={"color": CLASS_COLORS[c], "width": 2})
-                         for c in classes])
-        fig.update_layout(title="Precisión–exhaustividad (AP)", xaxis_title="Exhaustividad", yaxis_title="Precisión")
+def _metric(label: str, ours, base, pct: bool = True, lower_is_better: bool = False):
+    fmt = (lambda v: fmt_pct(v)) if pct else (lambda v: fmt_num(100 * v, 1))
+    val = html.Span(fmt(ours), className="disp num val") if is_num(ours) else html.Span(placeholder("[ — ]"), className="val")
+    base_v = html.Span(fmt(base), className="num") if is_num(base) else placeholder("[ — ]")
+    if is_num(ours) and is_num(base):
+        d = ours - base
+        better = d < 0 if lower_is_better else d > 0
+        delta = html.Span(f"Δ {fmt_signed(100 * d)} pts", className="delta" + ("" if better or d == 0 else " worse"))
     else:
-        rel = d["reliability"]
-        fig = go.Figure([go.Bar(x=[r["confianza"] for r in rel], y=[r["exactitud"] for r in rel], width=1 / 15,
-                                marker_color=UI["primary"], name="exactitud", text=[r["n"] for r in rel])])
-        fig.add_scatter(x=[0, 1], y=[0, 1], mode="lines", line={"dash": "dot", "color": UI["dark"]}, name="calibración perfecta")
-        fig.update_layout(title="Diagrama de fiabilidad (n por intervalo sobre la barra)", xaxis_title="Confianza",
-                          yaxis_title="Exactitud", xaxis={"range": [0, 1]}, yaxis={"range": [0, 1.05]})
-        fig.update_traces(textposition="outside", selector={"type": "bar"})
-    return static_graph(fig, 420)
+        delta = html.Span("Δ [ " + ("−" if lower_is_better else "+") + "— ]", className="delta na")
+    return html.Div([html.Span(label, className="lbl"), val, html.Span(["sin CCI · ", base_v], className="base"), delta],
+                    className="ours-metric")
+
+
+def ours_card():
+    o = data.ours()
+    cci, base = o["cci"], o["base"] or {}
+    bb = html.Span(o["backbone_name"]) if o["backbone_name"] else placeholder("[ backbone ]")
+    return html.Section([
+        html.Div([
+            html.Span("Nuestro modelo", className="ours-badge"),
+            html.H2(["CCI + ", bb, " frente al mismo backbone sin la capa."], className="disp"),
+            html.P("Misma arquitectura, mismo entrenamiento. La única diferencia es la capa de constancia de color." +
+                   ("" if o["has_runs"] else " Sus corridas definitivas aún no tienen resultados.")),
+        ], className="ours-copy"),
+        html.Div([
+            _metric("Exactitud balanceada", cci["ba"], base.get("ba")),
+            _metric("F1 macro", cci["f1"], base.get("f1")),
+            _metric("Variación entre fuentes", o["source_std"], o["backbone_source_std"], pct=False, lower_is_better=True),
+        ], className="ours-metrics"),
+    ], className="ours", **{"aria-label": "Nuestro modelo frente a su backbone"})
 
 
 # ---------------------------------------------------------------------------
-# Comparación global: diagrama de diferencia crítica y frontera de Pareto
+# Coste frente a desempeño
 # ---------------------------------------------------------------------------
 
 
-def cd_figure(cd: dict):
-    ranks = sorted(cd["ranks"].items(), key=lambda kv: kv[1])
-    k, crit = cd["k"], cd["cd"]
+def pareto(points: list[dict], x: str) -> list[dict]:
+    """No dominados: ningún otro punto tiene coste <= y exactitud >= (con una desigualdad estricta)."""
+    front = [p for p in points if not any(q[x] <= p[x] and q["ba"] >= p["ba"] and (q[x] < p[x] or q["ba"] > p["ba"])
+                                          for q in points if q is not p)]
+    return sorted(front, key=lambda p: p[x])
+
+
+def scatter_points(x: str) -> list[dict]:
+    rows = [r for r in data.leaderboard_rows() if not r["is_baseline"]] + [data.model_row(ORIGINAL_MODEL)]
+    return [r for r in rows if is_num(r.get(x)) and is_num(r["ba"]) and r[x] > 0]
+
+
+def scatter_figure(x: str, theme_name: str | None):
+    tk = theme.tokens(theme_name)
+    pts = scatter_points(x)
     fig = go.Figure()
-    for i, (m, r) in enumerate(ranks):
-        y = -(i % 2) * 0.35 - 0.3
-        fig.add_scatter(x=[r, r], y=[0, y], mode="lines", line={"color": UI["dark"], "width": 1}, showlegend=False, hoverinfo="skip")
-        fig.add_scatter(x=[r], y=[y], mode="markers+text", text=[f"{m} ({fmt(r, 2)})"], textposition="bottom center",
-                        marker={"size": 9, "color": FAMILY_COLORS.get(_family(m), UI["primary"])}, showlegend=False)
-    # grupos sin diferencia significativa (rangos a menos de la diferencia crítica)
-    vals = [r for _, r in ranks]
-    level, last_end = 0.18, -1
-    for i in range(len(vals)):
-        j = max(j for j in range(i, len(vals)) if vals[j] - vals[i] < crit)
-        if j > i and j > last_end:
-            fig.add_scatter(x=[vals[i], vals[j]], y=[level, level], mode="lines", line={"color": UI["accent"], "width": 5},
-                            showlegend=False, hoverinfo="skip")
-            level += 0.1
-            last_end = j
-    fig.add_scatter(x=[1, 1 + crit], y=[0.7, 0.7], mode="lines+text", text=["", f"CD = {fmt(crit, 2)}"],
-                    textposition="middle right", line={"color": UI["alert"], "width": 3}, showlegend=False)
-    fig.update_xaxes(range=[0.8, k + 0.2], title="Rango medio (mayor = mejor)", dtick=1)
-    fig.update_yaxes(visible=False, range=[-1.4, 0.9])
-    fig.update_layout(title=f"Diagrama de diferencia crítica (Nemenyi, α = {cd['alpha']}, {cd['n_runs']} corridas)")
+    others = [p for p in pts if p["id"] != ORIGINAL_MODEL]
+    ours = [p for p in pts if p["id"] == ORIGINAL_MODEL]
+    front = pareto(pts, x)
+    if len(front) >= 2:
+        fig.add_scatter(x=[p[x] for p in front], y=[100 * p["ba"] for p in front], mode="lines", name="Frontera de Pareto",
+                        line={"color": tk["accent"], "width": 2.5, "dash": "dash"}, hoverinfo="skip")
+    unit = " GFLOPs" if x == "gflops" else " ms"
+    if others:
+        fig.add_scatter(x=[p[x] for p in others], y=[100 * p["ba"] for p in others], mode="markers+text", name="Modelos",
+                        text=[p["name"] for p in others], textposition="top center",
+                        textfont={"color": tk["ink2"], "size": 12},
+                        marker={"size": 14, "color": tk["brand"]},
+                        hovertemplate="%{text}<br>%{x:.2f}" + unit + "<br>BA %{y:.1f} %<extra></extra>")
+    if ours:
+        fig.add_scatter(x=[p[x] for p in ours], y=[100 * p["ba"] for p in ours], mode="markers+text", name="Nuestro modelo",
+                        text=["Nuestro modelo"], textposition="top center", textfont={"color": tk["ink"], "size": 13},
+                        marker={"size": 20, "color": tk["accent"]},
+                        hovertemplate="Nuestro modelo<br>%{x:.2f}" + unit + "<br>BA %{y:.1f} %<extra></extra>")
+    fig.update_layout(template=theme.template(theme_name), showlegend=bool(pts), margin={"l": 60, "r": 20, "t": 20, "b": 50},
+                      xaxis_title="GFLOPs por imagen (log)" if x == "gflops" else "Latencia en CPU (ms)",
+                      yaxis_title="Exactitud balanceada (%) →", separators=", ")
+    if x == "gflops":
+        ticks = [0.1, 0.3, 1, 3, 10, 30, 100]
+        fig.update_xaxes(type="log", tickvals=ticks, ticktext=[fmt_num(t, 1 if t < 1 else 0) for t in ticks])
+    if not pts:
+        fig.update_xaxes(range=[np.log10(0.3), np.log10(20)] if x == "gflops" else [0, 200], showgrid=True)
+        fig.update_yaxes(range=[0, 100], showticklabels=False)
     return fig
 
 
-def _family(model: str) -> str:
-    return next((r["familia"] for r in (data.leaderboard() or {}).get("rows", []) if r["modelo"] == model), "CNN")
+def scatter_card():
+    has = bool(scatter_points("gflops") or scatter_points("latency_ms"))
+    overlay = None if has else html.Div([html.B("Resultados en camino"),
+                                         html.Span("Cada punto aparecerá en su coste y su exactitud real al exportar los "
+                                                   "resultados.")], className="overlay")
+    return html.Div([
+        html.Div([
+            insight_header("Insight", "Más grande no siempre es mejor.",
+                           "Coste frente a exactitud balanceada. La frontera de Pareto marca los modelos que no tienen rival "
+                           "más barato y mejor."),
+            html.Div([html.Button(label, id={"type": "sc-x", "id": k}, n_clicks=0, className="pill on" if k == "gflops" else "pill")
+                      for k, label in X_AXES], className="toggle", role="group", **{"aria-label": "Eje de coste"}),
+        ], className="viz-head"),
+        html.Div([graph("scatter-graph", 400, label="Dispersión de coste frente a exactitud balanceada"), overlay],
+                 className="viz-body"),
+        dcc.Store(id="sc-x-store", data="gflops"),
+    ], className="card viz-card")
 
 
-def global_section():
-    g = data.global_comparison()
-    if not g:
-        return section("global", "Diferencia crítica y frontera de Pareto", pending("Comparación global pendiente", SHORT_PENDING))
-    parts = []
-    if g.get("cd"):
-        parts.append(static_graph(cd_figure(g["cd"]), 360))
-        parts.append(html.P("Barras naranjas: modelos cuyos rangos medios no difieren más que la diferencia crítica.", className="muted small"))
-    else:
-        parts.append(pending("Diagrama CD pendiente", "Necesita al menos 3 modelos con corridas pareadas."))
-    pareto = g.get("pareto") or {}
-    if pareto:
-        labels = {"gflops": "GFLOPs", "latencia_ms": "Latencia CPU (ms)", "params_total": "Parámetros"}
-        parts.append(dbc.RadioItems(id="pareto-cost", options=[{"label": labels.get(c, c), "value": c} for c in pareto],
-                                    value=next(iter(pareto)), inline=True, inputClassName="btn-check",
-                                    labelClassName="btn btn-outline-primary btn-touch", labelCheckedClassName="active"))
-        parts.append(html.Div(id="pareto-output"))
-    return section("global", "Diferencia crítica y frontera de Pareto", parts)
+@callback(Output("sc-x-store", "data"), Output({"type": "sc-x", "id": ALL}, "className"),
+          Input({"type": "sc-x", "id": ALL}, "n_clicks"), State({"type": "sc-x", "id": ALL}, "id"), prevent_initial_call=True)
+def pick_x(_clicks, ids):
+    trig = ctx.triggered_id
+    if not isinstance(trig, dict):
+        return no_update, no_update
+    return trig["id"], ["pill on" if i["id"] == trig["id"] else "pill" for i in ids]
 
 
-@callback(Output("pareto-output", "children"), Input("pareto-cost", "value"))
-def show_pareto(cost):
-    rows = ((data.global_comparison() or {}).get("pareto") or {}).get(cost) or []
-    if not rows:
-        return None
-    fig = go.Figure()
-    for fam in dict.fromkeys(r["familia"] for r in rows):
-        sub = [r for r in rows if r["familia"] == fam]
-        fig.add_scatter(x=[r[cost] for r in sub], y=[r["ba_media"] for r in sub], mode="markers+text", name=fam,
-                        text=[r["modelo"] for r in sub], textposition="top center",
-                        marker={"size": 11, "color": FAMILY_COLORS.get(fam, UI["primary"])})
-    front = sorted([r for r in rows if r["frontera"]], key=lambda r: r[cost])
-    fig.add_scatter(x=[r[cost] for r in front], y=[r["ba_media"] for r in front], mode="lines", name="frontera",
-                    line={"color": UI["alert"], "width": 2, "dash": "dot"})
-    fig.update_layout(title="Frontera de Pareto: exactitud balanceada frente a costo", yaxis_title="BA media",
-                      xaxis_title={"gflops": "GFLOPs (escala log)", "latencia_ms": "Latencia CPU (ms)",
-                                   "params_total": "Parámetros (escala log)"}.get(cost, cost),
-                      xaxis_type="log" if cost in ("gflops", "params_total") else "linear")
-    return static_graph(fig, 380)
+@callback(Output("scatter-graph", "figure"), Input("sc-x-store", "data"), Input("theme", "data"))
+def draw_scatter(x, theme_name):
+    return scatter_figure(x or "gflops", theme_name)
 
 
 # ---------------------------------------------------------------------------
-# Modelo original y ficha
+# Matriz de confusión y calibración
+# ---------------------------------------------------------------------------
+
+
+def diag_model() -> str | None:
+    """El mejor modelo con diagnósticos; si ninguno tiene exactitud, el primero con diagnósticos."""
+    ranked = [r["id"] for r in data.ranked(data.leaderboard_rows() + [data.model_row(ORIGINAL_MODEL)])]
+    with_diag = [m for m in data.models_index().get("models_with_runs", []) if data.diagnostics(m)]
+    for m in ranked:
+        if m in with_diag:
+            return m
+    return with_diag[0] if with_diag else None
+
+
+def confusion(model: str | None):
+    """(conteos, normalizada por fila) en el orden CLASS_ORDER, o (None, None)."""
+    d = data.diagnostics(model) if model else None
+    if not d or not d.get("confusion"):
+        return None, None
+    idx = [d["classes"].index(c) for c in CLASS_ORDER]
+    cm = np.asarray(d["confusion"], dtype=float)[np.ix_(idx, idx)]
+    norm = cm / np.maximum(cm.sum(1, keepdims=True), 1)
+    return cm, norm
+
+
+def top_confusion(norm) -> tuple[int, int] | None:
+    if norm is None:
+        return None
+    off = norm.copy()
+    np.fill_diagonal(off, -1)
+    i, j = np.unravel_index(int(np.argmax(off)), off.shape)
+    return (int(i), int(j)) if off[i, j] > 0 else None
+
+
+def cells(mode: str, sel: tuple[int, int] | None, cm, norm):
+    classes, styles, texts, labels = [], [], [], []
+    for i in range(7):
+        for j in range(7):
+            on = sel == (i, j)
+            if norm is None:
+                classes.append("cell" + (" on" if on else ""))
+                styles.append({"background": "var(--brand-soft)" if i == j else "var(--surface-2)"})
+                texts.append("?")
+                labels.append(f"Real {CLASS_NAMES[CLASS_ORDER[i]]}, predicho {CLASS_NAMES[CLASS_ORDER[j]]}: pendiente")
+                continue
+            v = float(norm[i, j])
+            pct = round(100 * v ** 0.6) if v > 0 else 0         # escala perceptual para que se vean las celdas pequeñas
+            classes.append("cell" + (" on" if on else "") + (" hi" if pct > 55 else " lo" if pct > 0 else ""))
+            styles.append({"background": f"color-mix(in srgb, var(--brand) {pct}%, var(--surface-2))"})
+            texts.append(fmt_num(100 * v, 0) if mode == "norm" else fmt_num(cm[i, j]))
+            labels.append(f"Real {CLASS_NAMES[CLASS_ORDER[i]]}, predicho {CLASS_NAMES[CLASS_ORDER[j]]}: "
+                          f"{fmt_num(cm[i, j])} imágenes, {fmt_pct(v)} de los casos reales")
+    return classes, styles, texts, labels
+
+
+def detail(mode: str, sel, cm, norm):
+    i, j = sel
+    real, pred = CLASS_NAMES[CLASS_ORDER[i]], CLASS_NAMES[CLASS_ORDER[j]]
+    if norm is None:
+        val = placeholder("[ — ] % de los casos reales" if mode == "norm" else "[ — ] imágenes")
+    else:
+        n, p = cm[i, j], norm[i, j]
+        val = html.Span(f"{fmt_num(n)} imágenes · {fmt_pct(p)} de los casos reales", className="num")
+    return [html.Span(["Real ", html.Strong(real), " · Predicho ", html.Strong(pred)]), val]
+
+
+def confusion_card():
+    model = diag_model()
+    cm, norm = confusion(model)
+    top = top_confusion(norm)
+    if top:
+        title = (f"Donde más se equivoca: {CLASS_NAMES[CLASS_ORDER[top[0]]]} confundido con "
+                 f"{CLASS_NAMES[CLASS_ORDER[top[1]]]} ({fmt_pct(norm[top])})")
+    else:
+        title = placeholder("[ Frase: la confusión más frecuente, p. ej. clase A ↔ clase B ]")
+    sel = top or (0, 1)
+    cls, sty, txt, lab = cells("norm", sel, cm, norm)
+    d = data.diagnostics(model) if model else None
+    sub = (f"Matriz de confusión de {data.model_row(model)['name']} en test ({fmt_num(d['n_predictions'])} predicciones de "
+           f"{d['n_runs']} corridas). Toca una celda para ver el detalle." if d
+           else "Matriz de confusión del mejor modelo. Toca una celda para ver el detalle.")
+    grid = [html.Button(txt[k], id={"type": "cm-cell", "i": k // 7, "j": k % 7}, n_clicks=0, className=cls[k], style=sty[k],
+                        disabled=norm is None, **{"aria-label": lab[k]}) for k in range(49)]
+    return html.Div([
+        insight_header("Insight", title, sub, size=24),
+        html.Div([html.Button(label, id={"type": "cm-mode", "id": k}, n_clicks=0, className="pill on" if k == "norm" else "pill",
+                              disabled=norm is None) for k, label in (("norm", "Normalizada"), ("count", "Conteos"))],
+                 className="toggle", role="group", **{"aria-label": "Valores de la matriz"}),
+        html.Div([
+            html.Div(),
+            html.Div([html.Span([class_dot(c), CLASS_SHORT[c]], title=CLASS_NAMES[c]) for c in CLASS_ORDER], className="cm-cols"),
+            html.Div([html.Span([class_dot(c), CLASS_SHORT[c]], title=CLASS_NAMES[c]) for c in CLASS_ORDER], className="cm-rows"),
+            html.Div(grid, className="cm-grid", role="group", **{"aria-label": "Celdas de la matriz de confusión"}),
+        ], className="cm"),
+        html.Div(detail("norm", sel, cm, norm), className="cm-detail", id="cm-detail", **{"aria-live": "polite"}),
+        html.Span("Eje vertical: clase real · eje horizontal: clase predicha" +
+                  (" · valores normalizados por fila en %" if norm is not None else ""), className="cm-axes"),
+        dcc.Store(id="cm-state", data={"model": model, "mode": "norm", "sel": list(sel)}),
+    ], className="card viz-card cm-card")
+
+
+@callback(Output({"type": "cm-cell", "i": ALL, "j": ALL}, "className"), Output({"type": "cm-cell", "i": ALL, "j": ALL}, "style"),
+          Output({"type": "cm-cell", "i": ALL, "j": ALL}, "children"), Output("cm-detail", "children"),
+          Output({"type": "cm-mode", "id": ALL}, "className"), Output("cm-state", "data"),
+          Input({"type": "cm-cell", "i": ALL, "j": ALL}, "n_clicks"), Input({"type": "cm-mode", "id": ALL}, "n_clicks"),
+          State("cm-state", "data"), prevent_initial_call=True)
+def update_confusion(_cells, _modes, state):
+    trig = ctx.triggered_id
+    if not isinstance(trig, dict) or not state:
+        return (no_update,) * 6
+    mode, sel = state["mode"], tuple(state["sel"])
+    if trig["type"] == "cm-mode":
+        mode = trig["id"]
+    else:
+        sel = (int(trig["i"]), int(trig["j"]))
+    cm, norm = confusion(state.get("model"))
+    cls, sty, txt, _ = cells(mode, sel, cm, norm)
+    modes = ["pill on" if m == mode else "pill" for m in ("norm", "count")]
+    return cls, sty, txt, detail(mode, sel, cm, norm), modes, {**state, "mode": mode, "sel": list(sel)}
+
+
+def calibration_figure(model: str | None, theme_name: str | None):
+    tk = theme.tokens(theme_name)
+    d = data.diagnostics(model) if model else None
+    rel = (d or {}).get("reliability") or []
+    fig = go.Figure()
+    if rel:
+        n_bins = max(r["bin"] for r in rel) + 1
+        fig.add_bar(x=[(r["bin"] + 0.5) / n_bins for r in rel], y=[r["exactitud"] for r in rel], width=0.8 / n_bins,
+                    marker_color=tk["brand"], name="Exactitud observada", customdata=[[r["confianza"], r["n"]] for r in rel],
+                    hovertemplate="Confianza media %{customdata[0]:.2f}<br>Exactitud %{y:.2f}<br>n = %{customdata[1]}<extra></extra>")
+    else:
+        fig.add_bar(x=[(b + 0.5) / 10 for b in range(10)], y=[(b + 1) / 10 * 0.93 for b in range(10)], width=0.06,
+                    marker={"color": tk["surface2"], "line": {"color": tk["line"], "width": 1}}, hoverinfo="skip",
+                    name="Pendiente")
+    fig.add_scatter(x=[0, 1], y=[0, 1], mode="lines", name="Calibración perfecta",
+                    line={"color": tk["ink3"], "width": 1.5, "dash": "dash"}, hoverinfo="skip")
+    fig.add_annotation(x=0.02, y=0.98, xanchor="left", yanchor="top", text="- - -  calibración perfecta", showarrow=False,
+                       font={"color": tk["ink2"], "size": 11})
+    fig.update_layout(template=theme.template(theme_name), showlegend=False, bargap=0.2,
+                      margin={"l": 44, "r": 12, "t": 12, "b": 36}, separators=", ")
+    fig.update_xaxes(range=[0, 1], tickvals=[0, 0.5, 1], ticktext=["0", "0,5", "1"])
+    fig.update_yaxes(range=[0, 1.02], tickvals=[0, 0.5, 1], ticktext=["0", "0,5", "1"])
+    return fig
+
+
+def calibration_card():
+    model = diag_model()
+    ece = data.model_row(model)["ece"] if model else None
+    sub = ["Diagrama de calibración", f" de {data.model_row(model)['name']}" if model else "",
+           ". Error de calibración esperado (ECE): ", html.Strong(fmt_num(ece, 3), className="num") if is_num(ece) else placeholder("[ — ]")]
+    d = data.diagnostics(model) if model else None
+    return html.Div([
+        insight_header("Insight", "Cuando dice 80 %, ¿acierta el 80 %?", sub, size=24),
+        graph("calibration-graph", 340, label="Diagrama de calibración: exactitud por tramo de confianza"),
+        html.Div([html.Span("Confianza predicha →"), html.Span("↑ Exactitud observada")], className="cal-axes"),
+        html.Div("Probabilidades sin calibrar por temperatura (las de la tabla maestra)." if d and d.get("reliability") else
+                 "Las barras se llenarán con la exactitud real de cada tramo de confianza.", className="note"),
+        dcc.Store(id="cal-model", data=model),
+    ], className="card viz-card cal-card")
+
+
+@callback(Output("calibration-graph", "figure"), Input("cal-model", "data"), Input("theme", "data"))
+def draw_calibration(model, theme_name):
+    return calibration_figure(model, theme_name)
+
+
+# ---------------------------------------------------------------------------
+# Ficha técnica del modelo original (procedencia, pseudocódigo, demostración, pruebas)
 # ---------------------------------------------------------------------------
 
 PROOF = r"""
@@ -389,67 +445,46 @@ diagonal. La cota $\varepsilon$ (píxeles negros) y el recorte a 255 rompen la i
 """
 
 
-def original_section():
+def technical():
     o = data.original_section()
     prov = (o.get("provenance_md") or "").split("\n", 1)[-1]
-    tests = o.get("tests") or []
-    test_table = dash_table.DataTable(
-        columns=[{"name": "Prueba", "id": "prueba"}, {"name": "Qué comprueba", "id": "descripcion"},
-                 {"name": "Resultado", "id": "resultado"}],
-        data=[{**t, "resultado": t.get("resultado") or "sin registrar"} for t in tests], page_size=8,
-        style_as_list_view=True, style_table={"overflowX": "auto"},
-        style_cell={"fontFamily": FONT, "whiteSpace": "normal", "textAlign": "left", "padding": "8px",
-                    "backgroundColor": "transparent", "color": UI["dark"], "maxWidth": "420px"},
-        style_header={"fontWeight": 600, "backgroundColor": "rgba(15, 94, 110, 0.10)"},
-        style_data_conditional=[{"if": {"filter_query": '{resultado} = "fallida"'}, "color": UI["alert"], "fontWeight": 700}],
-    ) if tests else html.P("Sin inventario de pruebas.", className="muted")
     layer = o.get("layer") or {}
-    backbone = o.get("backbone")
-    verdict = (pending("Veredicto pendiente", [
-        html.P("El diseño se considera exitoso si la diferencia de exactitud balanceada entre vidir_molemax y el resto se "
-               "reduce en al menos δ = 0,02 (límite inferior del IC 95 % mayor que cero), si se cumple la predicción 1 y si "
-               "la exactitud balanceada global no es peor que la del backbone (TOST con margen ±δ)."),
-        html.P(f"Backbone: {backbone or 'pendiente (regla del capítulo 24: mejor modelo en validación del Entregable 2)'}."),
-    ], color="info") if not o.get("verdict") else dbc.Alert(o["verdict"], color="success"))
-    robust = (pending("Robustez pendiente", "Se calcula con python -m src.robustness --model cci tras el entrenamiento.", color="info")
-              if not o.get("robustness") else dash_table.DataTable(
-                  columns=[{"name": c, "id": c} for c in o["robustness"]["columns"]],
-                  data=[dict(zip(o["robustness"]["columns"], r)) for r in o["robustness"]["data"]], page_size=10,
-                  style_table={"overflowX": "auto"}))
-    tabs = dbc.Tabs([
-        dbc.Tab(dcc.Markdown(prov or "Sin procedencia.", className="md"), label="Procedencia", tab_id="t-prov"),
-        dbc.Tab([html.Pre(o.get("pseudocode") or "—", className="code-block"),
-                 html.P(f"Parámetros: N̄ = {layer.get('reduced_size', 56)}², {layer.get('filters', 16)} filtros, "
-                        f"ε = {layer.get('eps')}, κ = {layer.get('kappa')}, p inicial = {layer.get('p_init')}.", className="muted small")],
-                label="Pseudocódigo", tab_id="t-pseudo"),
-        dbc.Tab(dcc.Markdown(PROOF, mathjax=True, className="md"), label="Demostración", tab_id="t-proof"),
-        dbc.Tab([test_table, html.P("Resultado desde outputs/tests/junit.xml (pytest --junitxml).", className="muted small")],
-                label="Pruebas", tab_id="t-tests"),
-        dbc.Tab(robust, label="Robustez", tab_id="t-rob"),
-        dbc.Tab(verdict, label="Veredicto", tab_id="t-verdict"),
-    ], active_tab="t-prov", className="touch-tabs")
-    return section("original", "Modelo original: capa CCI", tabs,
-                   lead="Constancia de color aprendible e invariante a las ganancias de canal, antepuesta al backbone.")
-
-
-def model_card_section():
-    md = data.content("MODEL_CARD.md")
-    body = dcc.Markdown(md, className="md") if md else pending("Ficha pendiente", "Falta MODEL_CARD.md en dashboard/data/content/.")
-    return section("ficha-modelo", "Ficha del modelo", body)
+    tests = o.get("tests") or []
+    test_table = html.Div(html.Table([
+        html.Thead(html.Tr([html.Th("Prueba"), html.Th("Qué comprueba"), html.Th("Resultado")])),
+        html.Tbody([html.Tr([html.Td(html.Code(t["prueba"])), html.Td(t.get("descripcion") or ""),
+                             html.Td(t.get("resultado") or placeholder("sin registrar"))]) for t in tests]),
+    ], className="tests"), style={"overflowX": "auto"}) if tests else html.P("Sin inventario de pruebas.")
+    card = data.content("MODEL_CARD.md")
+    return html.Details([
+        html.Summary([html.Div([eyebrow("Ficha técnica"), html.H2("La capa CCI, por dentro", className="disp")],
+                               className="insight")]),
+        html.Div([
+            html.Div([html.H3("Procedencia"), dcc.Markdown(prov or "Sin procedencia.", className="md")]),
+            html.Div([html.H3("Pseudocódigo"), html.Pre(o.get("pseudocode") or "—"),
+                      html.P(f"Parámetros: N̄ = {layer.get('reduced_size', '—')}², {layer.get('filters', '—')} filtros, "
+                             f"ε = {layer.get('eps', '—')}, κ = {layer.get('kappa', '—')}, p inicial = {layer.get('p_init', '—')}.")]),
+            html.Div([html.H3("Invarianza a las ganancias de canal"), dcc.Markdown(PROOF, mathjax=True, className="md")]),
+            html.Div([html.H3("Pruebas unitarias"), test_table,
+                      html.P("Resultado desde outputs/tests/junit.xml (pytest --junitxml).", className="small-note")]),
+            html.Div([html.H3("Ficha del modelo"), dcc.Markdown(card, className="md") if card else html.P("Falta MODEL_CARD.md.")]),
+        ], className="tech-body"),
+    ], className="card tech")
 
 
 def layout(**_):
-    status = data.models_index().get("status", "pendiente")
-    banner = (pending("Resultados de entrenamiento pendientes", PENDING_MSG) if status != "listo" else None)
     return html.Div([
-        html.H1("Modelos", className="page-title"),
-        html.P("Comparación de los modelos del benchmark y del modelo original, y predicción con los modelos exportados a ONNX.",
-               className="page-lead"),
-        banner,
-        leaderboard_section(),
-        prediction_section(),
-        diagnostics_section(),
-        global_section(),
-        original_section(),
-        model_card_section(),
-    ])
+        html.Div(html.Div([
+            html.Span("Modelos", className="eyebrow"),
+            html.H1(["8 arquitecturas, 2 baselines,", html.Br(), " una sola tabla de líderes."], className="disp page-title"),
+            html.P("Mismos datos, misma partición por lesión, misma métrica: exactitud balanceada, para que el nevus no infle "
+                   "los resultados.", className="page-lead"),
+        ]), className="page-head"),
+        podium(),
+        leaderboard_card(),
+        ours_card(),
+        scatter_card(),
+        html.Div([confusion_card(), calibration_card()], className="duo"),
+        technical(),
+    ], className="wrap page")
+

@@ -1,4 +1,4 @@
-"""Dashboard del proyecto (Dash multipágina, móvil primero).
+"""Cromia: dashboard del proyecto (Dash multipágina, sin frameworks JS adicionales).
 
     cd dashboard && python app.py                       # desarrollo: http://127.0.0.1:8050
     cd dashboard && gunicorn app:server --workers 1 --threads 2 --timeout 120
@@ -13,8 +13,8 @@ import logging
 import os
 
 import dash
-import dash_bootstrap_components as dbc
 from core import config, data, theme
+from core.components import icon, logo
 from dash import (
     ClientsideFunction,
     Dash,
@@ -28,6 +28,7 @@ from dash import (
 from flask import abort, send_file
 
 theme.register()
+logging.basicConfig(level=logging.INFO, format="%(levelname)s %(name)s: %(message)s")
 logging.getLogger("werkzeug").setLevel(logging.WARNING)   # sin registro de peticiones en desarrollo
 
 app = Dash(
@@ -35,19 +36,20 @@ app = Dash(
     use_pages=True,
     title=config.TITLE,
     update_title=None,
-    external_stylesheets=[dbc.themes.BOOTSTRAP],
     suppress_callback_exceptions=True,
     meta_tags=[{"name": "viewport", "content": "width=device-width, initial-scale=1"},
                {"name": "description", "content": config.SUBTITLE},
-               {"name": "theme-color", "content": config.UI["primary"]}],
+               {"name": "theme-color", "content": "#0B5563"}],
 )
 server = app.server
 server.config["MAX_CONTENT_LENGTH"] = 2 * config.MAX_UPLOAD_BYTES   # límite del servidor (base64 + JSON)
 
+app.index_string = app.index_string.replace("<html>", '<html lang="es">')
+
 
 @server.route("/media/<kind>/<name>")
 def media(kind: str, name: str):
-    """Miniaturas del EDA y ejemplos de la galería (solo carpetas y extensión permitidas)."""
+    """Miniaturas de la galería y ejemplos de la demo (solo carpetas y extensión permitidas)."""
     path = data.media_path(kind, name)
     if path is None:
         abort(404)
@@ -65,56 +67,60 @@ def security_headers(resp):
     return resp
 
 
+NAV = [("/", "Inicio", "nav-inicio"), ("/demo", "Demo en vivo", "nav-demo"), ("/modelos", "Modelos", "nav-modelos"),
+       ("/datos", "Explora los datos", "nav-datos")]
+
+
 def navbar():
-    links = [dbc.NavItem(dbc.NavLink(page["name"], href=page["relative_path"], active="exact", className="nav-touch"))
-             for page in dash.page_registry.values() if page.get("order") is not None]
-    return dbc.Navbar(
-        dbc.Container([
-            dbc.NavbarBrand([html.Span("●", className="brand-dot", **{"aria-hidden": "true"}), "Lesiones de la piel"],
-                            href="/", className="brand"),
-            dbc.NavbarToggler(id="nav-toggler", n_clicks=0),
-            dbc.Collapse(dbc.Nav(links, className="ms-auto", navbar=True), id="nav-collapse", navbar=True, is_open=False),
-        ], fluid=True),
-        className="app-navbar", fixed="top", dark=True,
-    )
-
-
-PRIVACY = dcc.Markdown("""
-**Política de privacidad.** Este sitio no usa cookies, no tiene cuentas de usuario ni analítica.
-Las imágenes que cargues se procesan en la memoria del servidor solo para calcular la predicción y se
-descartan al terminar: no se guardan en disco, no se registran y no se usan para entrenar. El
-servidor no registra el contenido de las peticiones. La hoja de estilos de Bootstrap se descarga de
-jsDelivr. Los datos de HAM10000 se muestran con fines académicos bajo su licencia CC BY-NC 4.0.
-""", className="privacy-text")
+    return html.Header(html.Div([
+        dcc.Link([logo(32), html.Span(config.BRAND, className="disp brand-name")], href="/", className="brand-link",
+                 title=f"{config.BRAND}: inicio"),
+        html.Nav([dcc.Link(label, href=href, id=nid) for href, label, nid in NAV], className="nav",
+                 id="site-nav", **{"aria-label": "Principal"}),
+        html.Div([
+            html.Button(icon("moon", 20), id="theme-toggle", className="icon-btn", n_clicks=0,
+                        **{"aria-label": "Cambiar entre modo claro y oscuro"}),
+            dcc.Link("Probar ahora", href="/demo", className="btn btn-primary btn-sm"),
+            html.Button(icon("menu", 22), id="menu-toggle", className="icon-btn menu-btn", n_clicks=0,
+                        **{"aria-label": "Abrir menú", "aria-controls": "site-nav", "aria-expanded": "false"}),
+        ], className="header-actions"),
+    ], className="wrap site-header-inner"), className="site-header", id="site-header")
 
 
 def footer():
-    return html.Footer(dbc.Container([
-        html.P(["Herramienta académica: ", html.Strong("no es una herramienta diagnóstica"),
-                " ni sustituye la valoración de un dermatólogo."], className="footer-warning"),
-        PRIVACY,
-        html.P(["Código bajo licencia MIT. Datos: HAM10000 (Tschandl, Rosendahl y Kittler, 2018), CC BY-NC 4.0. ",
-                "Universidad del Norte, 2026."], className="footer-credits"),
-    ], fluid=True), className="app-footer")
+    return html.Footer(html.Div([
+        html.Span(f"{config.BRAND} · Proyecto académico de clasificación de lesiones de piel · Universidad del Norte, 2026"),
+        html.Span("Datos: HAM10000 (Tschandl, Rosendahl y Kittler, 2018), CC BY-NC 4.0 · Código: MIT"),
+        html.Details([
+            html.Summary("Privacidad"),
+            html.P("Sin cookies, cuentas ni analítica. Las imágenes que cargues se procesan en la memoria del servidor solo "
+                   "para calcular la predicción y se descartan al terminar: no se guardan en disco, no se registran y no se "
+                   "usan para entrenar. El navegador guarda solo tu preferencia de tema claro u oscuro. Las tipografías "
+                   "Manrope e Inter se descargan de Google Fonts."),
+        ], className="privacy"),
+    ], className="wrap site-footer-inner"), className="site-footer")
 
 
 app.layout = html.Div([
     dcc.Location(id="url"),
+    dcc.Store(id="theme", storage_type="local"),
     html.A("Saltar al contenido", href="#main", className="skip-link"),
     navbar(),
-    html.Main(dbc.Container(dash.page_container, fluid=True, className="page"), id="main"),
+    html.Main(dash.page_container, id="main", tabIndex="-1"),
     footer(),
-])
+], id="root", className="cr light")
 
-# Menú colapsable en móvil (en el navegador) y cierre al navegar.
-clientside_callback(
-    ClientsideFunction(namespace="ui", function_name="toggleNav"),
-    Output("nav-collapse", "is_open"),
-    Input("nav-toggler", "n_clicks"),
-    Input("url", "pathname"),
-    State("nav-collapse", "is_open"),
-    prevent_initial_call=True,
-)
+# Tema: el botón alterna el Store local; el Store fija la clase del div raíz (y las figuras lo leen).
+clientside_callback(ClientsideFunction("ui", "toggleTheme"), Output("theme", "data"),
+                    Input("theme-toggle", "n_clicks"), Input("url", "pathname"), State("theme", "data"))
+clientside_callback(ClientsideFunction("ui", "applyTheme"), Output("root", "className"), Output("theme-toggle", "children"),
+                    Input("theme", "data"))
+# Navegación: enlace activo (.cur) y menú de móvil (se cierra al navegar).
+clientside_callback(ClientsideFunction("ui", "navCurrent"), *[Output(nid, "className") for _, _, nid in NAV],
+                    Input("url", "pathname"))
+clientside_callback(ClientsideFunction("ui", "toggleMenu"), Output("site-header", "className"),
+                    Output("menu-toggle", "aria-expanded"), Input("menu-toggle", "n_clicks"), Input("url", "pathname"),
+                    State("site-header", "className"), prevent_initial_call=True)
 
 
 if __name__ == "__main__":

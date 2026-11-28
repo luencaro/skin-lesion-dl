@@ -1,0 +1,9 @@
+modelo,corridas,divergentes,min_val_balanced_accuracy,corridas_divergentes
+mobilenetv2,5,0,0.656405013834645,
+resnet50,5,0,0.693413925564106,
+vgg16,5,0,0.6473657130401868,
+densenet201,5,0,0.7293796363182455,
+inceptionv3,5,0,0.6515660174442226,
+convnext_tiny,5,0,0.7320086719314638,
+vit_b16,5,0,0.7588559714530706,
+efficientnetb0,5,0,0.6736987441669482,

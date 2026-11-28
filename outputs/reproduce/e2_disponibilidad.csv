@@ -1,0 +1,11 @@
+modelo (final),rol,previstas,terminadas,pareadas_con_todos,con_test
+mobilenetv2,modelo base (E1),5,5,5,5
+resnet50,modelo base (E1),5,5,5,5
+vgg16,modelo base (E1),5,5,5,5
+densenet201,estado del arte,5,5,5,5
+inceptionv3,estado del arte,5,5,5,5
+convnext_tiny,estado del arte,5,5,5,5
+vit_b16,estado del arte,5,5,5,5
+efficientnetb0,estado del arte,5,5,5,5
+trivial,baseline,5,5,5,5
+logreg,baseline,5,5,5,5

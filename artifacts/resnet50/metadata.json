@@ -1,0 +1,473 @@
+{
+  "model": "resnet50",
+  "family": "CNN",
+  "created_at": "2026-11-28T13:10:07+00:00",
+  "format": "onnx",
+  "opset": 17,
+  "run": {
+    "label": "final",
+    "seed": 0,
+    "val_fold": 0,
+    "run_dir": "outputs/runs/resnet50/final/s0_f0"
+  },
+  "global_seed": 42,
+  "versions": {
+    "python": "3.11.18",
+    "tensorflow": "2.20.0",
+    "keras": "3.15.1",
+    "tf2onnx": "1.17.0",
+    "onnx": "1.23.2",
+    "onnxruntime": "1.32.0",
+    "numpy": "2.4.6"
+  },
+  "hyperparameters": {
+    "learning_rate": 0.00020210153187856742,
+    "weight_decay": 7.850698556587388e-06,
+    "dropout": 0.0
+  },
+  "model_config": {
+    "keras_application": "ResNet50",
+    "weights": "imagenet"
+  },
+  "classes": [
+    "akiec",
+    "bcc",
+    "bkl",
+    "df",
+    "mel",
+    "nv",
+    "vasc"
+  ],
+  "resolution": [
+    224,
+    224
+  ],
+  "input": {
+    "name": "image",
+    "shape": [
+      null,
+      224,
+      224,
+      3
+    ],
+    "dtype": "float32",
+    "range": [
+      0.0,
+      255.0
+    ],
+    "layout": "NHWC",
+    "color": "RGB"
+  },
+  "preprocessing": {
+    "color": "RGB",
+    "layout": "NHWC",
+    "dtype": "float32",
+    "range": [
+      0.0,
+      255.0
+    ],
+    "resize": [
+      224,
+      224
+    ],
+    "resize_method": "bilinear",
+    "antialias": true,
+    "keep_aspect_ratio": false,
+    "clip": [
+      0.0,
+      255.0
+    ],
+    "normalization": "dentro del modelo (capa preprocess)",
+    "steps": [
+      "decodificar JPEG/PNG a RGB de 8 bits",
+      "redimensionar a 224 x 224 (bilinear, antialias, sin conservar la relación de aspecto)",
+      "convertir a float32 sin normalizar, en [0, 255]"
+    ]
+  },
+  "outputs": {
+    "logits": {
+      "shape": [
+        null,
+        7
+      ]
+    },
+    "probabilities": {
+      "shape": [
+        null,
+        7
+      ]
+    },
+    "embedding": {
+      "shape": [
+        null,
+        2048
+      ]
+    },
+    "feature_map": {
+      "shape": [
+        null,
+        7,
+        7,
+        2048
+      ]
+    },
+    "head_weights": {
+      "shape": [
+        2048,
+        7
+      ]
+    }
+  },
+  "cam": {
+    "supported": true,
+    "kind": "gap_linear",
+    "formula": "CAM_k = sum_c feature_map[..., c] * head_weights[c, k]"
+  },
+  "temperature": 1.7380540725571683,
+  "conformal": {
+    "score": "lac",
+    "use_temperature": true,
+    "calibration_split": "val",
+    "n_calibration": 1717,
+    "quantiles": {
+      "0.1": 0.8657176622865291,
+      "0.05": 0.9322324247691015
+    }
+  },
+  "metrics": {
+    "val": {
+      "n": 1717,
+      "balanced_accuracy": 0.744615483157468,
+      "accuracy": 0.6686080372743156,
+      "f1_macro": 0.6090430668374147,
+      "f1_weighted": 0.7030565456289344,
+      "auc_roc_macro_ovr": 0.9514906118974359,
+      "auc_pr_macro": 0.7227982627379735,
+      "mcc": 0.5379662478932438,
+      "ece": 0.14815898903398708,
+      "cross_entropy": 0.9327699477583014,
+      "per_class": {
+        "akiec": {
+          "precision": 0.6,
+          "recall": 0.6428571428571429,
+          "f1": 0.6206896551724138,
+          "support": 56
+        },
+        "bcc": {
+          "precision": 0.6016949152542372,
+          "recall": 0.8068181818181818,
+          "f1": 0.6893203883495146,
+          "support": 88
+        },
+        "bkl": {
+          "precision": 0.5461538461538461,
+          "recall": 0.7553191489361702,
+          "f1": 0.6339285714285714,
+          "support": 188
+        },
+        "df": {
+          "precision": 0.1935483870967742,
+          "recall": 0.9,
+          "f1": 0.3185840707964602,
+          "support": 20
+        },
+        "mel": {
+          "precision": 0.3278301886792453,
+          "recall": 0.7277486910994765,
+          "f1": 0.45203252032520325,
+          "support": 191
+        },
+        "nv": {
+          "precision": 0.9783783783783784,
+          "recall": 0.6295652173913043,
+          "f1": 0.7661375661375661,
+          "support": 1150
+        },
+        "vasc": {
+          "precision": 0.8181818181818182,
+          "recall": 0.75,
+          "f1": 0.782608695652174,
+          "support": 24
+        }
+      },
+      "confusion_matrix": {
+        "labels": [
+          "akiec",
+          "bcc",
+          "bkl",
+          "df",
+          "mel",
+          "nv",
+          "vasc"
+        ],
+        "matrix": [
+          [
+            36,
+            8,
+            4,
+            2,
+            4,
+            2,
+            0
+          ],
+          [
+            6,
+            71,
+            5,
+            0,
+            4,
+            1,
+            1
+          ],
+          [
+            9,
+            15,
+            142,
+            4,
+            17,
+            1,
+            0
+          ],
+          [
+            2,
+            0,
+            0,
+            18,
+            0,
+            0,
+            0
+          ],
+          [
+            2,
+            4,
+            23,
+            10,
+            139,
+            12,
+            1
+          ],
+          [
+            5,
+            19,
+            86,
+            59,
+            255,
+            724,
+            2
+          ],
+          [
+            0,
+            1,
+            0,
+            0,
+            5,
+            0,
+            18
+          ]
+        ]
+      }
+    },
+    "test": {
+      "n": 1431,
+      "balanced_accuracy": 0.6596308592850063,
+      "accuracy": 0.6715583508036338,
+      "f1_macro": 0.5689355130287967,
+      "f1_weighted": 0.7068411278024703,
+      "auc_roc_macro_ovr": 0.9224083930978786,
+      "auc_pr_macro": 0.6358917163387436,
+      "mcc": 0.531804248051294,
+      "ece": 0.15303371678169592,
+      "cross_entropy": 0.957787438975983,
+      "per_class": {
+        "akiec": {
+          "precision": 0.423728813559322,
+          "recall": 0.5434782608695652,
+          "f1": 0.47619047619047616,
+          "support": 46
+        },
+        "bcc": {
+          "precision": 0.5955056179775281,
+          "recall": 0.7162162162162162,
+          "f1": 0.6503067484662577,
+          "support": 74
+        },
+        "bkl": {
+          "precision": 0.5072463768115942,
+          "recall": 0.6687898089171974,
+          "f1": 0.5769230769230769,
+          "support": 157
+        },
+        "df": {
+          "precision": 0.13846153846153847,
+          "recall": 0.5294117647058824,
+          "f1": 0.21951219512195122,
+          "support": 17
+        },
+        "mel": {
+          "precision": 0.3585434173669468,
+          "recall": 0.8050314465408805,
+          "f1": 0.49612403100775193,
+          "support": 159
+        },
+        "nv": {
+          "precision": 0.9827586206896551,
+          "recall": 0.6544885177453027,
+          "f1": 0.7857142857142857,
+          "support": 958
+        },
+        "vasc": {
+          "precision": 0.875,
+          "recall": 0.7,
+          "f1": 0.7777777777777778,
+          "support": 20
+        }
+      },
+      "confusion_matrix": {
+        "labels": [
+          "akiec",
+          "bcc",
+          "bkl",
+          "df",
+          "mel",
+          "nv",
+          "vasc"
+        ],
+        "matrix": [
+          [
+            25,
+            7,
+            10,
+            0,
+            3,
+            1,
+            0
+          ],
+          [
+            11,
+            53,
+            4,
+            0,
+            4,
+            2,
+            0
+          ],
+          [
+            10,
+            6,
+            105,
+            5,
+            29,
+            2,
+            0
+          ],
+          [
+            3,
+            1,
+            1,
+            9,
+            3,
+            0,
+            0
+          ],
+          [
+            1,
+            4,
+            16,
+            4,
+            128,
+            5,
+            1
+          ],
+          [
+            9,
+            14,
+            70,
+            47,
+            190,
+            627,
+            1
+          ],
+          [
+            0,
+            4,
+            1,
+            0,
+            0,
+            1,
+            14
+          ]
+        ]
+      }
+    }
+  },
+  "roundtrip": {
+    "n_images": 32,
+    "max_abs_error": 8.344650268554688e-07,
+    "atol": 0.0001,
+    "same_predicted_class": true,
+    "passed": true,
+    "images": "val"
+  },
+  "fp16": {
+    "enabled": true,
+    "ba_fp32": 0.745363426313788,
+    "ba_fp16": 0.7438675400011479,
+    "diferencia": -0.0014958863126401933,
+    "ic_bajo": -0.00336174092278419,
+    "ic_alto": 0.0,
+    "nivel_ic": 0.9,
+    "delta": 0.02,
+    "p_tost": 0.0,
+    "equivalentes": true,
+    "n_images": 1717,
+    "same_class_frac": 0.9976703552708212,
+    "n_resamples": 2000,
+    "size_mb": 44.99288558959961,
+    "benchmark": {
+      "latency_ms_median": 33.47024349932326,
+      "latency_ms_p95": 33.92645919993811,
+      "latency_ms_mean": 33.49618296000699,
+      "repeats": 100,
+      "warmup": 10,
+      "intra_op_threads": 2,
+      "peak_rss_mb": 293.82421875,
+      "rss_before_load_mb": 51.41796875,
+      "file_size_mb": 44.99288558959961,
+      "onnxruntime": "1.32.0",
+      "provider": "CPUExecutionProvider"
+    }
+  },
+  "benchmark": {
+    "latency_ms_median": 33.51544749966706,
+    "latency_ms_p95": 34.977326397711295,
+    "latency_ms_mean": 33.75301382970065,
+    "repeats": 100,
+    "warmup": 10,
+    "intra_op_threads": 2,
+    "peak_rss_mb": 306.9140625,
+    "rss_before_load_mb": 51.421875,
+    "file_size_mb": 89.89044284820557,
+    "onnxruntime": "1.32.0",
+    "provider": "CPUExecutionProvider"
+  },
+  "params": {
+    "trainable": 23548935,
+    "non_trainable": 53120,
+    "total": 23602055
+  },
+  "size_mb": 89.89044284820557,
+  "size_limit_mb": 95.0,
+  "serving_file": "model_fp16.onnx",
+  "live": true,
+  "ood": {
+    "metric": "cosine_knn_mean",
+    "k": 5,
+    "quantile": 0.99,
+    "threshold": 0.38923969864845276,
+    "n_reference": 1000,
+    "n_calibration": 500,
+    "calibration_split": "val",
+    "distance_median_val": 0.20413607358932495,
+    "file": "ood_reference.npz"
+  }
+}

@@ -1,0 +1,473 @@
+{
+  "model": "densenet201",
+  "family": "CNN",
+  "created_at": "2026-11-28T13:05:13+00:00",
+  "format": "onnx",
+  "opset": 17,
+  "run": {
+    "label": "final",
+    "seed": 0,
+    "val_fold": 0,
+    "run_dir": "outputs/runs/densenet201/final/s0_f0"
+  },
+  "global_seed": 42,
+  "versions": {
+    "python": "3.11.18",
+    "tensorflow": "2.20.0",
+    "keras": "3.15.1",
+    "tf2onnx": "1.17.0",
+    "onnx": "1.23.2",
+    "onnxruntime": "1.32.0",
+    "numpy": "2.4.6"
+  },
+  "hyperparameters": {
+    "learning_rate": 0.0003810978438937071,
+    "weight_decay": 0.0005193157688849777,
+    "dropout": 0.4
+  },
+  "model_config": {
+    "keras_application": "DenseNet201",
+    "weights": "imagenet"
+  },
+  "classes": [
+    "akiec",
+    "bcc",
+    "bkl",
+    "df",
+    "mel",
+    "nv",
+    "vasc"
+  ],
+  "resolution": [
+    224,
+    224
+  ],
+  "input": {
+    "name": "image",
+    "shape": [
+      null,
+      224,
+      224,
+      3
+    ],
+    "dtype": "float32",
+    "range": [
+      0.0,
+      255.0
+    ],
+    "layout": "NHWC",
+    "color": "RGB"
+  },
+  "preprocessing": {
+    "color": "RGB",
+    "layout": "NHWC",
+    "dtype": "float32",
+    "range": [
+      0.0,
+      255.0
+    ],
+    "resize": [
+      224,
+      224
+    ],
+    "resize_method": "bilinear",
+    "antialias": true,
+    "keep_aspect_ratio": false,
+    "clip": [
+      0.0,
+      255.0
+    ],
+    "normalization": "dentro del modelo (capa preprocess)",
+    "steps": [
+      "decodificar JPEG/PNG a RGB de 8 bits",
+      "redimensionar a 224 x 224 (bilinear, antialias, sin conservar la relación de aspecto)",
+      "convertir a float32 sin normalizar, en [0, 255]"
+    ]
+  },
+  "outputs": {
+    "logits": {
+      "shape": [
+        null,
+        7
+      ]
+    },
+    "probabilities": {
+      "shape": [
+        null,
+        7
+      ]
+    },
+    "embedding": {
+      "shape": [
+        null,
+        1920
+      ]
+    },
+    "feature_map": {
+      "shape": [
+        null,
+        7,
+        7,
+        1920
+      ]
+    },
+    "head_weights": {
+      "shape": [
+        1920,
+        7
+      ]
+    }
+  },
+  "cam": {
+    "supported": true,
+    "kind": "gap_linear",
+    "formula": "CAM_k = sum_c feature_map[..., c] * head_weights[c, k]"
+  },
+  "temperature": 1.2822840348356597,
+  "conformal": {
+    "score": "lac",
+    "use_temperature": true,
+    "calibration_split": "val",
+    "n_calibration": 1717,
+    "quantiles": {
+      "0.1": 0.8311937587544619,
+      "0.05": 0.9112364940346549
+    }
+  },
+  "metrics": {
+    "val": {
+      "n": 1717,
+      "balanced_accuracy": 0.7353192071485647,
+      "accuracy": 0.7216074548631334,
+      "f1_macro": 0.6513116289946168,
+      "f1_weighted": 0.7465084801016079,
+      "auc_roc_macro_ovr": 0.9541636870549031,
+      "auc_pr_macro": 0.7265312403326885,
+      "mcc": 0.5779681830420289,
+      "ece": 0.08361635009916883,
+      "cross_entropy": 0.6758710929817149,
+      "per_class": {
+        "akiec": {
+          "precision": 0.4625,
+          "recall": 0.6607142857142857,
+          "f1": 0.5441176470588235,
+          "support": 56
+        },
+        "bcc": {
+          "precision": 0.5806451612903226,
+          "recall": 0.8181818181818182,
+          "f1": 0.6792452830188679,
+          "support": 88
+        },
+        "bkl": {
+          "precision": 0.5358490566037736,
+          "recall": 0.7553191489361702,
+          "f1": 0.6269315673289183,
+          "support": 188
+        },
+        "df": {
+          "precision": 0.5185185185185185,
+          "recall": 0.7,
+          "f1": 0.5957446808510638,
+          "support": 20
+        },
+        "mel": {
+          "precision": 0.3631123919308357,
+          "recall": 0.6596858638743456,
+          "f1": 0.4684014869888476,
+          "support": 191
+        },
+        "nv": {
+          "precision": 0.9752650176678446,
+          "recall": 0.72,
+          "f1": 0.8284142071035517,
+          "support": 1150
+        },
+        "vasc": {
+          "precision": 0.8,
+          "recall": 0.8333333333333334,
+          "f1": 0.8163265306122449,
+          "support": 24
+        }
+      },
+      "confusion_matrix": {
+        "labels": [
+          "akiec",
+          "bcc",
+          "bkl",
+          "df",
+          "mel",
+          "nv",
+          "vasc"
+        ],
+        "matrix": [
+          [
+            37,
+            7,
+            8,
+            0,
+            4,
+            0,
+            0
+          ],
+          [
+            6,
+            72,
+            5,
+            0,
+            2,
+            1,
+            2
+          ],
+          [
+            14,
+            16,
+            142,
+            0,
+            15,
+            1,
+            0
+          ],
+          [
+            3,
+            0,
+            3,
+            14,
+            0,
+            0,
+            0
+          ],
+          [
+            12,
+            3,
+            28,
+            3,
+            126,
+            19,
+            0
+          ],
+          [
+            8,
+            23,
+            79,
+            10,
+            199,
+            828,
+            3
+          ],
+          [
+            0,
+            3,
+            0,
+            0,
+            1,
+            0,
+            20
+          ]
+        ]
+      }
+    },
+    "test": {
+      "n": 1431,
+      "balanced_accuracy": 0.6839329569879712,
+      "accuracy": 0.710691823899371,
+      "f1_macro": 0.6211089753000011,
+      "f1_weighted": 0.7369525793730882,
+      "auc_roc_macro_ovr": 0.9458874051343812,
+      "auc_pr_macro": 0.6824703078033251,
+      "mcc": 0.5626217855698192,
+      "ece": 0.09253525768890754,
+      "cross_entropy": 0.7127514346671725,
+      "per_class": {
+        "akiec": {
+          "precision": 0.421875,
+          "recall": 0.5869565217391305,
+          "f1": 0.4909090909090909,
+          "support": 46
+        },
+        "bcc": {
+          "precision": 0.6288659793814433,
+          "recall": 0.8243243243243243,
+          "f1": 0.7134502923976608,
+          "support": 74
+        },
+        "bkl": {
+          "precision": 0.5091743119266054,
+          "recall": 0.7070063694267515,
+          "f1": 0.592,
+          "support": 157
+        },
+        "df": {
+          "precision": 0.46153846153846156,
+          "recall": 0.35294117647058826,
+          "f1": 0.4,
+          "support": 17
+        },
+        "mel": {
+          "precision": 0.35555555555555557,
+          "recall": 0.7044025157232704,
+          "f1": 0.47257383966244726,
+          "support": 159
+        },
+        "nv": {
+          "precision": 0.9715099715099715,
+          "recall": 0.7118997912317327,
+          "f1": 0.8216867469879519,
+          "support": 958
+        },
+        "vasc": {
+          "precision": 0.8181818181818182,
+          "recall": 0.9,
+          "f1": 0.8571428571428571,
+          "support": 20
+        }
+      },
+      "confusion_matrix": {
+        "labels": [
+          "akiec",
+          "bcc",
+          "bkl",
+          "df",
+          "mel",
+          "nv",
+          "vasc"
+        ],
+        "matrix": [
+          [
+            27,
+            9,
+            7,
+            0,
+            1,
+            2,
+            0
+          ],
+          [
+            4,
+            61,
+            3,
+            2,
+            1,
+            3,
+            0
+          ],
+          [
+            15,
+            5,
+            111,
+            1,
+            21,
+            4,
+            0
+          ],
+          [
+            4,
+            3,
+            1,
+            6,
+            1,
+            2,
+            0
+          ],
+          [
+            11,
+            5,
+            23,
+            0,
+            112,
+            8,
+            0
+          ],
+          [
+            3,
+            14,
+            72,
+            4,
+            179,
+            682,
+            4
+          ],
+          [
+            0,
+            0,
+            1,
+            0,
+            0,
+            1,
+            18
+          ]
+        ]
+      }
+    }
+  },
+  "roundtrip": {
+    "n_images": 32,
+    "max_abs_error": 4.76837158203125e-07,
+    "atol": 0.0001,
+    "same_predicted_class": true,
+    "passed": true,
+    "images": "val"
+  },
+  "fp16": {
+    "enabled": true,
+    "ba_fp32": 0.7353192071485647,
+    "ba_fp16": 0.7353192071485647,
+    "diferencia": 0.0,
+    "ic_bajo": 0.0,
+    "ic_alto": 0.0,
+    "nivel_ic": 0.9,
+    "delta": 0.02,
+    "p_tost": 0.0,
+    "equivalentes": true,
+    "n_images": 1717,
+    "same_class_frac": 1.0,
+    "n_resamples": 2000,
+    "size_mb": 34.73083305358887,
+    "benchmark": {
+      "latency_ms_median": 46.12430549968849,
+      "latency_ms_p95": 47.16508775163675,
+      "latency_ms_mean": 46.23605404041882,
+      "repeats": 100,
+      "warmup": 10,
+      "intra_op_threads": 2,
+      "peak_rss_mb": 246.1953125,
+      "rss_before_load_mb": 51.2890625,
+      "file_size_mb": 34.73083305358887,
+      "onnxruntime": "1.32.0",
+      "provider": "CPUExecutionProvider"
+    }
+  },
+  "benchmark": {
+    "latency_ms_median": 47.77875750005478,
+    "latency_ms_p95": 51.04748899611877,
+    "latency_ms_mean": 48.13685949018691,
+    "repeats": 100,
+    "warmup": 10,
+    "intra_op_threads": 2,
+    "peak_rss_mb": 236.3203125,
+    "rss_before_load_mb": 51.3203125,
+    "file_size_mb": 69.18874645233154,
+    "onnxruntime": "1.32.0",
+    "provider": "CPUExecutionProvider"
+  },
+  "params": {
+    "trainable": 18106375,
+    "non_trainable": 229056,
+    "total": 18335431
+  },
+  "size_mb": 69.18874645233154,
+  "size_limit_mb": 95.0,
+  "serving_file": "model_fp16.onnx",
+  "live": true,
+  "ood": {
+    "metric": "cosine_knn_mean",
+    "k": 5,
+    "quantile": 0.99,
+    "threshold": 0.16550220549106598,
+    "n_reference": 1000,
+    "n_calibration": 500,
+    "calibration_split": "val",
+    "distance_median_val": 0.05743831396102905,
+    "file": "ood_reference.npz"
+  }
+}

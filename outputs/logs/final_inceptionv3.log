@@ -1,0 +1,124 @@
+2026-11-26 22:15:24 INFO inceptionv3 | final s0_f0 | Fase A: 5 épocas, backbone congelado
+2026-11-26 22:15:57 INFO inceptionv3 | final s0_f0 | warmup | época 1/5 | loss 1.8821 | val_bal_acc 0.4342 | mejor 0.4342 | 32.9s
+2026-11-26 22:16:06 INFO inceptionv3 | final s0_f0 | warmup | época 2/5 | loss 1.4570 | val_bal_acc 0.4822 | mejor 0.4822 | 8.8s
+2026-11-26 22:16:18 INFO inceptionv3 | final s0_f0 | warmup | época 3/5 | loss 1.3460 | val_bal_acc 0.5039 | mejor 0.5039 | 11.8s
+2026-11-26 22:16:34 INFO inceptionv3 | final s0_f0 | warmup | época 4/5 | loss 1.2748 | val_bal_acc 0.4970 | mejor 0.5039 | 16.1s
+2026-11-26 22:16:51 INFO inceptionv3 | final s0_f0 | warmup | época 5/5 | loss 1.2276 | val_bal_acc 0.5152 | mejor 0.5152 | 16.8s
+2026-11-26 22:16:51 INFO inceptionv3 | final s0_f0 | Fase B: hasta 30 épocas, todo descongelado
+2026-11-26 22:18:42 INFO inceptionv3 | final s0_f0 | finetune | época 1/30 | loss 1.4073 | val_bal_acc 0.5205 | mejor 0.5205 | 1m 51s
+2026-11-26 22:19:12 INFO inceptionv3 | final s0_f0 | finetune | época 2/30 | loss 1.0588 | val_bal_acc 0.6189 | mejor 0.6189 | 29.6s
+2026-11-26 22:19:39 INFO inceptionv3 | final s0_f0 | finetune | época 3/30 | loss 1.0065 | val_bal_acc 0.3964 | mejor 0.6189 | 27.9s
+2026-11-26 22:20:08 INFO inceptionv3 | final s0_f0 | finetune | época 4/30 | loss 0.8696 | val_bal_acc 0.5831 | mejor 0.6189 | 28.9s
+2026-11-26 22:20:36 INFO inceptionv3 | final s0_f0 | finetune | época 5/30 | loss 0.7887 | val_bal_acc 0.5832 | mejor 0.6189 | 27.9s
+2026-11-26 22:21:03 INFO inceptionv3 | final s0_f0 | finetune | época 6/30 | loss 0.7832 | val_bal_acc 0.3936 | mejor 0.6189 | 27.1s
+2026-11-26 22:21:31 INFO inceptionv3 | final s0_f0 | finetune | época 7/30 | loss 0.7024 | val_bal_acc 0.6469 | mejor 0.6469 | 28.0s
+2026-11-26 22:21:59 INFO inceptionv3 | final s0_f0 | finetune | época 8/30 | loss 0.6764 | val_bal_acc 0.6450 | mejor 0.6469 | 27.9s
+2026-11-26 22:22:27 INFO inceptionv3 | final s0_f0 | finetune | época 9/30 | loss 0.6043 | val_bal_acc 0.6709 | mejor 0.6709 | 27.7s
+2026-11-26 22:22:55 INFO inceptionv3 | final s0_f0 | finetune | época 10/30 | loss 0.6029 | val_bal_acc 0.6215 | mejor 0.6709 | 27.9s
+2026-11-26 22:23:23 INFO inceptionv3 | final s0_f0 | finetune | época 11/30 | loss 0.5308 | val_bal_acc 0.5639 | mejor 0.6709 | 27.9s
+2026-11-26 22:23:50 INFO inceptionv3 | final s0_f0 | finetune | época 12/30 | loss 0.4545 | val_bal_acc 0.6481 | mejor 0.6709 | 26.9s
+2026-11-26 22:24:21 INFO inceptionv3 | final s0_f0 | finetune | época 13/30 | loss 0.4654 | val_bal_acc 0.6652 | mejor 0.6709 | 31.6s
+2026-11-26 22:24:49 INFO inceptionv3 | final s0_f0 | finetune | época 14/30 | loss 0.3625 | val_bal_acc 0.6677 | mejor 0.6709 | 27.9s
+2026-11-26 22:24:49 INFO inceptionv3 | final s0_f0 | parada temprana en la época 14
+2026-11-26 22:24:49 INFO inceptionv3 | final s0_f0 | se restauran los pesos de la época 9 de la fase B
+2026-11-26 22:25:16 INFO inceptionv3 | final s0_f0 | val balanced_accuracy = 0.6709 (época 9 de la fase B) | entrenamiento 9m 25s -> outputs/runs/inceptionv3/final/s0_f0
+2026-11-26 22:25:30 INFO inceptionv3 | final s0_f1 | Fase A: 5 épocas, backbone congelado
+2026-11-26 22:26:04 INFO inceptionv3 | final s0_f1 | warmup | época 1/5 | loss 1.8620 | val_bal_acc 0.4177 | mejor 0.4177 | 33.1s
+2026-11-26 22:26:16 INFO inceptionv3 | final s0_f1 | warmup | época 2/5 | loss 1.4348 | val_bal_acc 0.4290 | mejor 0.4290 | 12.1s
+2026-11-26 22:26:25 INFO inceptionv3 | final s0_f1 | warmup | época 3/5 | loss 1.3810 | val_bal_acc 0.4832 | mejor 0.4832 | 9.0s
+2026-11-26 22:26:37 INFO inceptionv3 | final s0_f1 | warmup | época 4/5 | loss 1.2727 | val_bal_acc 0.5210 | mejor 0.5210 | 12.4s
+2026-11-26 22:26:46 INFO inceptionv3 | final s0_f1 | warmup | época 5/5 | loss 1.2570 | val_bal_acc 0.5544 | mejor 0.5544 | 9.2s
+2026-11-26 22:26:46 INFO inceptionv3 | final s0_f1 | Fase B: hasta 30 épocas, todo descongelado
+2026-11-26 22:29:02 INFO inceptionv3 | final s0_f1 | finetune | época 1/30 | loss 1.4684 | val_bal_acc 0.3717 | mejor 0.3717 | 2m 15s
+2026-11-26 22:29:31 INFO inceptionv3 | final s0_f1 | finetune | época 2/30 | loss 1.3937 | val_bal_acc 0.3202 | mejor 0.3717 | 29.2s
+2026-11-26 22:29:59 INFO inceptionv3 | final s0_f1 | finetune | época 3/30 | loss 1.0926 | val_bal_acc 0.6154 | mejor 0.6154 | 28.3s
+2026-11-26 22:30:28 INFO inceptionv3 | final s0_f1 | finetune | época 4/30 | loss 0.8907 | val_bal_acc 0.5356 | mejor 0.6154 | 28.2s
+2026-11-26 22:30:56 INFO inceptionv3 | final s0_f1 | finetune | época 5/30 | loss 0.8587 | val_bal_acc 0.6517 | mejor 0.6517 | 28.3s
+2026-11-26 22:31:24 INFO inceptionv3 | final s0_f1 | finetune | época 6/30 | loss 0.7737 | val_bal_acc 0.3609 | mejor 0.6517 | 28.2s
+2026-11-26 22:31:52 INFO inceptionv3 | final s0_f1 | finetune | época 7/30 | loss 0.7536 | val_bal_acc 0.6059 | mejor 0.6517 | 28.2s
+2026-11-26 22:32:20 INFO inceptionv3 | final s0_f1 | finetune | época 8/30 | loss 0.6832 | val_bal_acc 0.6461 | mejor 0.6517 | 28.3s
+2026-11-26 22:32:49 INFO inceptionv3 | final s0_f1 | finetune | época 9/30 | loss 0.6655 | val_bal_acc 0.6380 | mejor 0.6517 | 28.2s
+2026-11-26 22:33:17 INFO inceptionv3 | final s0_f1 | finetune | época 10/30 | loss 0.6039 | val_bal_acc 0.6998 | mejor 0.6998 | 28.2s
+2026-11-26 22:33:45 INFO inceptionv3 | final s0_f1 | finetune | época 11/30 | loss 0.5316 | val_bal_acc 0.6502 | mejor 0.6998 | 28.2s
+2026-11-26 22:34:13 INFO inceptionv3 | final s0_f1 | finetune | época 12/30 | loss 0.5266 | val_bal_acc 0.6715 | mejor 0.6998 | 28.0s
+2026-11-26 22:34:41 INFO inceptionv3 | final s0_f1 | finetune | época 13/30 | loss 0.4731 | val_bal_acc 0.6952 | mejor 0.6998 | 27.4s
+2026-11-26 22:35:09 INFO inceptionv3 | final s0_f1 | finetune | época 14/30 | loss 0.4461 | val_bal_acc 0.6766 | mejor 0.6998 | 28.2s
+2026-11-26 22:35:37 INFO inceptionv3 | final s0_f1 | finetune | época 15/30 | loss 0.3816 | val_bal_acc 0.7494 | mejor 0.7494 | 28.2s
+2026-11-26 22:36:09 INFO inceptionv3 | final s0_f1 | finetune | época 16/30 | loss 0.3487 | val_bal_acc 0.7250 | mejor 0.7494 | 32.5s
+2026-11-26 22:36:38 INFO inceptionv3 | final s0_f1 | finetune | época 17/30 | loss 0.3644 | val_bal_acc 0.6992 | mejor 0.7494 | 28.2s
+2026-11-26 22:37:06 INFO inceptionv3 | final s0_f1 | finetune | época 18/30 | loss 0.3291 | val_bal_acc 0.6941 | mejor 0.7494 | 28.2s
+2026-11-26 22:37:34 INFO inceptionv3 | final s0_f1 | finetune | época 19/30 | loss 0.2614 | val_bal_acc 0.6853 | mejor 0.7494 | 28.2s
+2026-11-26 22:38:02 INFO inceptionv3 | final s0_f1 | finetune | época 20/30 | loss 0.2594 | val_bal_acc 0.7240 | mejor 0.7494 | 27.7s
+2026-11-26 22:38:02 INFO inceptionv3 | final s0_f1 | parada temprana en la época 20
+2026-11-26 22:38:02 INFO inceptionv3 | final s0_f1 | se restauran los pesos de la época 15 de la fase B
+2026-11-26 22:38:22 INFO inceptionv3 | final s0_f1 | val balanced_accuracy = 0.7494 (época 15 de la fase B) | entrenamiento 12m 31s -> outputs/runs/inceptionv3/final/s0_f1
+2026-11-26 22:38:36 INFO inceptionv3 | final s0_f2 | Fase A: 5 épocas, backbone congelado
+2026-11-26 22:39:09 INFO inceptionv3 | final s0_f2 | warmup | época 1/5 | loss 1.8910 | val_bal_acc 0.4779 | mejor 0.4779 | 33.2s
+2026-11-26 22:39:18 INFO inceptionv3 | final s0_f2 | warmup | época 2/5 | loss 1.4901 | val_bal_acc 0.5217 | mejor 0.5217 | 8.9s
+2026-11-26 22:39:27 INFO inceptionv3 | final s0_f2 | warmup | época 3/5 | loss 1.3723 | val_bal_acc 0.5759 | mejor 0.5759 | 8.8s
+2026-11-26 22:39:36 INFO inceptionv3 | final s0_f2 | warmup | época 4/5 | loss 1.3297 | val_bal_acc 0.5347 | mejor 0.5759 | 8.8s
+2026-11-26 22:39:45 INFO inceptionv3 | final s0_f2 | warmup | época 5/5 | loss 1.2512 | val_bal_acc 0.5501 | mejor 0.5759 | 8.8s
+2026-11-26 22:39:45 INFO inceptionv3 | final s0_f2 | Fase B: hasta 30 épocas, todo descongelado
+2026-11-26 22:41:36 INFO inceptionv3 | final s0_f2 | finetune | época 1/30 | loss 1.4888 | val_bal_acc 0.5687 | mejor 0.5687 | 1m 51s
+2026-11-26 22:42:08 INFO inceptionv3 | final s0_f2 | finetune | época 2/30 | loss 1.1840 | val_bal_acc 0.6053 | mejor 0.6053 | 32.0s
+2026-11-26 22:42:36 INFO inceptionv3 | final s0_f2 | finetune | época 3/30 | loss 1.0561 | val_bal_acc 0.6108 | mejor 0.6108 | 28.1s
+2026-11-26 22:43:04 INFO inceptionv3 | final s0_f2 | finetune | época 4/30 | loss 0.9012 | val_bal_acc 0.5839 | mejor 0.6108 | 27.8s
+2026-11-26 22:43:32 INFO inceptionv3 | final s0_f2 | finetune | época 5/30 | loss 0.7453 | val_bal_acc 0.6249 | mejor 0.6249 | 28.1s
+2026-11-26 22:44:00 INFO inceptionv3 | final s0_f2 | finetune | época 6/30 | loss 0.8847 | val_bal_acc 0.3372 | mejor 0.6249 | 28.1s
+2026-11-26 22:44:28 INFO inceptionv3 | final s0_f2 | finetune | época 7/30 | loss 0.7781 | val_bal_acc 0.7449 | mejor 0.7449 | 28.1s
+2026-11-26 22:45:02 INFO inceptionv3 | final s0_f2 | finetune | época 8/30 | loss 0.6582 | val_bal_acc 0.7639 | mejor 0.7639 | 34.0s
+2026-11-26 22:45:30 INFO inceptionv3 | final s0_f2 | finetune | época 9/30 | loss 0.6282 | val_bal_acc 0.6494 | mejor 0.7639 | 28.1s
+2026-11-26 22:46:04 INFO inceptionv3 | final s0_f2 | finetune | época 10/30 | loss 0.6876 | val_bal_acc 0.7091 | mejor 0.7639 | 33.9s
+2026-11-26 22:46:33 INFO inceptionv3 | final s0_f2 | finetune | época 11/30 | loss 0.5504 | val_bal_acc 0.6743 | mejor 0.7639 | 29.0s
+2026-11-26 22:47:01 INFO inceptionv3 | final s0_f2 | finetune | época 12/30 | loss 0.5946 | val_bal_acc 0.7198 | mejor 0.7639 | 28.0s
+2026-11-26 22:47:29 INFO inceptionv3 | final s0_f2 | finetune | época 13/30 | loss 0.4776 | val_bal_acc 0.7014 | mejor 0.7639 | 28.0s
+2026-11-26 22:47:29 INFO inceptionv3 | final s0_f2 | parada temprana en la época 13
+2026-11-26 22:47:29 INFO inceptionv3 | final s0_f2 | se restauran los pesos de la época 8 de la fase B
+2026-11-26 22:47:49 INFO inceptionv3 | final s0_f2 | val balanced_accuracy = 0.7639 (época 8 de la fase B) | entrenamiento 8m 53s -> outputs/runs/inceptionv3/final/s0_f2
+2026-11-26 22:48:02 INFO inceptionv3 | final s0_f3 | Fase A: 5 épocas, backbone congelado
+2026-11-26 22:48:36 INFO inceptionv3 | final s0_f3 | warmup | época 1/5 | loss 1.8346 | val_bal_acc 0.4300 | mejor 0.4300 | 33.3s
+2026-11-26 22:48:45 INFO inceptionv3 | final s0_f3 | warmup | época 2/5 | loss 1.4704 | val_bal_acc 0.4915 | mejor 0.4915 | 8.8s
+2026-11-26 22:48:53 INFO inceptionv3 | final s0_f3 | warmup | época 3/5 | loss 1.3870 | val_bal_acc 0.5055 | mejor 0.5055 | 8.7s
+2026-11-26 22:49:02 INFO inceptionv3 | final s0_f3 | warmup | época 4/5 | loss 1.3062 | val_bal_acc 0.4856 | mejor 0.5055 | 8.8s
+2026-11-26 22:49:11 INFO inceptionv3 | final s0_f3 | warmup | época 5/5 | loss 1.2105 | val_bal_acc 0.4953 | mejor 0.5055 | 8.8s
+2026-11-26 22:49:11 INFO inceptionv3 | final s0_f3 | Fase B: hasta 30 épocas, todo descongelado
+2026-11-26 22:51:03 INFO inceptionv3 | final s0_f3 | finetune | época 1/30 | loss 1.4105 | val_bal_acc 0.4573 | mejor 0.4573 | 1m 52s
+2026-11-26 22:51:31 INFO inceptionv3 | final s0_f3 | finetune | época 2/30 | loss 0.9546 | val_bal_acc 0.4789 | mejor 0.4789 | 27.8s
+2026-11-26 22:52:01 INFO inceptionv3 | final s0_f3 | finetune | época 3/30 | loss 0.9578 | val_bal_acc 0.5624 | mejor 0.5624 | 29.6s
+2026-11-26 22:52:29 INFO inceptionv3 | final s0_f3 | finetune | época 4/30 | loss 0.7949 | val_bal_acc 0.6516 | mejor 0.6516 | 28.2s
+2026-11-26 22:52:57 INFO inceptionv3 | final s0_f3 | finetune | época 5/30 | loss 0.7012 | val_bal_acc 0.6064 | mejor 0.6516 | 28.1s
+2026-11-26 22:53:25 INFO inceptionv3 | final s0_f3 | finetune | época 6/30 | loss 0.7102 | val_bal_acc 0.5807 | mejor 0.6516 | 28.1s
+2026-11-26 22:53:59 INFO inceptionv3 | final s0_f3 | finetune | época 7/30 | loss 0.6542 | val_bal_acc 0.5867 | mejor 0.6516 | 33.6s
+2026-11-26 22:54:27 INFO inceptionv3 | final s0_f3 | finetune | época 8/30 | loss 0.5545 | val_bal_acc 0.5945 | mejor 0.6516 | 28.1s
+2026-11-26 22:54:55 INFO inceptionv3 | final s0_f3 | finetune | época 9/30 | loss 0.6193 | val_bal_acc 0.5783 | mejor 0.6516 | 28.1s
+2026-11-26 22:54:55 INFO inceptionv3 | final s0_f3 | parada temprana en la época 9
+2026-11-26 22:54:55 INFO inceptionv3 | final s0_f3 | se restauran los pesos de la época 4 de la fase B
+2026-11-26 22:55:15 INFO inceptionv3 | final s0_f3 | val balanced_accuracy = 0.6516 (época 4 de la fase B) | entrenamiento 6m 52s -> outputs/runs/inceptionv3/final/s0_f3
+2026-11-26 22:55:28 INFO inceptionv3 | final s0_f4 | Fase A: 5 épocas, backbone congelado
+2026-11-26 22:56:07 INFO inceptionv3 | final s0_f4 | warmup | época 1/5 | loss 1.8262 | val_bal_acc 0.4894 | mejor 0.4894 | 38.1s
+2026-11-26 22:56:15 INFO inceptionv3 | final s0_f4 | warmup | época 2/5 | loss 1.4327 | val_bal_acc 0.5034 | mejor 0.5034 | 8.8s
+2026-11-26 22:56:24 INFO inceptionv3 | final s0_f4 | warmup | época 3/5 | loss 1.3510 | val_bal_acc 0.5016 | mejor 0.5034 | 8.7s
+2026-11-26 22:56:33 INFO inceptionv3 | final s0_f4 | warmup | época 4/5 | loss 1.3198 | val_bal_acc 0.4670 | mejor 0.5034 | 8.9s
+2026-11-26 22:56:42 INFO inceptionv3 | final s0_f4 | warmup | época 5/5 | loss 1.2764 | val_bal_acc 0.5166 | mejor 0.5166 | 8.8s
+2026-11-26 22:56:42 INFO inceptionv3 | final s0_f4 | Fase B: hasta 30 épocas, todo descongelado
+2026-11-26 22:58:59 INFO inceptionv3 | final s0_f4 | finetune | época 1/30 | loss 1.4738 | val_bal_acc 0.4005 | mejor 0.4005 | 2m 17s
+2026-11-26 22:59:27 INFO inceptionv3 | final s0_f4 | finetune | época 2/30 | loss 1.0234 | val_bal_acc 0.5685 | mejor 0.5685 | 28.3s
+2026-11-26 22:59:55 INFO inceptionv3 | final s0_f4 | finetune | época 3/30 | loss 0.8803 | val_bal_acc 0.5876 | mejor 0.5876 | 28.0s
+2026-11-26 23:00:23 INFO inceptionv3 | final s0_f4 | finetune | época 4/30 | loss 0.7981 | val_bal_acc 0.5848 | mejor 0.5876 | 28.1s
+2026-11-26 23:00:52 INFO inceptionv3 | final s0_f4 | finetune | época 5/30 | loss 0.7570 | val_bal_acc 0.6754 | mejor 0.6754 | 28.3s
+2026-11-26 23:01:20 INFO inceptionv3 | final s0_f4 | finetune | época 6/30 | loss 0.8594 | val_bal_acc 0.6647 | mejor 0.6754 | 28.1s
+2026-11-26 23:01:47 INFO inceptionv3 | final s0_f4 | finetune | época 7/30 | loss 0.7693 | val_bal_acc 0.6436 | mejor 0.6754 | 27.1s
+2026-11-26 23:02:16 INFO inceptionv3 | final s0_f4 | finetune | época 8/30 | loss 0.5565 | val_bal_acc 0.6604 | mejor 0.6754 | 29.4s
+2026-11-26 23:02:44 INFO inceptionv3 | final s0_f4 | finetune | época 9/30 | loss 0.5994 | val_bal_acc 0.6724 | mejor 0.6754 | 28.1s
+2026-11-26 23:03:12 INFO inceptionv3 | final s0_f4 | finetune | época 10/30 | loss 0.5609 | val_bal_acc 0.6790 | mejor 0.6790 | 27.6s
+2026-11-26 23:03:40 INFO inceptionv3 | final s0_f4 | finetune | época 11/30 | loss 0.5057 | val_bal_acc 0.6180 | mejor 0.6790 | 28.1s
+2026-11-26 23:04:08 INFO inceptionv3 | final s0_f4 | finetune | época 12/30 | loss 0.5265 | val_bal_acc 0.6908 | mejor 0.6908 | 28.1s
+2026-11-26 23:04:42 INFO inceptionv3 | final s0_f4 | finetune | época 13/30 | loss 0.4487 | val_bal_acc 0.7359 | mejor 0.7359 | 34.0s
+2026-11-26 23:05:10 INFO inceptionv3 | final s0_f4 | finetune | época 14/30 | loss 0.4506 | val_bal_acc 0.6904 | mejor 0.7359 | 27.5s
+2026-11-26 23:05:37 INFO inceptionv3 | final s0_f4 | finetune | época 15/30 | loss 0.3738 | val_bal_acc 0.7019 | mejor 0.7359 | 27.2s
+2026-11-26 23:06:05 INFO inceptionv3 | final s0_f4 | finetune | época 16/30 | loss 0.3572 | val_bal_acc 0.7094 | mejor 0.7359 | 28.0s
+2026-11-26 23:06:33 INFO inceptionv3 | final s0_f4 | finetune | época 17/30 | loss 0.2884 | val_bal_acc 0.6999 | mejor 0.7359 | 28.1s
+2026-11-26 23:07:01 INFO inceptionv3 | final s0_f4 | finetune | época 18/30 | loss 0.3849 | val_bal_acc 0.7084 | mejor 0.7359 | 28.1s
+2026-11-26 23:07:01 INFO inceptionv3 | final s0_f4 | parada temprana en la época 18
+2026-11-26 23:07:01 INFO inceptionv3 | final s0_f4 | se restauran los pesos de la época 13 de la fase B
+2026-11-26 23:07:19 INFO inceptionv3 | final s0_f4 | val balanced_accuracy = 0.7359 (época 13 de la fase B) | entrenamiento 11m 33s -> outputs/runs/inceptionv3/final/s0_f4

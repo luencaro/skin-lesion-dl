@@ -18,7 +18,7 @@ def master_table(models=("mobilenetv2", "resnet50", "cci")) -> pd.DataFrame:
     rng = np.random.default_rng(0)
     rows = []
     for m in models:
-        for k in ("balanced_accuracy", "accuracy", "ece"):
+        for k in ("balanced_accuracy", "f1_macro", "accuracy", "ece"):
             mean = rng.uniform(0.6, 0.8) if k != "ece" else rng.uniform(0.02, 0.08)
             rows.append({"modelo": m, "rol": "x", "metrica": k, "corridas": 25, "media": mean, "std": rng.uniform(0.01, 0.03),
                          "ic_t_bajo": mean - 0.01, "ic_t_alto": mean + 0.01, "ic_lesion_bajo": np.nan, "ic_lesion_alto": np.nan})

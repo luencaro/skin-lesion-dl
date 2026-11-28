@@ -1,0 +1,9 @@
+verificacion,criterio,valor,resultado,detalle
+"Sintético: select_split separa train, val y test por lesión",conjuntos disjuntos,True,aprobado,
+Sintético: pesos de clase solo con train,iguales al cambiar las etiquetas de val y test,True,aprobado,
+Sintético: logreg ajustado solo con train,predicciones de train iguales al cambiar X e y de val y test,True,aprobado,
+Sintético: trivial ajustado solo con train,predicciones de train iguales al cambiar X e y de val y test,True,aprobado,
+Sintético: StandardScaler con la media de train,media del escalado = media de train,True,aprobado,
+Sintético: temperatura ajustada solo con validación,T igual al cambiar test,True,aprobado,
+Sintético: umbral conforme calibrado solo con validación,umbral igual al cambiar test,True,aprobado,
+Estadísticas de color calculadas solo con train,n_imagenes = 8584,8584,aprobado,

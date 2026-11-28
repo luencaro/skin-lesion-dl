@@ -1,77 +1,154 @@
-"""Componentes reutilizables de la interfaz."""
+"""Componentes compartidos de la interfaz (design/*.dc.html): iconos, logo, aviso, marcadores,
+estados vacíos, tarjetas de cifra, encabezados de insight y formato numérico es-CO."""
 
 from __future__ import annotations
 
 import math
 
-import dash_bootstrap_components as dbc
 from dash import dcc, html
 
-from core import data
+from core.config import CLASS_COLORS, CLASS_NAMES, DISCLAIMER
 from core.theme import GRAPH_CONFIG
 
-
-def interpretation(key: str | None, fallback: str | None = None):
-    """Frase de interpretación tomada de los notebooks 05 y 06 (con su procedencia)."""
-    item = data.interpretation(key) if key else None
-    if item is None and not fallback:
-        return None
-    text = item["text"] if item else fallback
-    source = f" — {item['source']}" if item else ""
-    return html.P([html.Span("Interpretación. ", className="interp-label"), text,
-                   html.Span(source, className="interp-source")], className="interpretation")
+# ---------------------------------------------------------------------------
+# Formato: miles con espacio y decimales con coma
+# ---------------------------------------------------------------------------
 
 
-def section(sid: str, title: str, body, lead: str | None = None, interp: str | None = None, controls=None):
-    """Tarjeta de sección con título, controles opcionales, cuerpo e interpretación."""
-    children = [html.H2(title, className="section-title", id=f"{sid}-title")]
-    if lead:
-        children.append(html.P(lead, className="section-lead"))
-    if controls is not None:
-        children.append(html.Div(controls, className="section-controls"))
-    children.append(html.Div(body, id=f"{sid}-body"))
-    note = interpretation(interp)
-    if note is not None:
-        children.append(note)
-    return html.Section(children, className="card-section", id=sid, **{"aria-labelledby": f"{sid}-title"})
-
-
-def graph(gid: str, height: int = 340, figure=None):
-    return dcc.Loading(dcc.Graph(id=gid, config=GRAPH_CONFIG, figure=figure or {}, style={"height": f"{height}px"},
-                                 className="graph"), type="dot", color="var(--color-primary)")
-
-
-def static_graph(figure, height: int = 340):
-    return dcc.Graph(figure=figure, config=GRAPH_CONFIG, style={"height": f"{height}px"}, className="graph")
-
-
-def kpi(value: str, label: str, note: str | None = None, tone: str = "primary"):
-    return html.Div([html.Div(value, className=f"kpi-value kpi-{tone}"), html.Div(label, className="kpi-label"),
-                     html.Div(note, className="kpi-note") if note else None], className="kpi")
-
-
-def pending(title: str, message, color: str = "warning"):
-    return dbc.Alert([html.H3(title, className="alert-title"), html.Div(message)], color=color,
-                     className="pending-alert")
-
-
-def error_alert(message: str):
-    return dbc.Alert(message, color="danger", className="error-alert", dismissable=True)
-
-
-def swatch(label: str, color: str):
-    return html.Span([html.Span(className="swatch", style={"backgroundColor": color}), label], className="swatch-label")
-
-
-def fmt(x, digits: int = 3, pct: bool = False) -> str:
-    """Número con coma decimal (es-CO); guion si falta."""
-    if x is None:
-        return "—"
+def _finite(x) -> float | None:
     try:
         v = float(x)
     except (TypeError, ValueError):
-        return str(x)
-    if math.isnan(v):
+        return None
+    return None if math.isnan(v) or math.isinf(v) else v
+
+
+def fmt_num(n, digits: int = 0) -> str:
+    """10015 -> "10 015"; 1.25 (digits=2) -> "1,25"; None -> "—"."""
+    v = _finite(n)
+    if v is None:
         return "—"
-    s = f"{100 * v:.{digits}f} %" if pct else f"{v:,.{digits}f}"
-    return s.replace(",", " ").replace(".", ",")
+    return f"{v:,.{digits}f}".replace(",", " ").replace(".", ",")
+
+
+def fmt_pct(x, digits: int = 1, scale: bool = True) -> str:
+    """Proporción 0,58 -> "58,0 %" (scale=False si ya está en %)."""
+    v = _finite(x)
+    if v is None:
+        return "—"
+    return f"{fmt_num(100 * v if scale else v, digits)} %"
+
+
+def fmt_signed(x, digits: int = 1) -> str:
+    v = _finite(x)
+    if v is None:
+        return "—"
+    return ("+" if v > 0 else "−" if v < 0 else "±") + fmt_num(abs(v), digits)
+
+
+def is_num(x) -> bool:
+    return _finite(x) is not None
+
+
+# ---------------------------------------------------------------------------
+# Piezas básicas
+# ---------------------------------------------------------------------------
+
+
+def icon(name: str, size: int = 20, cls: str = "", style: dict | None = None):
+    """Icono SVG monocromo (máscara CSS en assets/cromia.css): toma el color del texto."""
+    return html.Span(className=f"ic ic-{name} {cls}".strip(), style={"width": size, "height": size, **(style or {})},
+                     **{"aria-hidden": "true"})
+
+
+def logo(size: int = 32):
+    return html.Span(className="logo", style={"width": size, "height": size}, **{"aria-hidden": "true"})
+
+
+def placeholder(text: str, cls: str = ""):
+    """Marcador visible de dato pendiente (borde discontinuo naranja)."""
+    return html.Span(text, className=f"ph {cls}".strip(), title="Dato pendiente: aún no hay resultados exportados")
+
+
+def value_or_ph(value, render, ph: str):
+    """`render(value)` si el valor es numérico; si no, el marcador `ph`."""
+    return render(value) if is_num(value) else placeholder(ph)
+
+
+def dot(color: str, size: int | None = None):
+    style = {"background": color}
+    if size:
+        style |= {"width": size, "height": size}
+    return html.Span(className="dot", style=style, **{"aria-hidden": "true"})
+
+
+def class_dot(c: str, size: int | None = None):
+    return dot(CLASS_COLORS.get(c, "var(--ink-3)"), size)
+
+
+def class_label(c: str, cls: str = "class-label"):
+    return html.Span([class_dot(c), CLASS_NAMES.get(c, c)], className=cls)
+
+
+def eyebrow(text: str, accent: bool = False):
+    return html.Span(text, className="eyebrow" + (" eyebrow-accent" if accent else ""))
+
+
+def disclaimer(compact: bool = False):
+    """Aviso legal (Inicio y Demo)."""
+    return html.Div([
+        icon("info", 22 if not compact else 20, "ic-accent"),
+        html.P([html.Strong(DISCLAIMER[0]), " ", DISCLAIMER[1]]),
+    ], className="disclaimer" + (" compact" if compact else ""), role="note")
+
+
+def empty_state(title: str, body: str, size: int = 160, ic: str = "eye", heading: str = "h2", cls: str = ""):
+    """Círculo brand-soft con icono, título en Manrope y una línea de texto."""
+    tag = getattr(html, heading.upper() if heading.startswith("h") else "H2")
+    return html.Div([
+        html.Div([html.Div(className="empty-ring"), icon(ic, int(size * 0.35), "empty-ic")],
+                 className="empty-art", style={"width": size, "height": size}),
+        tag(title, className="disp empty-title"),
+        html.P(body, className="empty-body"),
+    ], className=f"empty {cls}".strip())
+
+
+def stat_card(value, label: str, highlight: bool = False, extra=None):
+    return html.Div([
+        html.Span(value, className="disp num stat-value"),
+        html.Span(label, className="stat-label"),
+        extra,
+    ], className="card stat" + (" stat-hl" if highlight else ""))
+
+
+def insight_header(eyebrow_text: str | None, title, subtitle=None, size: int = 28, heading: str = "h2", hid: str | None = None):
+    tag = html.H2 if heading == "h2" else html.H3
+    kids = []
+    if eyebrow_text:
+        kids.append(eyebrow(eyebrow_text, accent=True))
+    kids.append(tag(title, className="disp insight-title", style={"fontSize": size}, id=hid or None) if hid
+                else tag(title, className="disp insight-title", style={"fontSize": size}))
+    if subtitle is not None:
+        kids.append(html.Span(subtitle, className="insight-sub"))
+    return html.Div(kids, className="insight")
+
+
+def graph(gid, height: int = 380, figure=None, label: str | None = None):
+    props = {"aria-label": label} if label else {}
+    return html.Div(dcc.Graph(id=gid, config=GRAPH_CONFIG, figure=figure or {}, style={"height": f"{height}px"}),
+                    className="graph", role="img" if label else None, **props)
+
+
+def prob_row(c: str, p: float, compact: bool = False):
+    """Fila de probabilidad: punto + nombre, barra del color de la clase y porcentaje."""
+    width = f"{max(100 * float(p), 1):.2f}%"
+    bar = html.Div(html.Span(style={"width": width, "background": CLASS_COLORS[c]}), className="bar",
+                   role="presentation")
+    return html.Div([class_label(c, "prob-name"), bar, html.Span(fmt_pct(p), className="num prob-val")],
+                    className="prob-row" + (" compact" if compact else ""))
+
+
+def alert(message, title: str | None = None, kind: str = "warn"):
+    return html.Div([icon("alert", 22), html.Div([html.Strong(title) if title else None, html.Span(message)],
+                                                 className="alert-text")],
+                    className=f"alert alert-{kind}", role="alert")

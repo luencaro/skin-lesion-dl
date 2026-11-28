@@ -1,0 +1,9 @@
+,errores,exclusivos,compartidos_por_todos
+mobilenetv2,388,37,113
+resnet50,403,36,113
+vgg16,391,31,113
+densenet201,288,4,113
+inceptionv3,377,12,113
+convnext_tiny,259,6,113
+vit_b16,283,11,113
+efficientnetb0,358,17,113

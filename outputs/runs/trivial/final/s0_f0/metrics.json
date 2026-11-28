@@ -1,0 +1,398 @@
+{
+  "val": {
+    "n": 1717,
+    "balanced_accuracy": 0.14285714285714285,
+    "accuracy": 0.6697728596389051,
+    "f1_macro": 0.1146046140814191,
+    "f1_weighted": 0.5373134207078765,
+    "auc_roc_macro_ovr": 0.5,
+    "auc_pr_macro": 0.14285714285714285,
+    "mcc": 0.0,
+    "ece": 0.0003393369943732738,
+    "cross_entropy": 1.1304070778484256,
+    "per_class": {
+      "akiec": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "support": 56
+      },
+      "bcc": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "support": 88
+      },
+      "bkl": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "support": 188
+      },
+      "df": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "support": 20
+      },
+      "mel": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "support": 191
+      },
+      "nv": {
+        "precision": 0.6697728596389051,
+        "recall": 1.0,
+        "f1": 0.8022322985699337,
+        "support": 1150
+      },
+      "vasc": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "support": 24
+      }
+    },
+    "confusion_matrix": {
+      "labels": [
+        "akiec",
+        "bcc",
+        "bkl",
+        "df",
+        "mel",
+        "nv",
+        "vasc"
+      ],
+      "matrix": [
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          56,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          88,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          188,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          20,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          191,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          1150,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          24,
+          0
+        ]
+      ]
+    }
+  },
+  "test": {
+    "n": 1431,
+    "balanced_accuracy": 0.14285714285714285,
+    "accuracy": 0.6694619147449337,
+    "f1_macro": 0.11457274412485798,
+    "f1_weighted": 0.5369146206158614,
+    "auc_roc_macro_ovr": 0.5,
+    "auc_pr_macro": 0.14285714285714285,
+    "mcc": 0.0,
+    "ece": 2.839210040173068e-05,
+    "cross_entropy": 1.1312751568690056,
+    "per_class": {
+      "akiec": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "support": 46
+      },
+      "bcc": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "support": 74
+      },
+      "bkl": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "support": 157
+      },
+      "df": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "support": 17
+      },
+      "mel": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "support": 159
+      },
+      "nv": {
+        "precision": 0.6694619147449337,
+        "recall": 1.0,
+        "f1": 0.8020092088740058,
+        "support": 958
+      },
+      "vasc": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "support": 20
+      }
+    },
+    "confusion_matrix": {
+      "labels": [
+        "akiec",
+        "bcc",
+        "bkl",
+        "df",
+        "mel",
+        "nv",
+        "vasc"
+      ],
+      "matrix": [
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          46,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          74,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          157,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          17,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          159,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          958,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          20,
+          0
+        ]
+      ]
+    }
+  },
+  "train": {
+    "n": 6867,
+    "balanced_accuracy": 0.14285714285714285,
+    "accuracy": 0.6694335226445318,
+    "f1_macro": 0.11456983351610009,
+    "f1_weighted": 0.536878210676363,
+    "auc_roc_macro_ovr": 0.5,
+    "auc_pr_macro": 0.14285714285714285,
+    "mcc": 0.0,
+    "ece": 0.0,
+    "cross_entropy": 1.1311511083778778,
+    "per_class": {
+      "akiec": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "support": 225
+      },
+      "bcc": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "support": 352
+      },
+      "bkl": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "support": 754
+      },
+      "df": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "support": 78
+      },
+      "mel": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "support": 763
+      },
+      "nv": {
+        "precision": 0.6694335226445318,
+        "recall": 1.0,
+        "f1": 0.8019888346127007,
+        "support": 4597
+      },
+      "vasc": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "support": 98
+      }
+    },
+    "confusion_matrix": {
+      "labels": [
+        "akiec",
+        "bcc",
+        "bkl",
+        "df",
+        "mel",
+        "nv",
+        "vasc"
+      ],
+      "matrix": [
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          225,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          352,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          754,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          78,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          763,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          4597,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          98,
+          0
+        ]
+      ]
+    }
+  }
+}

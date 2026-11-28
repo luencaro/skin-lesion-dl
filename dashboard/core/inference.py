@@ -1,6 +1,18 @@
 """Inferencia en CPU con ONNX Runtime: validación de la imagen, preprocesamiento, probabilidades
 calibradas, conjunto conforme, CAM y aviso fuera de dominio.
 
+Pipeline: imagen (en memoria) -> RGB -> 224 x 224 bilineal -> float32 en [0, 255] -> ONNX. La
+normalización de cada backbone y, en el modelo original, la capa CCI van dentro del grafo
+(config.CCI_IN_GRAPH), así que aquí no se aplican.
+
+- CAM: el ONNX de los modelos con cabeza GAP -> [LayerNorm] -> lineal expone `feature_map` y
+  `head_weights` (src/export.py) y el mapa es Σ_c A[..., c] W[c, k] (equivale a Grad-CAM en esa
+  arquitectura). Los modelos sin esa cabeza (ViT-B/16: su attention rollout solo existe en el
+  pipeline de TensorFlow, src/interpret.py) no traen mapa.
+- Conjunto conforme: LAC, {k : 1 − p_k <= q̂(α)} con los cuantiles de metadata.json.
+- Fuera de distribución: distancia coseno media a los k vecinos de train en el espacio de
+  embeddings frente al umbral fijado en validación (metadata.json y ood_reference.npz).
+
 Las imágenes solo se procesan en memoria: no se escriben en disco ni se registran.
 """
 
@@ -8,6 +20,7 @@ from __future__ import annotations
 
 import base64
 import io
+import logging
 import time
 from functools import lru_cache
 
@@ -17,6 +30,8 @@ from PIL import Image, UnidentifiedImageError
 from core import data
 from core.config import (
     ALLOWED_FORMATS,
+    HEATMAP_STOPS,
+    INPUT_SIZE,
     MAX_PIXELS,
     MAX_UPLOAD_BYTES,
     MIN_SIDE,
@@ -25,6 +40,8 @@ from core.config import (
 )
 
 Image.MAX_IMAGE_PIXELS = MAX_PIXELS
+log = logging.getLogger(__name__)
+_OOD_WARNED: set[str] = set()
 
 
 class InvalidImage(ValueError):
@@ -121,6 +138,9 @@ def ood_check(embedding: np.ndarray, model: str, meta: dict) -> dict | None:
     ref = data.ood_reference(model)
     spec = meta.get("ood")
     if ref is None or not spec:
+        if model not in _OOD_WARNED:
+            _OOD_WARNED.add(model)
+            log.warning("%s: sin ood_reference.npz o sin umbral en metadata.json; detección fuera de distribución desactivada", model)
         return None
     e = embedding.astype(np.float32)
     e = e / max(float(np.linalg.norm(e)), 1e-12)
@@ -147,7 +167,7 @@ def predict(model: str, img: Image.Image) -> dict:
     meta = data.model_metadata(model)
     if meta is None:
         raise FileNotFoundError(f"No hay metadatos de {model}.")
-    size = int(meta["resolution"][0])
+    size = int((meta.get("resolution") or [INPUT_SIZE])[0])
     x = preprocess(img, size)
     sess = session(model)
     names = [o.name for o in sess.get_outputs()]
@@ -175,6 +195,42 @@ def predict_precomputed(model: str, image_id: str) -> dict:
         cam = np.maximum(cam, 0)
         cam = cam / cam.max() if cam.max() > 0 else cam
     path = data.example_path(image_id)
-    image = preprocess(Image.open(path), int(meta["resolution"][0]))[0].astype(np.uint8) if path else None
+    image = preprocess(Image.open(path), int((meta.get("resolution") or [INPUT_SIZE])[0]))[0].astype(np.uint8) if path else None
     emb = np.asarray(entry["embedding"], dtype=np.float32) if entry.get("embedding") else None
     return _result(model, meta, logits, emb, cam, None, image, "precalculado")
+
+
+# ---------------------------------------------------------------------------
+# Imágenes de salida (PNG en base64, en memoria)
+# ---------------------------------------------------------------------------
+
+
+def png_data_uri(arr: np.ndarray) -> str:
+    buf = io.BytesIO()
+    Image.fromarray(np.asarray(arr).astype(np.uint8)).save(buf, "PNG", optimize=True)
+    return "data:image/png;base64," + base64.b64encode(buf.getvalue()).decode()
+
+
+def _stops() -> np.ndarray:
+    return np.array([[int(h[i:i + 2], 16) for i in (1, 3, 5)] for h in HEATMAP_STOPS], dtype=np.float32)
+
+
+def heatmap_rgba(cam, size: int) -> np.ndarray:
+    """Mapa (h, w) -> RGBA (size, size, 4): ReLU, normalización 0–1, redimensionado bilineal,
+    paleta azul cielo -> amarillo -> naranja -> bermellón y alfa proporcional a la intensidad."""
+    m = np.maximum(np.asarray(cam, dtype=np.float32), 0.0)
+    top = float(m.max())
+    m = m / top if top > 0 else m
+    m = np.asarray(Image.fromarray(m).resize((size, size), Image.Resampling.BILINEAR), dtype=np.float32)
+    m = np.clip(m, 0.0, 1.0)
+    stops = _stops()
+    pos = m * (len(stops) - 1)
+    i = np.clip(np.floor(pos).astype(int), 0, len(stops) - 2)
+    t = (pos - i)[..., None]
+    rgb = stops[i] * (1 - t) + stops[i + 1] * t
+    alpha = 255.0 * np.clip(m, 0.0, 1.0) ** 0.8
+    return np.concatenate([rgb, alpha[..., None]], axis=-1).round().astype(np.uint8)
+
+
+def heatmap_png(cam, size: int) -> str | None:
+    return None if cam is None else png_data_uri(heatmap_rgba(cam, size))

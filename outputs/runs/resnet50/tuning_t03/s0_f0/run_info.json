@@ -1,0 +1,67 @@
+{
+  "model": "resnet50",
+  "label": "tuning_t03",
+  "seed": 0,
+  "val_fold": 0,
+  "hyperparameters": {
+    "learning_rate": 0.00020210153187856742,
+    "weight_decay": 7.850698556587388e-06,
+    "dropout": 0.0
+  },
+  "evaluated_test": false,
+  "evaluated_train": false,
+  "n_images": {
+    "train": 6867,
+    "val": 1717,
+    "test": null
+  },
+  "epochs": {
+    "warmup": 5,
+    "finetune_max": 15,
+    "finetune_run": 13,
+    "finetune_best": 8
+  },
+  "best_val_balanced_accuracy_during_training": 0.7596327828118146,
+  "train_time_s": {
+    "warmup": 75.68670841499988,
+    "finetune": 558.6039427399992,
+    "total": 634.2906511549991
+  },
+  "inference_s_per_image": {
+    "val": 0.0013694130221312236
+  },
+  "inference_batch_size": 32,
+  "batch_size": 32,
+  "micro_batch_size": 32,
+  "gradient_accumulation_steps": 1,
+  "params": {
+    "warmup": {
+      "trainable": 14343,
+      "non_trainable": 23587712,
+      "total": 23602055
+    },
+    "finetune": {
+      "trainable": 23548935,
+      "non_trainable": 53120,
+      "total": 23602055
+    }
+  },
+  "mixed_precision": true,
+  "deterministic": false,
+  "environment": {
+    "python": "3.11.18",
+    "tensorflow": "2.20.0",
+    "keras": "3.15.1",
+    "cuda": "12.5.1",
+    "cudnn": "9",
+    "platform": "Linux-7.2.11-300.fc45.x86_64-x86_64-with-glibc2.44",
+    "gpus": [
+      {
+        "device": "/physical_device:GPU:0",
+        "name": "NVIDIA GeForce RTX 3050 6GB Laptop GPU",
+        "compute_capability": "8.6"
+      }
+    ]
+  },
+  "finished_at": "2026-11-27T00:50:53+00:00"
+}

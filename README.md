@@ -276,9 +276,10 @@ pip install -r dashboard/requirements.txt
 cd dashboard && gunicorn app:server --workers 1 --threads 2 --timeout 120
 ```
 
-Tres páginas (Contexto, EDA y Modelos). Mientras no haya resultados de entrenamiento, el EDA
-funciona completo y Modelos muestra un estado «pendiente». Las imágenes cargadas se procesan en
-memoria y no se guardan ni se registran.
+Cromia: cuatro páginas (Inicio, Demo en vivo, Modelos y Explora los datos), con modo claro y oscuro.
+Mientras no haya resultados de entrenamiento, Explora los datos funciona completo y las cifras de
+rendimiento se ven como marcadores de dato pendiente. Las imágenes cargadas se procesan en memoria
+y no se guardan ni se registran. Detalles en `dashboard/README.md`.
 
 ## Despliegue
 

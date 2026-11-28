@@ -33,6 +33,10 @@ outputs/**/*.weights.h5
 artifacts/**/*.onnx
 artifacts/**/*.npz
 
+# Paquetes .zip en la raíz: descargas de Colab (*_colab*.zip, con pesos; hasta ~8 GB), el handoff
+# de diseño de Cromia y el dataset comprimido. Su contenido útil ya está desempaquetado en el repo.
+/*.zip
+
 # Resultados de pytest
 outputs/tests/
 .pytest_cache/

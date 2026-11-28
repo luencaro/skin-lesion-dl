@@ -1,0 +1,136 @@
+2026-11-27 03:31:52 INFO densenet201 | tuning_t00 s0_f0 | Fase A: 5 épocas, backbone congelado
+2026-11-27 03:34:26 INFO densenet201 | tuning_t00 s0_f0 | warmup | época 1/5 | loss 1.5932 | val_bal_acc 0.4897 | mejor 0.4897 | 2m 33s
+2026-11-27 03:34:34 INFO densenet201 | tuning_t00 s0_f0 | warmup | época 2/5 | loss 1.1712 | val_bal_acc 0.5197 | mejor 0.5197 | 8.6s
+2026-11-27 03:34:43 INFO densenet201 | tuning_t00 s0_f0 | warmup | época 3/5 | loss 1.0486 | val_bal_acc 0.5876 | mejor 0.5876 | 8.4s
+2026-11-27 03:34:51 INFO densenet201 | tuning_t00 s0_f0 | warmup | época 4/5 | loss 0.9704 | val_bal_acc 0.5664 | mejor 0.5876 | 8.5s
+2026-11-27 03:34:59 INFO densenet201 | tuning_t00 s0_f0 | warmup | época 5/5 | loss 0.9024 | val_bal_acc 0.5710 | mejor 0.5876 | 8.4s
+2026-11-27 03:35:00 INFO densenet201 | tuning_t00 s0_f0 | Fase B: hasta 15 épocas, todo descongelado
+2026-11-27 03:57:53 INFO densenet201 | tuning_t00 s0_f0 | finetune | época 1/15 | loss 1.2428 | val_bal_acc 0.6173 | mejor 0.6173 | 22m 53s
+2026-11-27 03:58:21 INFO densenet201 | tuning_t00 s0_f0 | finetune | época 2/15 | loss 0.8009 | val_bal_acc 0.6765 | mejor 0.6765 | 27.8s
+2026-11-27 03:58:48 INFO densenet201 | tuning_t00 s0_f0 | finetune | época 3/15 | loss 0.6298 | val_bal_acc 0.6744 | mejor 0.6765 | 27.3s
+2026-11-27 03:59:16 INFO densenet201 | tuning_t00 s0_f0 | finetune | época 4/15 | loss 0.5461 | val_bal_acc 0.6779 | mejor 0.6779 | 27.7s
+2026-11-27 03:59:43 INFO densenet201 | tuning_t00 s0_f0 | finetune | época 5/15 | loss 0.4645 | val_bal_acc 0.6771 | mejor 0.6779 | 27.5s
+2026-11-27 04:00:11 INFO densenet201 | tuning_t00 s0_f0 | finetune | época 6/15 | loss 0.4104 | val_bal_acc 0.6757 | mejor 0.6779 | 27.6s
+2026-11-27 04:00:39 INFO densenet201 | tuning_t00 s0_f0 | finetune | época 7/15 | loss 0.3817 | val_bal_acc 0.6898 | mejor 0.6898 | 28.1s
+2026-11-27 04:01:07 INFO densenet201 | tuning_t00 s0_f0 | finetune | época 8/15 | loss 0.3358 | val_bal_acc 0.6693 | mejor 0.6898 | 27.9s
+2026-11-27 04:01:35 INFO densenet201 | tuning_t00 s0_f0 | finetune | época 9/15 | loss 0.3134 | val_bal_acc 0.6920 | mejor 0.6920 | 28.0s
+2026-11-27 04:02:03 INFO densenet201 | tuning_t00 s0_f0 | finetune | época 10/15 | loss 0.2989 | val_bal_acc 0.6799 | mejor 0.6920 | 27.7s
+2026-11-27 04:02:30 INFO densenet201 | tuning_t00 s0_f0 | finetune | época 11/15 | loss 0.2701 | val_bal_acc 0.6698 | mejor 0.6920 | 27.7s
+2026-11-27 04:02:58 INFO densenet201 | tuning_t00 s0_f0 | finetune | época 12/15 | loss 0.2591 | val_bal_acc 0.6577 | mejor 0.6920 | 27.6s
+2026-11-27 04:03:26 INFO densenet201 | tuning_t00 s0_f0 | finetune | época 13/15 | loss 0.2582 | val_bal_acc 0.6732 | mejor 0.6920 | 27.7s
+2026-11-27 04:03:53 INFO densenet201 | tuning_t00 s0_f0 | finetune | época 14/15 | loss 0.2499 | val_bal_acc 0.6692 | mejor 0.6920 | 27.7s
+2026-11-27 04:03:54 INFO densenet201 | tuning_t00 s0_f0 | parada temprana en la época 14
+2026-11-27 04:03:54 INFO densenet201 | tuning_t00 s0_f0 | se restauran los pesos de la época 9 de la fase B
+2026-11-27 04:04:06 INFO densenet201 | tuning_t00 s0_f0 | val balanced_accuracy = 0.6920 (época 9 de la fase B) | entrenamiento 32m 01s -> outputs/runs/densenet201/tuning_t00/s0_f0
+2026-11-27 04:04:35 INFO densenet201 | tuning_t01 s0_f0 | Fase A: 5 épocas, backbone congelado
+2026-11-27 04:06:46 INFO densenet201 | tuning_t01 s0_f0 | warmup | época 1/5 | loss 1.5956 | val_bal_acc 0.4899 | mejor 0.4899 | 2m 11s
+2026-11-27 04:06:54 INFO densenet201 | tuning_t01 s0_f0 | warmup | época 2/5 | loss 1.1694 | val_bal_acc 0.5219 | mejor 0.5219 | 8.6s
+2026-11-27 04:07:03 INFO densenet201 | tuning_t01 s0_f0 | warmup | época 3/5 | loss 1.0516 | val_bal_acc 0.5794 | mejor 0.5794 | 8.7s
+2026-11-27 04:07:12 INFO densenet201 | tuning_t01 s0_f0 | warmup | época 4/5 | loss 0.9732 | val_bal_acc 0.5204 | mejor 0.5794 | 8.5s
+2026-11-27 04:07:20 INFO densenet201 | tuning_t01 s0_f0 | warmup | época 5/5 | loss 0.9107 | val_bal_acc 0.5942 | mejor 0.5942 | 8.4s
+2026-11-27 04:07:20 INFO densenet201 | tuning_t01 s0_f0 | Fase B: hasta 15 épocas, todo descongelado
+2026-11-27 04:30:08 INFO densenet201 | tuning_t01 s0_f0 | finetune | época 1/15 | loss 1.1150 | val_bal_acc 0.6654 | mejor 0.6654 | 22m 48s
+2026-11-27 04:30:36 INFO densenet201 | tuning_t01 s0_f0 | finetune | época 2/15 | loss 0.6922 | val_bal_acc 0.7346 | mejor 0.7346 | 28.0s
+2026-11-27 04:31:04 INFO densenet201 | tuning_t01 s0_f0 | finetune | época 3/15 | loss 0.5493 | val_bal_acc 0.6833 | mejor 0.7346 | 27.6s
+2026-11-27 04:31:31 INFO densenet201 | tuning_t01 s0_f0 | finetune | época 4/15 | loss 0.4163 | val_bal_acc 0.6798 | mejor 0.7346 | 27.5s
+2026-11-27 04:31:59 INFO densenet201 | tuning_t01 s0_f0 | finetune | época 5/15 | loss 0.3662 | val_bal_acc 0.7010 | mejor 0.7346 | 27.6s
+2026-11-27 04:32:27 INFO densenet201 | tuning_t01 s0_f0 | finetune | época 6/15 | loss 0.3311 | val_bal_acc 0.7097 | mejor 0.7346 | 27.8s
+2026-11-27 04:32:55 INFO densenet201 | tuning_t01 s0_f0 | finetune | época 7/15 | loss 0.2733 | val_bal_acc 0.6965 | mejor 0.7346 | 27.9s
+2026-11-27 04:32:55 INFO densenet201 | tuning_t01 s0_f0 | parada temprana en la época 7
+2026-11-27 04:32:55 INFO densenet201 | tuning_t01 s0_f0 | se restauran los pesos de la época 2 de la fase B
+2026-11-27 04:32:59 INFO densenet201 | tuning_t01 s0_f0 | val balanced_accuracy = 0.7346 (época 2 de la fase B) | entrenamiento 28m 20s -> outputs/runs/densenet201/tuning_t01/s0_f0
+2026-11-27 04:33:25 INFO densenet201 | tuning_t02 s0_f0 | Fase A: 5 épocas, backbone congelado
+2026-11-27 04:35:37 INFO densenet201 | tuning_t02 s0_f0 | warmup | época 1/5 | loss 1.6992 | val_bal_acc 0.4795 | mejor 0.4795 | 2m 12s
+2026-11-27 04:35:46 INFO densenet201 | tuning_t02 s0_f0 | warmup | época 2/5 | loss 1.2899 | val_bal_acc 0.4941 | mejor 0.4941 | 8.6s
+2026-11-27 04:35:55 INFO densenet201 | tuning_t02 s0_f0 | warmup | época 3/5 | loss 1.1619 | val_bal_acc 0.5717 | mejor 0.5717 | 8.5s
+2026-11-27 04:36:03 INFO densenet201 | tuning_t02 s0_f0 | warmup | época 4/5 | loss 1.0927 | val_bal_acc 0.5737 | mejor 0.5737 | 8.5s
+2026-11-27 04:36:12 INFO densenet201 | tuning_t02 s0_f0 | warmup | época 5/5 | loss 1.0356 | val_bal_acc 0.5720 | mejor 0.5737 | 8.7s
+2026-11-27 04:36:12 INFO densenet201 | tuning_t02 s0_f0 | Fase B: hasta 15 épocas, todo descongelado
+2026-11-27 04:58:45 INFO densenet201 | tuning_t02 s0_f0 | finetune | época 1/15 | loss 1.5458 | val_bal_acc 0.5506 | mejor 0.5506 | 22m 33s
+2026-11-27 04:59:13 INFO densenet201 | tuning_t02 s0_f0 | finetune | época 2/15 | loss 1.0904 | val_bal_acc 0.6212 | mejor 0.6212 | 28.1s
+2026-11-27 04:59:41 INFO densenet201 | tuning_t02 s0_f0 | finetune | época 3/15 | loss 0.9172 | val_bal_acc 0.4499 | mejor 0.6212 | 27.8s
+2026-11-27 05:00:09 INFO densenet201 | tuning_t02 s0_f0 | finetune | época 4/15 | loss 0.8972 | val_bal_acc 0.6687 | mejor 0.6687 | 28.0s
+2026-11-27 05:00:37 INFO densenet201 | tuning_t02 s0_f0 | finetune | época 5/15 | loss 0.7901 | val_bal_acc 0.6988 | mejor 0.6988 | 28.0s
+2026-11-27 05:01:05 INFO densenet201 | tuning_t02 s0_f0 | finetune | época 6/15 | loss 0.6752 | val_bal_acc 0.6990 | mejor 0.6990 | 28.1s
+2026-11-27 05:01:33 INFO densenet201 | tuning_t02 s0_f0 | finetune | época 7/15 | loss 0.6619 | val_bal_acc 0.5477 | mejor 0.6990 | 27.8s
+2026-11-27 05:02:01 INFO densenet201 | tuning_t02 s0_f0 | finetune | época 8/15 | loss 0.6623 | val_bal_acc 0.7455 | mejor 0.7455 | 28.0s
+2026-11-27 05:02:29 INFO densenet201 | tuning_t02 s0_f0 | finetune | época 9/15 | loss 0.4843 | val_bal_acc 0.7419 | mejor 0.7455 | 27.9s
+2026-11-27 05:02:57 INFO densenet201 | tuning_t02 s0_f0 | finetune | época 10/15 | loss 0.4111 | val_bal_acc 0.7587 | mejor 0.7587 | 28.1s
+2026-11-27 05:03:24 INFO densenet201 | tuning_t02 s0_f0 | finetune | época 11/15 | loss 0.3640 | val_bal_acc 0.7510 | mejor 0.7587 | 27.8s
+2026-11-27 05:03:52 INFO densenet201 | tuning_t02 s0_f0 | finetune | época 12/15 | loss 0.2950 | val_bal_acc 0.7512 | mejor 0.7587 | 27.8s
+2026-11-27 05:04:21 INFO densenet201 | tuning_t02 s0_f0 | finetune | época 13/15 | loss 0.2755 | val_bal_acc 0.7731 | mejor 0.7731 | 28.3s
+2026-11-27 05:04:49 INFO densenet201 | tuning_t02 s0_f0 | finetune | época 14/15 | loss 0.2600 | val_bal_acc 0.7733 | mejor 0.7733 | 28.4s
+2026-11-27 05:05:17 INFO densenet201 | tuning_t02 s0_f0 | finetune | época 15/15 | loss 0.2384 | val_bal_acc 0.7806 | mejor 0.7806 | 28.2s
+2026-11-27 05:05:18 INFO densenet201 | tuning_t02 s0_f0 | se restauran los pesos de la época 15 de la fase B
+2026-11-27 05:05:21 INFO densenet201 | tuning_t02 s0_f0 | val balanced_accuracy = 0.7806 (época 15 de la fase B) | entrenamiento 31m 52s -> outputs/runs/densenet201/tuning_t02/s0_f0
+2026-11-27 05:05:49 INFO densenet201 | tuning_t03 s0_f0 | Fase A: 5 épocas, backbone congelado
+2026-11-27 05:08:01 INFO densenet201 | tuning_t03 s0_f0 | warmup | época 1/5 | loss 1.4863 | val_bal_acc 0.4951 | mejor 0.4951 | 2m 12s
+2026-11-27 05:08:09 INFO densenet201 | tuning_t03 s0_f0 | warmup | época 2/5 | loss 1.0875 | val_bal_acc 0.5414 | mejor 0.5414 | 8.2s
+2026-11-27 05:08:17 INFO densenet201 | tuning_t03 s0_f0 | warmup | época 3/5 | loss 0.9482 | val_bal_acc 0.5771 | mejor 0.5771 | 8.2s
+2026-11-27 05:08:25 INFO densenet201 | tuning_t03 s0_f0 | warmup | época 4/5 | loss 0.8811 | val_bal_acc 0.5479 | mejor 0.5771 | 8.3s
+2026-11-27 05:08:34 INFO densenet201 | tuning_t03 s0_f0 | warmup | época 5/5 | loss 0.8369 | val_bal_acc 0.5668 | mejor 0.5771 | 8.2s
+2026-11-27 05:08:34 INFO densenet201 | tuning_t03 s0_f0 | Fase B: hasta 15 épocas, todo descongelado
+2026-11-27 05:30:56 INFO densenet201 | tuning_t03 s0_f0 | finetune | época 1/15 | loss 1.2612 | val_bal_acc 0.4383 | mejor 0.4383 | 22m 22s
+2026-11-27 05:31:24 INFO densenet201 | tuning_t03 s0_f0 | finetune | época 2/15 | loss 0.8416 | val_bal_acc 0.6102 | mejor 0.6102 | 27.9s
+2026-11-27 05:31:52 INFO densenet201 | tuning_t03 s0_f0 | finetune | época 3/15 | loss 0.7060 | val_bal_acc 0.6854 | mejor 0.6854 | 27.9s
+2026-11-27 05:32:20 INFO densenet201 | tuning_t03 s0_f0 | finetune | época 4/15 | loss 0.5821 | val_bal_acc 0.7219 | mejor 0.7219 | 28.0s
+2026-11-27 05:32:47 INFO densenet201 | tuning_t03 s0_f0 | finetune | época 5/15 | loss 0.4749 | val_bal_acc 0.6966 | mejor 0.7219 | 27.6s
+2026-11-27 05:33:15 INFO densenet201 | tuning_t03 s0_f0 | finetune | época 6/15 | loss 0.4286 | val_bal_acc 0.7014 | mejor 0.7219 | 27.9s
+2026-11-27 05:33:43 INFO densenet201 | tuning_t03 s0_f0 | finetune | época 7/15 | loss 0.3096 | val_bal_acc 0.7285 | mejor 0.7285 | 28.1s
+2026-11-27 05:34:11 INFO densenet201 | tuning_t03 s0_f0 | finetune | época 8/15 | loss 0.2332 | val_bal_acc 0.7252 | mejor 0.7285 | 27.8s
+2026-11-27 05:34:39 INFO densenet201 | tuning_t03 s0_f0 | finetune | época 9/15 | loss 0.1962 | val_bal_acc 0.7519 | mejor 0.7519 | 28.1s
+2026-11-27 05:35:07 INFO densenet201 | tuning_t03 s0_f0 | finetune | época 10/15 | loss 0.1765 | val_bal_acc 0.7460 | mejor 0.7519 | 27.8s
+2026-11-27 05:35:35 INFO densenet201 | tuning_t03 s0_f0 | finetune | época 11/15 | loss 0.1208 | val_bal_acc 0.7365 | mejor 0.7519 | 27.7s
+2026-11-27 05:36:02 INFO densenet201 | tuning_t03 s0_f0 | finetune | época 12/15 | loss 0.1053 | val_bal_acc 0.7298 | mejor 0.7519 | 27.8s
+2026-11-27 05:36:30 INFO densenet201 | tuning_t03 s0_f0 | finetune | época 13/15 | loss 0.0879 | val_bal_acc 0.7418 | mejor 0.7519 | 27.8s
+2026-11-27 05:36:58 INFO densenet201 | tuning_t03 s0_f0 | finetune | época 14/15 | loss 0.0769 | val_bal_acc 0.7387 | mejor 0.7519 | 27.8s
+2026-11-27 05:36:58 INFO densenet201 | tuning_t03 s0_f0 | parada temprana en la época 14
+2026-11-27 05:36:58 INFO densenet201 | tuning_t03 s0_f0 | se restauran los pesos de la época 9 de la fase B
+2026-11-27 05:37:02 INFO densenet201 | tuning_t03 s0_f0 | val balanced_accuracy = 0.7519 (época 9 de la fase B) | entrenamiento 31m 10s -> outputs/runs/densenet201/tuning_t03/s0_f0
+2026-11-27 05:37:29 INFO densenet201 | tuning_t04 s0_f0 | Fase A: 5 épocas, backbone congelado
+2026-11-27 05:39:42 INFO densenet201 | tuning_t04 s0_f0 | warmup | época 1/5 | loss 1.4755 | val_bal_acc 0.4907 | mejor 0.4907 | 2m 13s
+2026-11-27 05:39:50 INFO densenet201 | tuning_t04 s0_f0 | warmup | época 2/5 | loss 1.0880 | val_bal_acc 0.5371 | mejor 0.5371 | 8.4s
+2026-11-27 05:39:59 INFO densenet201 | tuning_t04 s0_f0 | warmup | época 3/5 | loss 0.9505 | val_bal_acc 0.5901 | mejor 0.5901 | 8.5s
+2026-11-27 05:40:07 INFO densenet201 | tuning_t04 s0_f0 | warmup | época 4/5 | loss 0.8744 | val_bal_acc 0.5580 | mejor 0.5901 | 8.5s
+2026-11-27 05:40:16 INFO densenet201 | tuning_t04 s0_f0 | warmup | época 5/5 | loss 0.8191 | val_bal_acc 0.5690 | mejor 0.5901 | 8.6s
+2026-11-27 05:40:16 INFO densenet201 | tuning_t04 s0_f0 | Fase B: hasta 15 épocas, todo descongelado
+2026-11-27 06:02:49 INFO densenet201 | tuning_t04 s0_f0 | finetune | época 1/15 | loss 1.7564 | val_bal_acc 0.1452 | mejor 0.1452 | 22m 32s
+2026-11-27 06:03:16 INFO densenet201 | tuning_t04 s0_f0 | finetune | época 2/15 | loss 1.5031 | val_bal_acc 0.1492 | mejor 0.1492 | 27.8s
+2026-11-27 06:03:44 INFO densenet201 | tuning_t04 s0_f0 | finetune | época 3/15 | loss 1.8988 | val_bal_acc 0.2506 | mejor 0.2506 | 27.8s
+2026-11-27 06:04:12 INFO densenet201 | tuning_t04 s0_f0 | finetune | época 4/15 | loss 1.5290 | val_bal_acc 0.5174 | mejor 0.5174 | 27.7s
+2026-11-27 06:04:40 INFO densenet201 | tuning_t04 s0_f0 | finetune | época 5/15 | loss 1.3954 | val_bal_acc 0.4844 | mejor 0.5174 | 27.6s
+2026-11-27 06:05:07 INFO densenet201 | tuning_t04 s0_f0 | finetune | época 6/15 | loss 1.2377 | val_bal_acc 0.4976 | mejor 0.5174 | 27.5s
+2026-11-27 06:05:35 INFO densenet201 | tuning_t04 s0_f0 | finetune | época 7/15 | loss 1.1559 | val_bal_acc 0.5454 | mejor 0.5454 | 27.8s
+2026-11-27 06:06:03 INFO densenet201 | tuning_t04 s0_f0 | finetune | época 8/15 | loss 1.0664 | val_bal_acc 0.6014 | mejor 0.6014 | 27.9s
+2026-11-27 06:06:31 INFO densenet201 | tuning_t04 s0_f0 | finetune | época 9/15 | loss 0.9974 | val_bal_acc 0.6037 | mejor 0.6037 | 28.1s
+2026-11-27 06:06:59 INFO densenet201 | tuning_t04 s0_f0 | finetune | época 10/15 | loss 0.9754 | val_bal_acc 0.6003 | mejor 0.6037 | 27.7s
+2026-11-27 06:07:27 INFO densenet201 | tuning_t04 s0_f0 | finetune | época 11/15 | loss 0.8734 | val_bal_acc 0.6392 | mejor 0.6392 | 28.0s
+2026-11-27 06:07:55 INFO densenet201 | tuning_t04 s0_f0 | finetune | época 12/15 | loss 0.8259 | val_bal_acc 0.6582 | mejor 0.6582 | 27.9s
+2026-11-27 06:08:22 INFO densenet201 | tuning_t04 s0_f0 | finetune | época 13/15 | loss 0.7816 | val_bal_acc 0.6539 | mejor 0.6582 | 27.5s
+2026-11-27 06:08:50 INFO densenet201 | tuning_t04 s0_f0 | finetune | época 14/15 | loss 0.7578 | val_bal_acc 0.6523 | mejor 0.6582 | 27.7s
+2026-11-27 06:09:18 INFO densenet201 | tuning_t04 s0_f0 | finetune | época 15/15 | loss 0.7529 | val_bal_acc 0.6632 | mejor 0.6632 | 28.0s
+2026-11-27 06:09:18 INFO densenet201 | tuning_t04 s0_f0 | se restauran los pesos de la época 15 de la fase B
+2026-11-27 06:09:22 INFO densenet201 | tuning_t04 s0_f0 | val balanced_accuracy = 0.6632 (época 15 de la fase B) | entrenamiento 31m 49s -> outputs/runs/densenet201/tuning_t04/s0_f0
+2026-11-27 06:09:49 INFO densenet201 | tuning_t05 s0_f0 | Fase A: 5 épocas, backbone congelado
+2026-11-27 06:12:01 INFO densenet201 | tuning_t05 s0_f0 | warmup | época 1/5 | loss 1.6046 | val_bal_acc 0.4918 | mejor 0.4918 | 2m 12s
+2026-11-27 06:12:10 INFO densenet201 | tuning_t05 s0_f0 | warmup | época 2/5 | loss 1.1717 | val_bal_acc 0.5405 | mejor 0.5405 | 8.7s
+2026-11-27 06:12:18 INFO densenet201 | tuning_t05 s0_f0 | warmup | época 3/5 | loss 1.0542 | val_bal_acc 0.5814 | mejor 0.5814 | 8.5s
+2026-11-27 06:12:27 INFO densenet201 | tuning_t05 s0_f0 | warmup | época 4/5 | loss 0.9837 | val_bal_acc 0.5645 | mejor 0.5814 | 8.6s
+2026-11-27 06:12:36 INFO densenet201 | tuning_t05 s0_f0 | warmup | época 5/5 | loss 0.8995 | val_bal_acc 0.5872 | mejor 0.5872 | 8.7s
+2026-11-27 06:12:36 INFO densenet201 | tuning_t05 s0_f0 | Fase B: hasta 15 épocas, todo descongelado
+2026-11-27 06:35:25 INFO densenet201 | tuning_t05 s0_f0 | finetune | época 1/15 | loss 1.3952 | val_bal_acc 0.5663 | mejor 0.5663 | 22m 49s
+2026-11-27 06:35:53 INFO densenet201 | tuning_t05 s0_f0 | finetune | época 2/15 | loss 1.0580 | val_bal_acc 0.4707 | mejor 0.5663 | 27.8s
+2026-11-27 06:36:21 INFO densenet201 | tuning_t05 s0_f0 | finetune | época 3/15 | loss 0.9435 | val_bal_acc 0.5840 | mejor 0.5840 | 28.0s
+2026-11-27 06:36:49 INFO densenet201 | tuning_t05 s0_f0 | finetune | época 4/15 | loss 0.7972 | val_bal_acc 0.5568 | mejor 0.5840 | 27.9s
+2026-11-27 06:37:17 INFO densenet201 | tuning_t05 s0_f0 | finetune | época 5/15 | loss 0.6844 | val_bal_acc 0.6326 | mejor 0.6326 | 28.4s
+2026-11-27 06:37:46 INFO densenet201 | tuning_t05 s0_f0 | finetune | época 6/15 | loss 0.6396 | val_bal_acc 0.6782 | mejor 0.6782 | 28.6s
+2026-11-27 06:38:14 INFO densenet201 | tuning_t05 s0_f0 | finetune | época 7/15 | loss 0.5092 | val_bal_acc 0.6888 | mejor 0.6888 | 28.5s
+2026-11-27 06:38:43 INFO densenet201 | tuning_t05 s0_f0 | finetune | época 8/15 | loss 0.4264 | val_bal_acc 0.7640 | mejor 0.7640 | 28.4s
+2026-11-27 06:39:11 INFO densenet201 | tuning_t05 s0_f0 | finetune | época 9/15 | loss 0.3551 | val_bal_acc 0.7170 | mejor 0.7640 | 28.2s
+2026-11-27 06:39:39 INFO densenet201 | tuning_t05 s0_f0 | finetune | época 10/15 | loss 0.2882 | val_bal_acc 0.7344 | mejor 0.7640 | 27.6s
+2026-11-27 06:40:06 INFO densenet201 | tuning_t05 s0_f0 | finetune | época 11/15 | loss 0.2492 | val_bal_acc 0.7266 | mejor 0.7640 | 27.7s
+2026-11-27 06:40:34 INFO densenet201 | tuning_t05 s0_f0 | finetune | época 12/15 | loss 0.1993 | val_bal_acc 0.7320 | mejor 0.7640 | 27.8s
+2026-11-27 06:41:02 INFO densenet201 | tuning_t05 s0_f0 | finetune | época 13/15 | loss 0.1740 | val_bal_acc 0.7469 | mejor 0.7640 | 27.7s
+2026-11-27 06:41:02 INFO densenet201 | tuning_t05 s0_f0 | parada temprana en la época 13
+2026-11-27 06:41:02 INFO densenet201 | tuning_t05 s0_f0 | se restauran los pesos de la época 8 de la fase B
+2026-11-27 06:41:06 INFO densenet201 | tuning_t05 s0_f0 | val balanced_accuracy = 0.7640 (época 8 de la fase B) | entrenamiento 31m 13s -> outputs/runs/densenet201/tuning_t05/s0_f0

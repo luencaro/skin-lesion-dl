@@ -1,0 +1,37 @@
+{
+  "model": "cci",
+  "image_size": 224,
+  "batch_size": 32,
+  "micro_batch_size": 32,
+  "gradient_accumulation_steps": 1,
+  "mixed_precision": true,
+  "params_total": 2269737,
+  "params_trainable_warmup": 11753,
+  "params_trainable_finetune": 2235625,
+  "flops": 631086645,
+  "gflops": 0.631086645,
+  "gmacs": 0.3155433225,
+  "device": "GPU:0",
+  "train_step_s": 0.5477724140000646,
+  "peak_mem_train_mb": 929.0580978393555,
+  "oom_entrenamiento": false,
+  "peak_mem_inference_mb": 192.43622970581055,
+  "latency_ms_per_image": 5.181528002140112,
+  "images_per_second": 229.5965090724568,
+  "epoch_estimate_min": 1.9628511501668982,
+  "environment": {
+    "python": "3.11.18",
+    "tensorflow": "2.20.0",
+    "keras": "3.15.1",
+    "cuda": "12.5.1",
+    "cudnn": "9",
+    "platform": "Linux-7.2.11-300.fc45.x86_64-x86_64-with-glibc2.44",
+    "gpus": [
+      {
+        "device": "/physical_device:GPU:0",
+        "name": "NVIDIA GeForce RTX 3050 6GB Laptop GPU",
+        "compute_capability": "8.6"
+      }
+    ]
+  }
+}
